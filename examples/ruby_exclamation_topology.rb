@@ -15,9 +15,8 @@ java_import 'backtype.storm.utils.Utils'
 java_import 'java.util.Map'
 
 java_import 'backtype.storm.jruby.JRubyBolt'
-java_import 'storm.starter.RubyExclamationBolt'
 
-java_package 'storm.starter'
+require 'examples/ruby_exclamation_bolt'
 
 class RubyExclamationTopology
 
@@ -26,15 +25,15 @@ class RubyExclamationTopology
     builder = TopologyBuilder.new
     
     builder.setSpout(1, TestWordSpout.new, 10)     
-    builder.setBolt(2, JRubyBolt.new("storm.starter.RubyExclamationBolt"), 3).shuffleGrouping(1)
-    builder.setBolt(3, JRubyBolt.new("storm.starter.RubyExclamationBolt"), 2).shuffleGrouping(2)
+    builder.setBolt(2, JRubyBolt.new("RubyExclamationBolt"), 3).shuffleGrouping(1)
+    builder.setBolt(3, JRubyBolt.new("RubyExclamationBolt"), 2).shuffleGrouping(2)
             
     conf = Config.new
     conf.setDebug(true)
     
     cluster = LocalCluster.new
     cluster.submitTopology("test", conf, builder.createTopology)
-    Utils.sleep(10000)
+    sleep(5)
     cluster.killTopology("test")
     cluster.shutdown
   end

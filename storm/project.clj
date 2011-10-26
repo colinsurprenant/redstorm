@@ -1,6 +1,9 @@
 (defproject storm-jruby "0.0.1"
   :source-path "src/clj"
   :java-source-path "src/jvm"
+  :library-path "lib/"
+  :dev-library-path "lib/dev/"
+  :compile-path "build/classes"
   :javac-options {:debug "true" :fork "true"}
   :resources-path "multilang"
   :aot :all

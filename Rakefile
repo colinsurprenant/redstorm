@@ -1,10 +1,7 @@
 require 'ant' 
 
 # EDIT JRUBY_JAR to fit your installation
-JRUBY_JAR = ''
-
-### For user RVM installs, look here:
-#JRUBY_JAR = '~/.rvm/rubies/jruby-1.6.5/lib/jruby.jar'
+JRUBY_JAR = "$HOME/.rvm/rubies/jruby-1.6.5/lib/jruby.jar"
 
 STORM_DIR = './storm'
 JAVA_SRC_DIR = "#{STORM_DIR}/src/jvm"

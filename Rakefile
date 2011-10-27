@@ -1,14 +1,18 @@
 require 'ant' 
 
 # EDIT JRUBY_JAR to fit your installation
-JRUBY_JAR = '/Users/colin/.rvm/rubies/jruby-1.6.4/lib/jruby.jar'
+JRUBY_JAR = ''
+
+### For user RVM installs, look here:
+#JRUBY_JAR = '~/.rvm/rubies/jruby-1.6.5/lib/jruby.jar'
 
 STORM_DIR = './storm'
 JAVA_SRC_DIR = "#{STORM_DIR}/src/jvm"
 RUNTIME_LIB_DIR = "#{STORM_DIR}/lib" 
 DEV_LIB_DIR = "#{STORM_DIR}/lib/dev" 
 CLASSES_DIR = "#{STORM_DIR}/classes"  
-EXAMPLES_SRC_DIR = "./examples" 
+EXAMPLES_SRC_DIR = "./examples"
+TOPOLOGIES_SRC_DIR = "./lib/topologies"
 JRUBY_SRC_DIR = "./lib/red_storm" 
   
 task :default => [:clean, :build]  
@@ -43,6 +47,9 @@ task :build => :setup do
 
   # compile the Ruby examples
   build_jruby("#{EXAMPLES_SRC_DIR}")
+
+  # compile the Ruby user-created topologies
+  build_jruby("#{TOPOLOGIES_SRC_DIR}")
 end  
 
 task :storm do

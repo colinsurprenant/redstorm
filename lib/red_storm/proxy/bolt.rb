@@ -11,17 +11,27 @@ java_import 'java.util.Map'
 
 java_package 'redstorm.proxy'
 
+# the Bolt class is a proxy to the real bolt to avoid having to deal with all the
+# Java artifacts when creating a bolt.
+#
+# The real bolt class implementation must define these methods:
+# - prepare(conf, context, collector)
+# - execute(tuple)
+# - declare_output_fields
+#
+# and optionnaly:
+# - cleanup
+#
 class Bolt
   java_implements IRichBolt
 
   java_signature 'IRichBolt (String real_bolt_class_name)'
   def initialize(real_bolt_class_name)
-    @real_bolt_class_name = real_bolt_class_name
+    @real_bolt = Object.module_eval(real_bolt_class_name).new
   end
 
   java_signature 'void prepare(Map, TopologyContext, OutputCollector)'
   def prepare(conf, context, collector)
-    @real_bolt = Object.module_eval(@real_bolt_class_name).new
     @real_bolt.prepare(conf, context, collector)
   end
 
@@ -37,7 +47,7 @@ class Bolt
 
   java_signature 'void declareOutputFields(OutputFieldsDeclarer)'
   def declareOutputFields(declarer)
-    Object.module_eval(@real_bolt_class_name).new.declare_output_fields(declarer)
+    @real_bolt.declare_output_fields(declarer)
   end
 
 end

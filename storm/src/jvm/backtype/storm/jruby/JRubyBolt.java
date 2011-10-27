@@ -13,10 +13,9 @@ import java.util.Map;
  * the bolts to the workers. JRuby does not yet support serialization from Java
  * (Java serialization call on a JRuby class). 
  *
- * Note that the JRuby bolt class is instanciated twice, in the constructor and in the prepare
- * method. The constructor instance is required to support the declareOutputFields at topology
- * creation while the prepare instance is required for the actual bolt execution, 
- * post-deserialization at the workers.
+ * Note that the JRuby bolt proxy class is instanciated in the prepare method which is called after 
+ * deserialization at the worker and in the declareOutputFields method which is called once before 
+ * serialization at topology creation. 
  */
 public class JRubyBolt implements IRichBolt {
   IRichBolt _proxyBolt;
@@ -33,7 +32,7 @@ public class JRubyBolt implements IRichBolt {
 
   @Override
   public void prepare(final Map stormConf, final TopologyContext context, final OutputCollector collector) {
-    // create instance of the jruby class here, after deserialization for the workers.
+    // create instance of the jruby class here, after deserialization in the workers.
     _proxyBolt = newProxyBolt(_realBoltClassName);
     _proxyBolt.prepare(stormConf, context, collector);
   }
@@ -50,8 +49,8 @@ public class JRubyBolt implements IRichBolt {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
-    // declareOutputFields is executed in the topology creation time, before the prepare method at
-    // pre serialisation. do not set the _proxyBolt instance variable here to avoid JRuby serialization
+    // declareOutputFields is executed in the topology creation time, before serialisation.
+    // do not set the _proxyBolt instance variable here to avoid JRuby serialization
     // issues. Just create tmp bolt instance to call declareOutputFields.
     IRichBolt bolt = newProxyBolt(_realBoltClassName);
     bolt.declareOutputFields(declarer);

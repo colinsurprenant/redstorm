@@ -11,22 +11,35 @@ java_import 'java.util.Map'
 
 java_package 'redstorm.proxy'
 
+# the Spout class is a proxy to the real spout to avoid having to deal with all the
+# Java artifacts when creating a spout.
+#
+# The real spout class implementation must define these methods:
+# - open(conf, context, collector)
+# - next_tuple
+# - is_distributed
+# - declare_output_fields
+#
+# and optionnaly:
+# - ack(msg_id)
+# - fail(msg_id)
+# - close
+#
 class Spout
   java_implements IRichSpout
 
   java_signature 'IRichSpout (String real_spout_class_name)'
   def initialize(real_spout_class_name)
-    @real_spout_class_name = real_spout_class_name
+    @real_spout = Object.module_eval(real_spout_class_name).new
   end
 
   java_signature 'boolean isDistributed()'
   def isDistributed
-    Object.module_eval(@real_spout_class_name).new.is_distributed
+    @real_spout.is_distributed
   end
 
   java_signature 'void open(Map, TopologyContext, SpoutOutputCollector)'
   def open(conf, context, collector)
-    @real_spout = Object.module_eval(@real_spout_class_name).new
     @real_spout.open(conf, context, collector)
   end
 
@@ -41,18 +54,18 @@ class Spout
   end
 
   java_signature 'void ack(Object)'
-  def ack(msgId)
-    @real_spout.ack(msgId) if @real_spout.respond_to?(:close)
+  def ack(msg_id)
+    @real_spout.ack(msg_id) if @real_spout.respond_to?(:ack)
   end
 
   java_signature 'void fail(Object)'
-  def fail(msgId)
-    @real_spout.fail(msgId) if @real_spout.respond_to?(:close)
+  def fail(msg_id)
+    @real_spout.fail(msg_id) if @real_spout.respond_to?(:fail)
   end
 
   java_signature 'void declareOutputFields(OutputFieldsDeclarer)'
   def declareOutputFields(declarer)
-    Object.module_eval(@real_spout_class_name).new.declare_output_fields(declarer)
+    @real_spout.declare_output_fields(declarer)
   end
 
 end

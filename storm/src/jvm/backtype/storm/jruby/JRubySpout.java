@@ -1,15 +1,10 @@
 package backtype.storm.jruby;
 
-import backtype.storm.generated.StreamInfo;
-import backtype.storm.spout.ISpout;
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.tuple.Fields;
-import backtype.storm.utils.Utils;
-import java.util.ArrayList;
-import java.util.List;
+import backtype.storm.tuple.Tuple;
 import java.util.Map;
 
 /**
@@ -18,10 +13,9 @@ import java.util.Map;
  * the spout to the workers. JRuby does not yet support serialization from Java
  * (Java serialization call on a JRuby class). 
  *
- * Note that the JRuby spout class is instanciated twice, in the constructor and in the open
- * method. The constructor instance is required to support the declareOutputFields at topology
- * creation while the open instance is required for the actual spout execution, 
- * post-deserialization at the workers.
+ * Note that the JRuby spout proxy class is instanciated in the open method which is called after 
+ * deserialization at the worker and in both the declareOutputFields and isDistributed methods which 
+ * are called once before serialization at topology creation. 
  */
 public class JRubySpout implements IRichSpout {
   IRichSpout _proxySpout;
@@ -30,7 +24,7 @@ public class JRubySpout implements IRichSpout {
   /**
    * create a new JRubySpout
    * 
-   * @param jrubyClassName the fully qualified JRuby spout implementation class name
+   * @param realSpoutClassName the fully qualified JRuby spout implementation class name
    */
   public JRubySpout(String realSpoutClassName) {
     _realSpoutClassName = realSpoutClassName;
@@ -38,12 +32,16 @@ public class JRubySpout implements IRichSpout {
 
   @Override
   public boolean isDistributed() {
+    // isDistributed is executed in the topology creation time before serialisation.
+    // do not set the _proxySpout instance variable here to avoid JRuby serialization
+    // issues. Just create tmp spout instance to call isDistributed.
     IRichSpout spout = newProxySpout(_realSpoutClassName);
     return spout.isDistributed();
   }
 
   @Override
   public void open(final Map conf, final TopologyContext context, final SpoutOutputCollector collector) {
+    // create instance of the jruby proxy class here, after deserialization in the workers.
     _proxySpout = newProxySpout(_realSpoutClassName);
     _proxySpout.open(conf, context, collector);
   }
@@ -70,6 +68,9 @@ public class JRubySpout implements IRichSpout {
 
   @Override
   public void declareOutputFields(OutputFieldsDeclarer declarer) {
+    // declareOutputFields is executed in the topology creation time before serialisation.
+    // do not set the _proxySpout instance variable here to avoid JRuby serialization
+    // issues. Just create tmp spout instance to call declareOutputFields.
     IRichSpout spout = newProxySpout(_realSpoutClassName);
     spout.declareOutputFields(declarer);
   }  

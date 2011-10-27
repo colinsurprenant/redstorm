@@ -39,10 +39,24 @@ $ rake clean build
 
 ### run examples
 
+These are the simple examples in `./examples`
+
 ``` sh
 $ rake storm class=RubyExclamationTopology
 $ rake storm class=RubyExclamationTopology2
 $ rake storm class=RubyWordCountTopology
+```
+
+### using gems
+
+To use gems in your Ruby code, `jruby-complete.jar` is required. By default `jruby.jar` is included with the JRuby installation but does not support gems. You can download `jruby-complete.jar` from http://jruby.org/download
+
+Until this is better integrated, please download `jruby-complete.jar` and edit the `Rakefile` to update `JRUBY_JAR` with the path to your `jruby-complete.jar`
+
+This example uses the **Redis** gem to poll the `test` queue from a Redis server on `localhost:6379` and emits the words into a word count bolt.
+
+``` sh
+$ rake storm class=RubyRedisWordCountTopology
 ```
 
 ## Author

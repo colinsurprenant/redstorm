@@ -46,7 +46,9 @@ task :build => :setup do
   build_jruby("#{EXAMPLES_SRC_DIR}")
 
   # compile the Ruby user-created topologies
-  build_jruby("#{TOPOLOGIES_SRC_DIR}")
+  unless Dir["#{TOPOLOGIES_SRC_DIR}/*"].empty?
+    build_jruby("#{TOPOLOGIES_SRC_DIR}")
+  end
 end  
 
 task :storm do

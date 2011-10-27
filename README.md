@@ -1,6 +1,6 @@
 # Storm JRuby integration
 
-This project is a first try for integrating JRuby in Storm. It is currently possible to write **bolts** and **spouts** and also the **topology** creation/launcher in Ruby.
+This project is a first try for integrating [JRuby][jruby] in [Storm][storm]. It is currently possible to write **bolts** and **spouts** and also the **topology** creation/launcher in Ruby.
 
 The **Exclamation Topology** and the **Word Count Topology** have been rewritten in Ruby in the `examples/` directory.
 
@@ -53,3 +53,5 @@ Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][ne
 [twitter]: http://twitter.com/colinsurprenant
 [github]: http://github.com/colinsurprenant
 [rvm]: http://beginrescueend.com/
+[storm]: https://github.com/nathanmarz/storm
+[jruby]: http://jruby.org/

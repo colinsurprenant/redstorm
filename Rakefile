@@ -1,14 +1,15 @@
 require 'ant' 
 
+# EDIT JRUBY_JAR to fit your installation
 JRUBY_JAR = '/Users/colin/.rvm/rubies/jruby-1.6.4/lib/jruby.jar'
 
 STORM_DIR = './storm'
 JAVA_SRC_DIR = "#{STORM_DIR}/src/jvm"
-EXAMPLES_SRC_DIR = "./examples" 
-JRUBY_SRC_DIR = "./lib/red_storm" 
 RUNTIME_LIB_DIR = "#{STORM_DIR}/lib" 
 DEV_LIB_DIR = "#{STORM_DIR}/lib/dev" 
 CLASSES_DIR = "#{STORM_DIR}/classes"  
+EXAMPLES_SRC_DIR = "./examples" 
+JRUBY_SRC_DIR = "./lib/red_storm" 
   
 task :default => [:clean, :build]  
   
@@ -34,8 +35,13 @@ task :deps do
 end
 
 task :build => :setup do
+  # first compile the JRuby proxy classes, required by the Java bindings
   build_jruby("#{JRUBY_SRC_DIR}")
+
+  # compile the Storm Java->JRuby bindings
   build_java("#{JAVA_SRC_DIR}/backtype/storm/jruby")
+
+  # compile the Ruby examples
   build_jruby("#{EXAMPLES_SRC_DIR}")
 end  
 

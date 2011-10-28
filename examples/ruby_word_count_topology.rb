@@ -1,23 +1,3 @@
-require 'java'
-
-java_import 'backtype.storm.Config'
-java_import 'backtype.storm.LocalCluster'
-java_import 'backtype.storm.task.OutputCollector'
-java_import 'backtype.storm.task.TopologyContext'
-java_import 'backtype.storm.testing.TestWordSpout'
-java_import 'backtype.storm.topology.IRichBolt'
-java_import 'backtype.storm.topology.OutputFieldsDeclarer'
-java_import 'backtype.storm.topology.TopologyBuilder'
-java_import 'backtype.storm.tuple.Fields'
-java_import 'backtype.storm.tuple.Tuple'
-java_import 'backtype.storm.tuple.Values'
-java_import 'backtype.storm.utils.Utils'
-java_import 'java.util.Map'
-
-java_import 'backtype.storm.jruby.JRubyBolt'
-java_import 'backtype.storm.jruby.JRubySpout'
-
-
 class RubyRandomSentenceSpout
   def initialize
     @sentences = [
@@ -82,9 +62,7 @@ end
 
 
 class RubyWordCountTopology
-
-  java_signature 'void main(String[])'
-  def self.main(args)
+  def start
     builder = TopologyBuilder.new
     builder.setSpout(1, JRubySpout.new("RubyRandomSentenceSpout"), 5)
     builder.setBolt(2, JRubyBolt.new("RubySplitSentence"), 8).shuffleGrouping(1)

@@ -1,23 +1,6 @@
-require 'java'
-
-java_import 'backtype.storm.Config'
-java_import 'backtype.storm.LocalCluster'
-java_import 'backtype.storm.task.OutputCollector'
-java_import 'backtype.storm.task.TopologyContext'
 java_import 'backtype.storm.testing.TestWordSpout'
-java_import 'backtype.storm.topology.IRichBolt'
-java_import 'backtype.storm.topology.OutputFieldsDeclarer'
-java_import 'backtype.storm.topology.TopologyBuilder'
-java_import 'backtype.storm.tuple.Fields'
-java_import 'backtype.storm.tuple.Tuple'
-java_import 'backtype.storm.tuple.Values'
-java_import 'backtype.storm.utils.Utils'
-java_import 'java.util.Map'
-
-java_import 'backtype.storm.jruby.JRubyBolt'
 
 class RubyExclamationBolt2
-
   def prepare(conf, context, collector)
     @collector = collector
   end
@@ -30,13 +13,10 @@ class RubyExclamationBolt2
   def declare_output_fields(declarer)
     declarer.declare(Fields.new("word"))
   end
-
 end
 
 class RubyExclamationTopology2
-
-  java_signature 'void main(String[])'
-  def self.main(args)
+  def start
     builder = TopologyBuilder.new
     
     builder.setSpout(1, TestWordSpout.new, 10)     
@@ -52,5 +32,4 @@ class RubyExclamationTopology2
     cluster.killTopology("test")
     cluster.shutdown
   end
-
 end

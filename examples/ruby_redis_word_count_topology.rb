@@ -1,29 +1,9 @@
-require 'java'
-require 'rubygems'
 require 'redis'
 require 'thread'
-
-java_import 'backtype.storm.Config'
-java_import 'backtype.storm.LocalCluster'
-java_import 'backtype.storm.task.OutputCollector'
-java_import 'backtype.storm.task.TopologyContext'
-java_import 'backtype.storm.testing.TestWordSpout'
-java_import 'backtype.storm.topology.IRichBolt'
-java_import 'backtype.storm.topology.OutputFieldsDeclarer'
-java_import 'backtype.storm.topology.TopologyBuilder'
-java_import 'backtype.storm.tuple.Fields'
-java_import 'backtype.storm.tuple.Tuple'
-java_import 'backtype.storm.tuple.Values'
-java_import 'backtype.storm.utils.Utils'
-java_import 'java.util.Map'
-
-java_import 'backtype.storm.jruby.JRubyBolt'
-java_import 'backtype.storm.jruby.JRubySpout'
 
 # RubyRedisWordSpout reads the Redis queue "test" on localhost:6379 
 # and emits each word items pop'ed from the queue.
 class RubyRedisWordSpout
-
   def is_distributed
     false
   end
@@ -36,6 +16,7 @@ class RubyRedisWordSpout
   end
   
   def next_tuple
+    # per doc nextTuple should not block, and sleep a bit when there's no data to process.
     if @q.size > 0
       @collector.emit(Values.new(@q.pop))
     else
@@ -64,7 +45,6 @@ class RubyRedisWordSpout
 end
 
 class RubyRedisWordCount
-
   def initialize
     @counts = Hash.new{|h, k| h[k] = 0}
   end
@@ -85,9 +65,7 @@ class RubyRedisWordCount
 end
 
 class RubyRedisWordCountTopology
-
-  java_signature 'void main(String[])'
-  def self.main(args)
+  def start
     builder = TopologyBuilder.new
     builder.setSpout(1, JRubySpout.new("RubyRedisWordSpout"), 1)
     builder.setBolt(2, JRubyBolt.new("RubyRedisWordCount"), 3).fieldsGrouping(1, Fields.new("word"))

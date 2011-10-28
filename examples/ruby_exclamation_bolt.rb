@@ -1,6 +1,4 @@
-
 class RubyExclamationBolt
-
   def prepare(conf, context, collector)
     @collector = collector
   end
@@ -13,5 +11,4 @@ class RubyExclamationBolt
   def declare_output_fields(declarer)
     declarer.declare(Fields.new("word"))
   end
-
 end

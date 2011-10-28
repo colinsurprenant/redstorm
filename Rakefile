@@ -37,27 +37,14 @@ end
 
 task :build => :setup do
   # first compile the JRuby proxy classes, required by the Java bindings
-  build_jruby("#{JRUBY_SRC_DIR}")
+  build_jruby("#{JRUBY_SRC_DIR}/proxy")
 
   # compile the Storm Java->JRuby bindings
   build_java("#{JAVA_SRC_DIR}/backtype/storm/jruby")
 
-  # compile the Ruby examples
-  build_jruby("#{EXAMPLES_SRC_DIR}")
-
-  # compile the Ruby user-created topologies
-  unless Dir["#{TOPOLOGIES_SRC_DIR}/*"].empty?
-    build_jruby("#{TOPOLOGIES_SRC_DIR}")
-  end
+  # first compile the JRuby proxy classes, required by the Java bindings
+  build_jruby("#{JRUBY_SRC_DIR}/topology_launcher.rb")
 end  
-
-task :storm do
-  unless ENV['class']
-    puts("usage: rake storm class={fully qualified java class name}")
-    exit(1)
-  end
-  system("java -cp \"./#{CLASSES_DIR}:./#{RUNTIME_LIB_DIR}/*:./#{DEV_LIB_DIR}/*:#{JRUBY_JAR}\" #{ENV['class']}")
-end
 
 def build_java(source_folder)
   puts("\n--> Building Java:")

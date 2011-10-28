@@ -14,13 +14,21 @@ The **Exclamation Topology** and the **Word Count Topology** have been rewritten
 
 This has been tested on OSX 10.6.8 using Storm 0.5.3 and JRuby 1.6.4 & 1.6.5
 
+Ruby gems support is provided by `jruby-complete.jar`. By default only `jruby.jar` is included with the JRuby installation but does not support gems.
+
+Until this is better integreted in this project, please download `jruby-complete.jar` from http://jruby.org/download and edit the `Rakefile` to update `JRUBY_JAR` with the path to your `jruby-complete.jar`
+
 ## usage
 
-- Edit `Rakefile` to ajust your `JRUBY_JAR`
+### setup 
+
+- Edit `Rakefile` to ajust your `JRUBY_JAR` to your `jruby-complete.jar`, see dependencies section
 
 - If you don't use [RVM][rvm], you should! :P
 
 ### build
+
+Building is typically required only once. 
 
 ``` sh
 $ rake deps
@@ -36,27 +44,24 @@ $ rake build
 $ rake clean build
 ```
 
+### run
 
-### run examples
+Use the `bin/redstorm` launcher with the path to your Ruby topology class file as parameter. See examples below.
+
+### examples
 
 These are the simple examples in `./examples`
 
 ``` sh
-$ rake storm class=RubyExclamationTopology
-$ rake storm class=RubyExclamationTopology2
-$ rake storm class=RubyWordCountTopology
+$ bin/redstorm examples/ruby_exclamation_topology.rb
+$ bin/redstorm examples/ruby_exclamation_topology2.rb
+$ bin/redstorm examples/ruby_word_count_topology.rb
 ```
 
-### using gems
-
-To use gems in your Ruby code, `jruby-complete.jar` is required. By default `jruby.jar` is included with the JRuby installation but does not support gems. You can download `jruby-complete.jar` from http://jruby.org/download
-
-Until this is better integrated, please download `jruby-complete.jar` and edit the `Rakefile` to update `JRUBY_JAR` with the path to your `jruby-complete.jar`
-
-This example uses the **Redis** gem to poll the `test` queue from a Redis server on `localhost:6379` and emits the words into a word count bolt.
+This next example requires the use of a **Redis** server on `localhost:6379`
 
 ``` sh
-$ rake storm class=RubyRedisWordCountTopology
+$ bin/redstorm examples/ruby_redis_word_count_topology
 ```
 
 ## Author

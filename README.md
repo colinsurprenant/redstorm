@@ -63,7 +63,7 @@ This next example requires the use of a **Redis** server on `localhost:6379`
 $ bin/redstorm examples/ruby_redis_word_count_topology
 ```
 
-## Author
+## author
 Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][needium], [colin.surprenant@gmail.com][gmail], [http://github.com/colinsurprenant][github]
 
 [needium]: colin.surprenant@needium.com

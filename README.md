@@ -16,15 +16,18 @@ This has been tested on OSX 10.6.8 using Storm 0.5.3 and JRuby 1.6.4 & 1.6.5
 
 Ruby gems support is provided by `jruby-complete.jar`. By default only `jruby.jar` is included with the JRuby installation but does not support gems.
 
-Until this is better integreted in this project, please download `jruby-complete.jar` from http://jruby.org/download and edit the `Rakefile` to update `JRUBY_JAR` with the path to your `jruby-complete.jar`
+Until this is better integreted in this project, you **MUST** download `jruby-complete.jar` from http://jruby.org/download and edit the `Rakefile` and `bin/redstorm` to update `JRUBY_JAR` with the path to your `jruby-complete.jar`
 
-## usage
+## environment
 
 ### setup 
 
-- Edit `Rakefile` to ajust your `JRUBY_JAR` to your `jruby-complete.jar`, see dependencies section
+**IMPORTANT** these two steps **MUST** be done otherwise nothing will run!
 
-- If you don't use [RVM][rvm], you should! :P
+- Edit `Rakefile` and set `JRUBY_JAR` to your `jruby-complete.jar`, see dependencies section
+- Edit `bin/redstorm` and set `JRUBY_JAR` to your `jruby-complete.jar`, see dependencies section
+
+Also, if you don't use [RVM][rvm], you should! :P
 
 ### build
 
@@ -36,21 +39,17 @@ $ rake build
 ```
 
 - `rake deps` will call the `lein` script to install the required Java libraries in the `storm/lib` directory.
-- `rake build` will compile the required Java bindings and the Ruby proxy classes and examples.
+- `rake build` will compile the required Java & Ruby bindings.
 
-- When developping I usually a clean before build using:
-
-``` sh
-$ rake clean build
-```
+## usage
 
 ### run
 
-Use the `bin/redstorm` launcher with the path to your Ruby topology class file as parameter. See examples below.
+- First create a topology class that implements the `start` method. The *underscore* class filename **MUST** correspond to the *CamelCase* class name.
+
+- Use the `bin/redstorm` launcher with the path to your Ruby topology class file as parameter. See examples below.
 
 ### examples
-
-These are the simple examples in `./examples`
 
 ``` sh
 $ bin/redstorm examples/ruby_exclamation_topology.rb

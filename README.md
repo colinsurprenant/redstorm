@@ -66,6 +66,9 @@ $ bin/redstorm examples/ruby_redis_word_count_topology
 ## author
 Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][needium], [colin.surprenant@gmail.com][gmail], [http://github.com/colinsurprenant][github]
 
+## license
+Apache License, Version 2.0. See the LICENSE.md file.
+
 [needium]: colin.surprenant@needium.com
 [gmail]: colin.surprenant@gmail.com
 [twitter]: http://twitter.com/colinsurprenant

@@ -1,7 +1,5 @@
-JRUBY_JAR="${HOME}/.rvm/rubies/jruby-1.6.5/lib/jruby-complete.jar"
-STORM_DIR="./storm"
-RUNTIME_LIB_DIR="${STORM_DIR}/lib" 
-DEV_LIB_DIR="${STORM_DIR}/lib/dev" 
-CLASSES_DIR="${STORM_DIR}/classes"  
+TARGET_DIR="./target"
+DEPENDENCY_DIR="${TARGET_DIR}/dependency" 
+CLASSES_DIR="${TARGET_DIR}/classes"  
 
-java -cp "./${CLASSES_DIR}:./${RUNTIME_LIB_DIR}/*:./${DEV_LIB_DIR}/*:${JRUBY_JAR}" TopologyLauncher $@
+java -cp "./${CLASSES_DIR}:./${DEPENDENCY_DIR}/*" redstorm.TopologyLauncher $@

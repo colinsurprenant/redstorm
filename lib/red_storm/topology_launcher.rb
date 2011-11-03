@@ -11,8 +11,10 @@ java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Tuple'
 java_import 'backtype.storm.tuple.Values'
 
-java_import 'backtype.storm.jruby.JRubyBolt'
-java_import 'backtype.storm.jruby.JRubySpout'
+java_import 'redstorm.storm.jruby.JRubyBolt'
+java_import 'redstorm.storm.jruby.JRubySpout'
+
+java_package 'redstorm'
 
 # TopologyLauncher is the application entry point when launching a topology. Basically it will 
 # call require on the specified Ruby topology/project class file path and call its start method

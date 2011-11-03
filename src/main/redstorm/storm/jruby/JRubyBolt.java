@@ -1,4 +1,4 @@
-package backtype.storm.jruby;
+package redstorm.storm.jruby;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;

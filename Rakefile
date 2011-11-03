@@ -1,56 +1,64 @@
-require 'ant' 
+require 'ant'
 
 # EDIT JRUBY_JAR to fit your installation
-JRUBY_JAR = "$HOME/.rvm/rubies/jruby-1.6.5/lib/jruby.jar"
+JRUBY_JAR = "$HOME/.rvm/rubies/jruby-1.6.5/lib/jruby-complete-1.6.5.jar"
 
-STORM_DIR = './storm'
-JAVA_SRC_DIR = "#{STORM_DIR}/src/jvm"
-RUNTIME_LIB_DIR = "#{STORM_DIR}/lib" 
-DEV_LIB_DIR = "#{STORM_DIR}/lib/dev" 
-CLASSES_DIR = "#{STORM_DIR}/classes"  
-EXAMPLES_SRC_DIR = "./examples"
-TOPOLOGIES_SRC_DIR = "./lib/topologies"
+TARGET_DIR = './target'
+TARGET_SRC_DIR = "#{TARGET_DIR}/src"
+TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"  
+TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
+
+JAVA_SRC_DIR = "./src/main"
 JRUBY_SRC_DIR = "./lib/red_storm" 
   
 task :default => [:clean, :build]  
   
-task :clean_all => :clean do  
-  ant.delete :dir => RUNTIME_LIB_DIR
+task :clean_deps => :clean do  
+  ant.delete :dir => TARGET_DEPENDENCY_DIR
 end
 
 task :clean do
-  ant.delete :dir => CLASSES_DIR
+  ant.delete :dir => TARGET_CLASSES_DIR
+  ant.delete :dir => TARGET_SRC_DIR
 end
   
 task :setup do  
-  ant.mkdir :dir => CLASSES_DIR  
+  ant.mkdir :dir => TARGET_DIR 
+  ant.mkdir :dir => TARGET_CLASSES_DIR 
+  ant.mkdir :dir => TARGET_SRC_DIR
   ant.path :id => 'classpath' do  
-    fileset :dir => RUNTIME_LIB_DIR  
-    fileset :dir => DEV_LIB_DIR  
-    fileset :dir => CLASSES_DIR  
+    fileset :dir => TARGET_DEPENDENCY_DIR  
+    fileset :dir => TARGET_CLASSES_DIR  
   end  
 end  
   
 task :deps do
-  system("cd #{STORM_DIR}; ./lein deps")
+  system("rmvn dependency:copy-dependencies")
+  system("cp #{JRUBY_JAR} #{TARGET_DEPENDENCY_DIR}")
 end
 
 task :build => :setup do
-  # first compile the JRuby proxy classes, required by the Java bindings
+  # generate the JRuby proxy classes in java, required by the Java bindings
   build_jruby("#{JRUBY_SRC_DIR}/proxy")
 
-  # compile the Storm Java->JRuby bindings
-  build_java("#{JAVA_SRC_DIR}/backtype/storm/jruby")
+  # compile the JRuby proxy classes
+  build_java_dir("#{TARGET_SRC_DIR}")
 
-  # first compile the JRuby proxy classes, required by the Java bindings
+  # generate the JRuby proxy classes in java, required by the Java bindings
   build_jruby("#{JRUBY_SRC_DIR}/topology_launcher.rb")
+
+  # compile the JRuby proxy classes
+  build_java_dir("#{JAVA_SRC_DIR}")
+
+  # compile the JRuby proxy classes
+  build_java_dir("#{TARGET_SRC_DIR}")
 end  
 
-def build_java(source_folder)
-  puts("\n--> Building Java:")
+def build_java_dir(source_folder)
+  puts("\n--> Compiling Java")
   ant.javac(
     :srcdir => source_folder,
-    :destdir => CLASSES_DIR,
+    :destdir => TARGET_CLASSES_DIR,
     :classpathref => 'classpath', 
     :source => "1.6",
     :target => "1.6",
@@ -60,8 +68,8 @@ def build_java(source_folder)
     :listfiles => true
   )
 end  
-  
+
 def build_jruby(source_folder)
-  puts("\n--> Building JRuby #{source_folder}")
-  system("jrubyc -t #{CLASSES_DIR} --verbose --javac -c \"#{DEV_LIB_DIR}/storm-0.5.3.jar\" -c \"#{CLASSES_DIR}\" #{source_folder}")
+  puts("\n--> Compiling JRuby")
+  system("jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-0.5.3.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_folder}")
 end

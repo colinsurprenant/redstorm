@@ -4,9 +4,7 @@ java_import 'backtype.storm.spout.SpoutOutputCollector'
 java_import 'backtype.storm.task.TopologyContext'
 java_import 'backtype.storm.topology.IRichSpout'
 java_import 'backtype.storm.topology.OutputFieldsDeclarer'
-java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Tuple'
-java_import 'backtype.storm.tuple.Values'
 java_import 'java.util.Map'
 
 java_package 'redstorm.proxy'
@@ -28,14 +26,17 @@ java_package 'redstorm.proxy'
 class Spout
   java_implements IRichSpout
 
-  java_signature 'IRichSpout (String real_spout_class_name)'
-  def initialize(real_spout_class_name)
+  java_signature 'IRichSpout (String base_class_path, String real_spout_class_name)'
+  def initialize(base_class_path, real_spout_class_name)
+    @real_spout = Object.module_eval(real_spout_class_name).new
+  rescue NameError
+    require base_class_path
     @real_spout = Object.module_eval(real_spout_class_name).new
   end
 
   java_signature 'boolean isDistributed()'
   def isDistributed
-    @real_spout.is_distributed
+    @real_spout.respond_to?(:is_distributed) ? @real_spout.is_distributed : false
   end
 
   java_signature 'void open(Map, TopologyContext, SpoutOutputCollector)'
@@ -67,5 +68,4 @@ class Spout
   def declareOutputFields(declarer)
     @real_spout.declare_output_fields(declarer)
   end
-
 end

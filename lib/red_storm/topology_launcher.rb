@@ -1,8 +1,11 @@
 require 'java'
 require 'rubygems'
 
+require 'lib/red_storm/version'
+
 java_import 'backtype.storm.Config'
 java_import 'backtype.storm.LocalCluster'
+java_import 'backtype.storm.StormSubmitter'
 java_import 'backtype.storm.topology.TopologyBuilder'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Tuple'
@@ -11,19 +14,21 @@ java_import 'backtype.storm.tuple.Values'
 java_import 'backtype.storm.jruby.JRubyBolt'
 java_import 'backtype.storm.jruby.JRubySpout'
 
-
+# TopologyLauncher is the application entry point when launching a topology. Basically it will 
+# call require on the specified Ruby topology/project class file path and call its start method
 class TopologyLauncher
 
   java_signature 'void main(String[])'
   def self.main(args)
     unless args.size > 0 
-      puts("usage: redstorm {ruby topology class file path}")
+      puts("Usage: redstorm topology_class_file")
       exit(1)
     end
-    require args[0]
-    clazz = camel_case(args[0].split('/').last.split('.').first)
-    puts("redstorm launching #{clazz}")
-    Object.module_eval(clazz).new.start
+    class_path = args[0]
+    clazz = camel_case(class_path.split('/').last.split('.').first)
+    puts("redstorm v#{Redstorm::VERSION} launching #{clazz}")
+    require class_path
+    Object.module_eval(clazz).new.start(class_path)
   end
 
   private 

@@ -1,5 +1,8 @@
 class RubyRandomSentenceSpout
+  attr_reader :is_distributed
+
   def initialize
+    @is_distributed = true
     @sentences = [
       "the cow jumped over the moon",
       "an apple a day keeps the doctor away",
@@ -8,10 +11,6 @@ class RubyRandomSentenceSpout
       "i am at two with nature"
     ]
   end 
-
-  def is_distributed
-    true
-  end
 
   def open(conf, context, collector)
     @collector = collector
@@ -62,11 +61,11 @@ end
 
 
 class RubyWordCountTopology
-  def start
+  def start(base_class_path)
     builder = TopologyBuilder.new
-    builder.setSpout(1, JRubySpout.new("RubyRandomSentenceSpout"), 5)
-    builder.setBolt(2, JRubyBolt.new("RubySplitSentence"), 8).shuffleGrouping(1)
-    builder.setBolt(3, JRubyBolt.new("RubyWordCount"), 12).fieldsGrouping(2, Fields.new("word"))
+    builder.setSpout(1, JRubySpout.new(base_class_path, "RubyRandomSentenceSpout"), 5)
+    builder.setBolt(2, JRubyBolt.new(base_class_path, "RubySplitSentence"), 8).shuffleGrouping(1)
+    builder.setBolt(3, JRubyBolt.new(base_class_path, "RubyWordCount"), 12).fieldsGrouping(2, Fields.new("word"))
 
     conf = Config.new
     conf.setDebug(true)

@@ -4,9 +4,7 @@ java_import 'backtype.storm.task.OutputCollector'
 java_import 'backtype.storm.task.TopologyContext'
 java_import 'backtype.storm.topology.IRichBolt'
 java_import 'backtype.storm.topology.OutputFieldsDeclarer'
-java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Tuple'
-java_import 'backtype.storm.tuple.Values'
 java_import 'java.util.Map'
 
 java_package 'redstorm.proxy'
@@ -25,8 +23,11 @@ java_package 'redstorm.proxy'
 class Bolt
   java_implements IRichBolt
 
-  java_signature 'IRichBolt (String real_bolt_class_name)'
-  def initialize(real_bolt_class_name)
+  java_signature 'IRichBolt (String base_class_path, String real_bolt_class_name)'
+  def initialize(base_class_path, real_bolt_class_name)
+    @real_bolt = Object.module_eval(real_bolt_class_name).new
+  rescue NameError
+    require base_class_path
     @real_bolt = Object.module_eval(real_bolt_class_name).new
   end
 
@@ -49,5 +50,4 @@ class Bolt
   def declareOutputFields(declarer)
     @real_bolt.declare_output_fields(declarer)
   end
-
 end

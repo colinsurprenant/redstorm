@@ -20,20 +20,22 @@ import java.util.Map;
 public class JRubyBolt implements IRichBolt {
   IRichBolt _proxyBolt;
   String _realBoltClassName;
-  
+  String _baseClassPath; 
   /**
    * create a new JRubyBolt
    * 
+   * @param baseClassPath the topology/project base JRuby class file path 
    * @param realBoltClassName the fully qualified JRuby bolt implementation class name
    */
-  public JRubyBolt(String realBoltClassName) {
+  public JRubyBolt(String baseClassPath, String realBoltClassName) {
+    _baseClassPath = baseClassPath;
     _realBoltClassName = realBoltClassName;
   }
 
   @Override
   public void prepare(final Map stormConf, final TopologyContext context, final OutputCollector collector) {
     // create instance of the jruby class here, after deserialization in the workers.
-    _proxyBolt = newProxyBolt(_realBoltClassName);
+    _proxyBolt = newProxyBolt(_baseClassPath, _realBoltClassName);
     _proxyBolt.prepare(stormConf, context, collector);
   }
 
@@ -52,13 +54,13 @@ public class JRubyBolt implements IRichBolt {
     // declareOutputFields is executed in the topology creation time, before serialisation.
     // do not set the _proxyBolt instance variable here to avoid JRuby serialization
     // issues. Just create tmp bolt instance to call declareOutputFields.
-    IRichBolt bolt = newProxyBolt(_realBoltClassName);
+    IRichBolt bolt = newProxyBolt(_baseClassPath, _realBoltClassName);
     bolt.declareOutputFields(declarer);
   }
 
-  private static IRichBolt newProxyBolt(String realBoltClassName) {
+  private static IRichBolt newProxyBolt(String baseClassPath, String realBoltClassName) {
     try {
-      redstorm.proxy.Bolt proxy = new redstorm.proxy.Bolt(realBoltClassName);
+      redstorm.proxy.Bolt proxy = new redstorm.proxy.Bolt(baseClassPath, realBoltClassName);
       return proxy;
     }
     catch (Exception e) {

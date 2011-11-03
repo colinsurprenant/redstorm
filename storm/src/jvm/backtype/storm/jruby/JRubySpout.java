@@ -20,13 +20,16 @@ import java.util.Map;
 public class JRubySpout implements IRichSpout {
   IRichSpout _proxySpout;
   String _realSpoutClassName;
+  String _baseClassPath;
   
   /**
    * create a new JRubySpout
    * 
+   * @param baseClassPath the topology/project base JRuby class file path 
    * @param realSpoutClassName the fully qualified JRuby spout implementation class name
    */
-  public JRubySpout(String realSpoutClassName) {
+  public JRubySpout(String baseClassPath, String realSpoutClassName) {
+    _baseClassPath = baseClassPath;
     _realSpoutClassName = realSpoutClassName;
   }
 
@@ -35,14 +38,14 @@ public class JRubySpout implements IRichSpout {
     // isDistributed is executed in the topology creation time before serialisation.
     // do not set the _proxySpout instance variable here to avoid JRuby serialization
     // issues. Just create tmp spout instance to call isDistributed.
-    IRichSpout spout = newProxySpout(_realSpoutClassName);
+    IRichSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
     return spout.isDistributed();
   }
 
   @Override
   public void open(final Map conf, final TopologyContext context, final SpoutOutputCollector collector) {
     // create instance of the jruby proxy class here, after deserialization in the workers.
-    _proxySpout = newProxySpout(_realSpoutClassName);
+    _proxySpout = newProxySpout(_baseClassPath, _realSpoutClassName);
     _proxySpout.open(conf, context, collector);
   }
 
@@ -71,13 +74,13 @@ public class JRubySpout implements IRichSpout {
     // declareOutputFields is executed in the topology creation time before serialisation.
     // do not set the _proxySpout instance variable here to avoid JRuby serialization
     // issues. Just create tmp spout instance to call declareOutputFields.
-    IRichSpout spout = newProxySpout(_realSpoutClassName);
+    IRichSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
     spout.declareOutputFields(declarer);
   }  
 
-  private static IRichSpout newProxySpout(String realSpoutClassName) {
+  private static IRichSpout newProxySpout(String baseClassPath, String realSpoutClassName) {
     try {
-      redstorm.proxy.Spout proxy = new redstorm.proxy.Spout(realSpoutClassName);
+      redstorm.proxy.Spout proxy = new redstorm.proxy.Spout(baseClassPath, realSpoutClassName);
       return proxy;
     }
     catch (Exception e) {

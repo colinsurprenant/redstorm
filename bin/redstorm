@@ -1,5 +1,5 @@
-TARGET_DIR="./target"
-DEPENDENCY_DIR="${TARGET_DIR}/dependency" 
-CLASSES_DIR="${TARGET_DIR}/classes"  
-
-java -cp "./${CLASSES_DIR}:./${DEPENDENCY_DIR}/*" redstorm.TopologyLauncher $@
+#!/usr/bin/env ruby
+# $:.unshift './lib'
+require 'rubygems' 
+require 'red_storm'
+RedStorm::Application.new.run(ARGV.dup)

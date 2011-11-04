@@ -1,17 +1,30 @@
 require 'ant'
 
+$:.unshift './lib'
+
+require 'red_storm'
+
 # EDIT JRUBY_JAR to fit your installation
 JRUBY_JAR = "$HOME/.rvm/rubies/jruby-1.6.5/lib/jruby-complete-1.6.5.jar"
 
-TARGET_DIR = './target'
+CWD = Dir.pwd
+TARGET_DIR = "#{CWD}/target"
 TARGET_SRC_DIR = "#{TARGET_DIR}/src"
 TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"  
 TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
 
-JAVA_SRC_DIR = "./src/main"
-JRUBY_SRC_DIR = "./lib/red_storm" 
+JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
+JRUBY_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/lib/red_storm" 
   
-task :default => [:clean, :build]  
+task :default => [:clean, :build]
+
+task :launch, :class_file do |t, args|
+#  TARGET_DIR="./target"
+#  DEPENDENCY_DIR="${TARGET_DIR}/dependency" 
+#  CLASSES_DIR="${TARGET_DIR}/classes"  
+# 
+  system("java -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\" redstorm.TopologyLauncher #{args[:class_file]}")
+end
   
 task :clean_deps => :clean do  
   ant.delete :dir => TARGET_DEPENDENCY_DIR
@@ -52,7 +65,7 @@ task :build => :setup do
 
   # compile the JRuby proxy classes
   build_java_dir("#{TARGET_SRC_DIR}")
-end  
+end 
 
 def build_java_dir(source_folder)
   puts("\n--> Compiling Java")
@@ -71,5 +84,5 @@ end
 
 def build_jruby(source_folder)
   puts("\n--> Compiling JRuby")
-  system("jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-0.5.3.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_folder}")
+  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-0.5.3.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_folder}")
 end

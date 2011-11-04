@@ -28,7 +28,7 @@ class TopologyLauncher
     end
     class_path = args[0]
     clazz = camel_case(class_path.split('/').last.split('.').first)
-    puts("redstorm v#{Redstorm::VERSION} launching #{clazz}")
+    puts("redstorm v#{RedStorm::VERSION} launching #{clazz}")
     require class_path
     Object.module_eval(clazz).new.start(class_path)
   end

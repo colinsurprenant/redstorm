@@ -51,7 +51,6 @@
               <version>1.6.5</version>
               <type>jar</type>
               <overWrite>false</overWrite>
-              <outputDirectory>${basedir}/target/dependency-unpacked</outputDirectory>
             </artifactItem>
           </artifactItems>
         </configuration>

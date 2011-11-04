@@ -45,7 +45,7 @@ end
 task :install => [:deps, :build]
 
 task :unpack do
-  system("rmvn dependency:unpack -f pom.xml")
+  system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml")
 end
 
 task :jar => :unpack do
@@ -77,7 +77,7 @@ task :examples do
 end
 
 task :deps do
-  system("rmvn dependency:copy-dependencies -f pom.xml")
+  system("rmvn dependency:copy-dependencies -f #{RedStorm::REDSTORM_HOME}/pom.xml")
 end
 
 task :build => :setup do

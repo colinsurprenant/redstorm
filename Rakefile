@@ -32,6 +32,10 @@ task :clean do
   ant.delete :dir => TARGET_DIR
 end
 
+task :clean_jar do
+  ant.delete :dir => "#{TARGET_DIR}/cluster-topology.jar"
+end
+
 task :setup do  
   ant.mkdir :dir => TARGET_DIR 
   ant.mkdir :dir => TARGET_CLASSES_DIR 
@@ -48,7 +52,7 @@ task :unpack do
   system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR}")
 end
 
-task :jar => :unpack do
+task :jar => [:unpack, :clean_jar] do
   ant.jar :destfile => "#{TARGET_DIR}/cluster-topology.jar" do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR

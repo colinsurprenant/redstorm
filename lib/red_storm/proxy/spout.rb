@@ -5,6 +5,8 @@ java_import 'backtype.storm.task.TopologyContext'
 java_import 'backtype.storm.topology.IRichSpout'
 java_import 'backtype.storm.topology.OutputFieldsDeclarer'
 java_import 'backtype.storm.tuple.Tuple'
+java_import 'backtype.storm.tuple.Fields'
+java_import 'backtype.storm.tuple.Values'
 java_import 'java.util.Map'
 
 java_package 'redstorm.proxy'

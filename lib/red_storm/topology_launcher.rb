@@ -1,7 +1,15 @@
 require 'java'
 require 'rubygems'
 
-require 'red_storm/version'
+begin
+  # will work from gem, since lib dir is in gem require_paths
+  require 'red_storm/version'
+rescue LoadError
+  # will work within RedStorm dev project
+  $:.unshift './lib'
+  require 'red_storm/version'
+end
+
 
 java_import 'backtype.storm.Config'
 java_import 'backtype.storm.LocalCluster'

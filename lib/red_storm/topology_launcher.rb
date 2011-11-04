@@ -1,6 +1,8 @@
 require 'java'
 require 'rubygems'
 
+require 'red_storm/version'
+
 java_import 'backtype.storm.Config'
 java_import 'backtype.storm.LocalCluster'
 java_import 'backtype.storm.StormSubmitter'

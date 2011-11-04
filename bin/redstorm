@@ -1,5 +1,14 @@
 #!/usr/bin/env ruby
-# $:.unshift './lib'
+
 require 'rubygems' 
-require 'red_storm'
+
+begin
+  # will work from gem, since lib dir is in gem require_paths
+  require 'red_storm'
+rescue LoadError
+  # will work within RedStorm dev project
+  $:.unshift './lib'
+  require 'red_storm'
+end
+
 RedStorm::Application.new.run(ARGV.dup)

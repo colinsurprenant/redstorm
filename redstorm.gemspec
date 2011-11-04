@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["colin.surprenant@gmail.com"]
   s.homepage    = "http://github.com/praized/storm-jruby"
   s.summary     = "Storm JRuby Bindings"
-  s.description = "Storm JRuby Bindings Gem"
+  s.description = "Storm 0.5.4 with JRuby 1.6.5 Bindings Gem"
  
   s.required_rubygems_version = ">= 1.3.0"
   s.rubyforge_project = "redstorm"
@@ -22,10 +22,9 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "rubyforge"
 
-  # Test dependencies
-  s.add_development_dependency "rspec", ["~> 2.6.0"]
-  s.add_development_dependency "rake", ["~> 0.9.2"]
 
+  # s.add_development_dependency "rspec", ["~> 2.6.0"]
+  s.add_runtime_dependency "rake", ["~> 0.9.2"]
   s.add_runtime_dependency "ruby-maven", ["~> 3.0.3.0.28.5"]
 end
 

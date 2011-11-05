@@ -2,3 +2,4 @@ storm/lib/
 storm/classes/
 tmp/
 target/
+*.gem

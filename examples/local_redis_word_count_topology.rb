@@ -1,9 +1,10 @@
 require 'redis'
 require 'thread'
+require 'examples/word_count_bolt'
 
-# RubyRedisWordSpout reads the Redis queue "test" on localhost:6379 
+# RedisWordSpout reads the Redis queue "test" on localhost:6379 
 # and emits each word items pop'ed from the queue.
-class RubyRedisWordSpout
+class RedisWordSpout
   def open(conf, context, collector)
     @collector = collector
     @q = Queue.new
@@ -39,31 +40,11 @@ class RubyRedisWordSpout
   end
 end
 
-class RubyRedisWordCount
-  def initialize
-    @counts = Hash.new{|h, k| h[k] = 0}
-  end
-
-  def prepare(conf, context, collector)
-    @collector = collector
-  end
-
-  def execute(tuple)
-    word = tuple.getString(0)
-    @counts[word] += 1
-    @collector.emit(Values.new(word, @counts[word]))
-  end
-
-  def declare_output_fields(declarer)
-    declarer.declare(Fields.new("word", "count"))
-  end
-end
-
-class RubyRedisWordCountTopology
+class LocalRedisWordCountTopology
   def start(base_class_path)
     builder = TopologyBuilder.new
-    builder.setSpout(1, JRubySpout.new(base_class_path, "RubyRedisWordSpout"), 1)
-    builder.setBolt(2, JRubyBolt.new(base_class_path, "RubyRedisWordCount"), 3).fieldsGrouping(1, Fields.new("word"))
+    builder.setSpout(1, JRubySpout.new(base_class_path, "RedisWordSpout"), 1)
+    builder.setBolt(2, JRubyBolt.new(base_class_path, "WordCountBolt"), 3).fieldsGrouping(1, Fields.new("word"))
 
     conf = Config.new
     conf.setDebug(true)

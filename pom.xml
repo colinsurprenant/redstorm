@@ -4,8 +4,8 @@
 
   <groupId>redstorm</groupId>
   <artifactId>redstorm</artifactId>
-  <version>0.0.1</version>
-  <name>RedStorm Storm JRuby bindings</name>
+  <version>0.1.0</version>
+  <name>RedStorm JRuby on Storm</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

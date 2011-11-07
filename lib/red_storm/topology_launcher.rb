@@ -31,7 +31,7 @@ class TopologyLauncher
   java_signature 'void main(String[])'
   def self.main(args)
     unless args.size > 0 
-      puts("Usage: redstorm topology_class_file")
+      puts("Usage: redstorm topology_class_file_name")
       exit(1)
     end
     class_path = args[0]

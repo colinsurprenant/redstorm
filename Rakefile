@@ -15,6 +15,7 @@ TARGET_SRC_DIR = "#{TARGET_DIR}/src"
 TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"  
 TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
 TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
+TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
 
 JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
 JRUBY_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/lib/red_storm"
@@ -46,14 +47,16 @@ task :setup do
   end  
 end
 
-task :install => [:deps, :build]
+task :install => [:deps, :build] do
+  puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
+end
 
 task :unpack do
   system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR}")
 end
 
 task :jar => [:unpack, :clean_jar] do
-  ant.jar :destfile => "#{TARGET_DIR}/cluster-topology.jar" do
+  ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
     fileset :dir => CWD do
@@ -63,6 +66,7 @@ task :jar => [:unpack, :clean_jar] do
       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
     end
   end
+  puts("\nRedStorm jar completed. Generated jar file #{TARGET_CLUSTER_JAR}")
 end
 
 task :examples do
@@ -78,6 +82,7 @@ task :examples do
   puts("copying examples into #{DST_EXAMPLES}")
   system("mkdir #{DST_EXAMPLES}")
   system("cp -r #{SRC_EXAMPLES}/* #{DST_EXAMPLES}")
+  puts("\nRedStorm examples completed. All examples copied in #{DST_EXAMPLES}")
 end
 
 task :deps do

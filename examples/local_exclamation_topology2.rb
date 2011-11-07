@@ -1,6 +1,6 @@
 java_import 'backtype.storm.testing.TestWordSpout'
 
-class RubyExclamationBolt2
+class ExclamationBolt2
   def prepare(conf, context, collector)
     @collector = collector
   end
@@ -15,13 +15,15 @@ class RubyExclamationBolt2
   end
 end
 
-class RubyExclamationTopology2
+# this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt
+
+class LocalExclamationTopology2
   def start(base_class_path)
     builder = TopologyBuilder.new
     
     builder.setSpout(1, TestWordSpout.new, 10)     
-    builder.setBolt(2, JRubyBolt.new(base_class_path, "RubyExclamationBolt2"), 3).shuffleGrouping(1)
-    builder.setBolt(3, JRubyBolt.new(base_class_path, "RubyExclamationBolt2"), 2).shuffleGrouping(2)
+    builder.setBolt(2, JRubyBolt.new(base_class_path, "ExclamationBolt2"), 3).shuffleGrouping(1)
+    builder.setBolt(3, JRubyBolt.new(base_class_path, "ExclamationBolt2"), 2).shuffleGrouping(2)
             
     conf = Config.new
     conf.setDebug(true)

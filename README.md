@@ -1,4 +1,4 @@
-# RedStorm v0.1.0 - JRuby on Storm
+# RedStorm v0.1.1 - JRuby on Storm
 
 RedStorm provides the JRuby integration for the [Storm][storm] distributed realtime computation system.
 

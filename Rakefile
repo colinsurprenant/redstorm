@@ -26,7 +26,9 @@ DST_EXAMPLES = "#{CWD}/examples"
 task :default => [:clean, :build]
 
 task :launch, :class_file do |t, args|
-  system("java -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\" redstorm.TopologyLauncher #{args[:class_file]}")
+  gem_home = ENV["GEM_HOME"].to_s.empty? ? " -Djruby.gem.home=`gem env home`" : ""
+  puts("launching java -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\"#{gem_home} redstorm.TopologyLauncher #{args[:class_file]}")
+  system("java -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\"#{gem_home} redstorm.TopologyLauncher #{args[:class_file]}")
 end
 
 task :clean do

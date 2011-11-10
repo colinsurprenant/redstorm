@@ -9,9 +9,12 @@ module RedStorm
       @fields = fields.map(&:to_s)
     end
 
-    def self.on_next_tuple(method_name = nil, options = {}, &execute_block)
+    def self.on_next_tuple(*args, &next_tuple_block)
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      method_name = args.first
+      
       self.execute_options.merge!(options)
-      @execute_block = block_given? ? execute_block : lambda {self.send(method_name)}
+      @next_tuple_block = block_given? ? next_tuple_block : lambda {self.send(method_name)}
     end
 
     def self.on_init(method_name = nil, &init_block)
@@ -27,7 +30,7 @@ module RedStorm
     end
 
     def self.set(options = {})
-      self.global_options.merge!(options)
+      self.spout_options.merge!(options)
     end
 
     def emit(*values)
@@ -37,7 +40,7 @@ module RedStorm
     # Spout interface
 
     def next_tuple
-      output = instance_exec(&self.class.execute_block)
+      output = instance_exec(&self.class.next_tuple_block)
       if self.class.emit?
         if output
           values = [output].flatten
@@ -77,8 +80,8 @@ module RedStorm
       @fields
     end
 
-    def self.execute_block
-      @execute_block ||= lambda {}
+    def self.next_tuple_block
+      @next_tuple_block ||= lambda {}
     end
 
     def self.init_block
@@ -93,16 +96,16 @@ module RedStorm
       @fail_block ||= lambda {}
     end
 
-    def self.is_distributed?
-      !!@global_options[:is_distributed]
-    end
-
     def self.execute_options
       @execute_options ||= {:emit => true}
     end
 
-    def self.global_options
-      @global_options ||= {:is_distributed => false}
+    def self.spout_options
+      @spout_options ||= {:is_distributed => false}
+    end
+
+    def self.is_distributed?
+      !!self.spout_options[:is_distributed]
     end
 
     def self.emit?

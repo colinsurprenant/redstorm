@@ -8,9 +8,12 @@ module RedStorm
       @fields = fields.map(&:to_s)
     end
 
-    def self.on_tuple(method_name = nil, options = {}, &execute_block)
+    def self.on_tuple(*args, &tuple_block)
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      method_name = args.first
+
       self.execute_options.merge!(options)
-      @execute_block = block_given? ? execute_block : lambda {|tuple| self.send(method_name, tuple)}
+      @tuple_block = block_given? ? tuple_block : lambda {|tuple| self.send(method_name, tuple)}
     end
 
     def self.on_init(method_name = nil, &init_block)
@@ -28,9 +31,9 @@ module RedStorm
     # Bolt interface
 
     def execute(tuple)
-      if (output = instance_exec(tuple, &self.class.execute_block)) && self.class.emit?
+      if (output = instance_exec(tuple, &self.class.tuple_block)) && self.class.emit?
         values = [output].flatten
-        self.class.anchor? ? @collector.emit(tuple, Values.new(*values)) : @collector.emit(Values.new(*values))        
+        self.class.anchor? ? @collector.emit(tuple, Values.new(*values)) : emit(*values)
         @collector.ack(tuple) if self.class.ack?
       end
     end
@@ -52,12 +55,16 @@ module RedStorm
       @fields
     end
 
-    def self.execute_block
-      @execute_block ||= lambda {}
+    def self.tuple_block
+      @tuple_block ||= lambda {}
     end
 
     def self.init_block
       @init_block ||= lambda {}
+    end
+
+    def self.execute_options
+      @execute_options ||= {:emit => true, :ack => false, :anchor => false}
     end
 
     def self.emit?
@@ -70,10 +77,6 @@ module RedStorm
 
     def self.anchor?
       !!self.execute_options[:anchor]
-    end
-
-    def self.execute_options
-      @execute_options ||= {:emit => true, :ack => false, :anchor => false}
     end
 
   end

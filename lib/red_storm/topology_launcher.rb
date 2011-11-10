@@ -10,7 +10,6 @@ rescue LoadError
   require 'red_storm/version'
 end
 
-
 java_import 'backtype.storm.Config'
 java_import 'backtype.storm.LocalCluster'
 java_import 'backtype.storm.StormSubmitter'
@@ -36,7 +35,7 @@ class TopologyLauncher
     end
     class_path = args[0]
     clazz = camel_case(class_path.split('/').last.split('.').first)
-    puts("redstorm v#{RedStorm::VERSION} launching #{clazz}")
+    puts("RedStorm v#{RedStorm::VERSION} starting topology #{clazz}")
     require class_path
     Object.module_eval(clazz).new.start(class_path)
   end

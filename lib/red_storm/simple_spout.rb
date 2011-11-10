@@ -112,5 +112,4 @@ module RedStorm
       !!self.execute_options[:emit]
     end
   end
-
 end

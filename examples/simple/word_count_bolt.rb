@@ -11,7 +11,6 @@ class WordCountBolt < RedStorm::SimpleBolt
   end
 end
 
-
 # below is the same bolt but passing a method name to on_tuple
 
 # class WordCountBolt < RedStorm::SimpleBolt

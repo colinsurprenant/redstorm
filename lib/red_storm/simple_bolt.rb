@@ -78,7 +78,5 @@ module RedStorm
     def self.anchor?
       !!self.execute_options[:anchor]
     end
-
   end
-
 end

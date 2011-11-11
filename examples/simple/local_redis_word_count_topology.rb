@@ -10,7 +10,7 @@ require 'examples/simple/word_count_bolt'
 class RedisWordSpout
   output_fields :word
 
-  on_next_tuple {@q.pop if @q.size > 0}
+  on_send {@q.pop if @q.size > 0}
 
   on_init do
     @q = Queue.new

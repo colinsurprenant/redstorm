@@ -2,7 +2,7 @@ class RandomSentenceSpout < RedStorm::SimpleSpout
   set :is_distributed => true
   output_fields :word
 
-  on_next_tuple {@sentences[rand(@sentences.length)]}
+  on_send {@sentences[rand(@sentences.length)]}
 
   on_init do
     @sentences = [

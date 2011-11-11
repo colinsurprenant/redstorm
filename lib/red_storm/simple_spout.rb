@@ -9,16 +9,20 @@ module RedStorm
       @fields = fields.map(&:to_s)
     end
 
-    def self.on_next_tuple(*args, &next_tuple_block)
+    def self.on_send(*args, &send_block)
       options = args.last.is_a?(Hash) ? args.pop : {}
       method_name = args.first
       
-      self.execute_options.merge!(options)
-      @next_tuple_block = block_given? ? next_tuple_block : lambda {self.send(method_name)}
+      self.send_options.merge!(options)
+      @send_block = block_given? ? send_block : lambda {self.send(method_name)}
     end
 
     def self.on_init(method_name = nil, &init_block)
       @init_block = block_given? ? init_block : lambda {self.send(method_name)}
+    end
+
+    def self.on_close(method_name = nil, &close_block)
+      @close_block = block_given? ? close_block : lambda {self.send(method_name)}
     end
 
     def self.on_ack(method_name = nil, &ack_block)
@@ -33,14 +37,16 @@ module RedStorm
       self.spout_options.merge!(options)
     end
 
+    # DSL instance methods
+
     def emit(*values)
       @collector.emit(Values.new(*values)) 
     end
 
-    # Spout interface
+    # Spout proxy interface
 
     def next_tuple
-      output = instance_exec(&self.class.next_tuple_block)
+      output = instance_exec(&self.class.send_block)
       if self.class.emit?
         if output
           values = [output].flatten
@@ -56,6 +62,10 @@ module RedStorm
       @context = context
       @config = config
       instance_exec(&self.class.init_block)
+    end
+
+    def close
+      instance_exec(&self.class.close_block)
     end
 
     def declare_output_fields(declarer)
@@ -80,12 +90,16 @@ module RedStorm
       @fields
     end
 
-    def self.next_tuple_block
-      @next_tuple_block ||= lambda {}
+    def self.send_block
+      @send_block ||= lambda {}
     end
 
     def self.init_block
       @init_block ||= lambda {}
+    end
+
+    def self.close_block
+      @close_block ||= lambda {}
     end
 
     def self.ack_block
@@ -96,8 +110,8 @@ module RedStorm
       @fail_block ||= lambda {}
     end
 
-    def self.execute_options
-      @execute_options ||= {:emit => true}
+    def self.send_options
+      @send_options ||= {:emit => true}
     end
 
     def self.spout_options
@@ -109,7 +123,7 @@ module RedStorm
     end
 
     def self.emit?
-      !!self.execute_options[:emit]
+      !!self.send_options[:emit]
     end
   end
 end

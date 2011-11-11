@@ -29,15 +29,16 @@ class TopologyLauncher
 
   java_signature 'void main(String[])'
   def self.main(args)
-    unless args.size > 0 
-      puts("Usage: redstorm topology_class_file_name")
+    unless args.size > 1 
+      puts("Usage: redstorm local|cluster topology_class_file_name")
       exit(1)
     end
-    class_path = args[0]
+    env = args[0].to_sym
+    class_path = args[1]
     clazz = camel_case(class_path.split('/').last.split('.').first)
-    puts("RedStorm v#{RedStorm::VERSION} starting topology #{clazz}")
+    puts("RedStorm v#{RedStorm::VERSION} starting topology #{clazz} in #{env.to_s} environment")
     require class_path
-    Object.module_eval(clazz).new.start(class_path)
+    Object.module_eval(clazz).new.start(class_path, env)
   end
 
   private 

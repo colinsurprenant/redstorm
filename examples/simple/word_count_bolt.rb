@@ -3,7 +3,7 @@ class WordCountBolt < RedStorm::SimpleBolt
 
   on_init {@counts = Hash.new{|h, k| h[k] = 0}}
 
-  on_tuple do |tuple|
+  on_receive do |tuple|
     word = tuple.getString(0)
     @counts[word] += 1
 
@@ -16,7 +16,7 @@ end
 # class WordCountBolt < RedStorm::SimpleBolt
 #   output_fields :word, :count
 #   on_init {@counts = Hash.new{|h, k| h[k] = 0}}
-#   on_tuple :count_word
+#   on_receive :count_word
 #
 #   def count_word(tuple)
 #     word = tuple.getString(0)

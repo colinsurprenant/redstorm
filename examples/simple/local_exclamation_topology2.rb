@@ -4,7 +4,7 @@ require 'red_storm'
 
 class ExclamationBolt2 < RedStorm::SimpleBolt
   output_fields :word
-  on_tuple(:ack => true, :anchor => true) {|tuple| tuple.getString(0) + "!!!"}
+  on_receive(:ack => true, :anchor => true) {|tuple| tuple.getString(0) + "!!!"}
 end
 
 # this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt

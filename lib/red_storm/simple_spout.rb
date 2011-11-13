@@ -5,6 +5,10 @@ module RedStorm
 
     # DSL class methods
 
+    def self.set(options = {})
+      self.spout_options.merge!(options)
+    end
+
     def self.output_fields(*fields)
       @fields = fields.map(&:to_s)
     end
@@ -31,10 +35,6 @@ module RedStorm
 
     def self.on_fail(method_name = nil, &fail_block)
       @fail_block = block_given? ? fail_block : lambda {|msg_id| self.send(method_name, msg_id)}
-    end
-
-    def self.set(options = {})
-      self.spout_options.merge!(options)
     end
 
     # DSL instance methods
@@ -87,7 +87,7 @@ module RedStorm
     private
 
     def self.fields
-      @fields
+      @fields ||= []
     end
 
     def self.send_block

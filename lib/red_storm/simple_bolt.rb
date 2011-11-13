@@ -62,7 +62,7 @@ module RedStorm
     private
 
     def self.fields
-      @fields
+      @fields ||= []
     end
 
     def self.receive_block

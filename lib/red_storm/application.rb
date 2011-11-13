@@ -3,6 +3,7 @@ require 'rake'
 module RedStorm
   
   class Application 
+    TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake" 
 
     def usage
       puts("Usage: redstorm install|examples|jar")
@@ -12,13 +13,11 @@ module RedStorm
 
     def run(args)
       if args.size > 0
-
         if ["install", "examples", "jar"].include?(args[0])
-          task = args.shift
-          load("#{RedStorm::REDSTORM_HOME}/Rakefile")
-          Rake::Task[task].invoke(args)
+          load(TASKS_FILE)
+          Rake::Task[args.shift].invoke(*args)
         elsif args.size == 2 && ["local", "cluster"].include?(args[0]) && File.exist?(args[1])
-          load("#{RedStorm::REDSTORM_HOME}/Rakefile")
+          load(TASKS_FILE)
           Rake::Task['launch'].invoke(*args)
         else
           usage

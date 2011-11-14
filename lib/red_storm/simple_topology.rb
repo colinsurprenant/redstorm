@@ -1,6 +1,7 @@
 module RedStorm
 
   class SimpleTopology
+    attr_reader :cluster # LocalCluster reference usable in on_submit block for example
 
     class BoltDefinition
       attr_reader :bolt_class, :id, :parallelism
@@ -112,10 +113,6 @@ module RedStorm
       instance_exec(env, &self.class.submit_block)
     end
 
-    def cluster
-      @cluster
-    end
-
     private
 
     def self.spouts
@@ -127,15 +124,15 @@ module RedStorm
     end
 
     def self.topology_name
-      @topology_name ||= self.underscore(self.class.name)
+      @topology_name ||= self.underscore(self.name)
     end
 
     def self.configure_block
-      @configure_block ||= lamda{|env|}
+      @configure_block ||= lambda{|env|}
     end
 
     def self.submit_block
-      @submit_block ||= lamda{|env|}
+      @submit_block ||= lambda{|env|}
     end
 
     def self.underscore(camel_case)

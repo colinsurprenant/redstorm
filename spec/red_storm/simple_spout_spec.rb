@@ -312,22 +312,80 @@ describe RedStorm::SimpleSpout do
     end
 
     describe "open" do
+      it "should assing collector, context, config and call init block" do
+        class SpoutPrepare1 < RedStorm::SimpleSpout
+          on_init {trigger}
+        end
+        spout = SpoutPrepare1.new
+        spout.should_receive(:trigger).once
+
+        spout.config.should be_nil
+        spout.context.should be_nil
+        spout.collector.should be_nil
+        spout.open("config", "context", "collector")
+        spout.config.should == "config"
+        spout.context.should == "context"
+        spout.collector.should == "collector"
+      end
     end
 
     describe "close" do
+      it "should call close block" do
+        class SpoutClose1 < RedStorm::SimpleSpout
+          on_close {trigger}
+        end
+        spout = SpoutClose1.new
+        spout.should_receive(:trigger).once
+
+        spout.close
+      end
     end
  
     describe "declare_output_fields" do
+      it "should declare fields" do
+        class SpoutDeclare1 < RedStorm::SimpleSpout
+          output_fields :f1, :f2
+        end
+        spout = SpoutDeclare1.new
+        class RedStorm::Fields; end
+        declarer = mock("Declarer")
+        declarer.should_receive(:declare).with("fields")
+        RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("fields")
+        spout.declare_output_fields(declarer)
+      end
     end
 
     describe "is_distributed" do
+      it "should report is_distributed" do
+        RedStorm::SimpleSpout.is_distributed?.should be_false
+        class SpoutIsDistributed1 < RedStorm::SimpleSpout
+          set :is_distributed => true
+        end
+        spout = SpoutIsDistributed1.new
+        spout.is_distributed.should be_true
+      end
     end
 
     describe "ack" do
+      it "should call ack block" do
+        class SpoutAck1 < RedStorm::SimpleSpout
+          on_ack {|msg_id| trigger(msg_id)}
+        end
+        spout = SpoutAck1.new
+        spout.should_receive(:trigger).once.with("test")
+        spout.ack("test")
+      end
     end
 
     describe "fail" do
+      it "should call fail block" do
+        class SpoutFail1 < RedStorm::SimpleSpout
+          on_fail {|msg_id| trigger(msg_id)}
+        end
+        spout = SpoutFail1.new
+        spout.should_receive(:trigger).once.with("test")
+        spout.fail("test")
+      end
     end
-    
   end
 end

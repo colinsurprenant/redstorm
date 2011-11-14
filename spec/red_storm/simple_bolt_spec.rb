@@ -321,12 +321,47 @@ describe RedStorm::SimpleBolt do
     end
 
     describe "prepare" do
+      it "should assing collector, context, config and call init block" do
+        class BoltPrepare1 < RedStorm::SimpleBolt
+          on_init {trigger}
+        end
+        bolt = BoltPrepare1.new
+        bolt.should_receive(:trigger).once
+
+        bolt.config.should be_nil
+        bolt.context.should be_nil
+        bolt.collector.should be_nil
+        bolt.prepare("config", "context", "collector")
+        bolt.config.should == "config"
+        bolt.context.should == "context"
+        bolt.collector.should == "collector"
+      end
     end
 
     describe "cleanup" do
+      it "should call close block" do
+        class BoltClose1 < RedStorm::SimpleBolt
+          on_close {trigger}
+        end
+        bolt = BoltClose1.new
+        bolt.should_receive(:trigger).once
+
+        bolt.cleanup
+      end
     end
 
     describe "declare_output_fields" do
+      it "should declare fields" do
+        class BoltDeclare1 < RedStorm::SimpleBolt
+          output_fields :f1, :f2
+        end
+        bolt = BoltDeclare1.new
+        class RedStorm::Fields; end
+        declarer = mock("Declarer")
+        declarer.should_receive(:declare).with("fields")
+        RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("fields")
+        bolt.declare_output_fields(declarer)
+      end
     end
 
   end

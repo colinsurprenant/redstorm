@@ -246,7 +246,7 @@ describe RedStorm::SimpleSpout do
 
     describe "next_tuple" do
 
-      it "should auto enit on single value output" do
+      it "should auto emit on single value output" do
         class SpoutNextTuple1 < RedStorm::SimpleSpout
           on_send {"output"}
         end
@@ -261,7 +261,7 @@ describe RedStorm::SimpleSpout do
         spout.next_tuple
       end
 
-      it "should auto enit on multiple values output" do
+      it "should auto emit on multiple values output" do
         class SpoutNextTuple2 < RedStorm::SimpleSpout
           on_send {["output1", "output2"]}
         end
@@ -275,6 +275,59 @@ describe RedStorm::SimpleSpout do
         spout.open(nil, nil, collector)
         spout.next_tuple
       end
+
+      it "should sleep on nil output" do
+        class SpoutNextTuple2 < RedStorm::SimpleSpout
+          on_send {nil}
+        end
+        collector = mock("Collector")
+
+        class RedStorm::Values; end
+        RedStorm::Values.should_receive(:new).never
+        collector.should_receive(:emit).never
+
+        spout = SpoutNextTuple2.new
+        spout.should_receive(:sleep)
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
+
+      it "should respect :emit => false" do
+        class SpoutNextTuple3 < RedStorm::SimpleSpout
+          on_send :emit => false do 
+            "output"
+          end
+        end
+        collector = mock("Collector")
+
+        class RedStorm::Values; end
+        RedStorm::Values.should_receive(:new).never
+        collector.should_receive(:emit).never
+
+        spout = SpoutNextTuple3.new
+        spout.should_receive(:sleep).never
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
     end
+
+    describe "open" do
+    end
+
+    describe "close" do
+    end
+ 
+    describe "declare_output_fields" do
+    end
+
+    describe "is_distributed" do
+    end
+
+    describe "ack" do
+    end
+
+    describe "fail" do
+    end
+    
   end
 end

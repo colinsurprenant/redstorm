@@ -1,6 +1,7 @@
 module RedStorm
 
   class SimpleBolt
+    attr_reader :collector, :context, :config
 
     # DSL class methods
 

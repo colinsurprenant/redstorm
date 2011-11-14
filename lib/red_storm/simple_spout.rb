@@ -1,7 +1,7 @@
 module RedStorm
 
   class SimpleSpout
-
+    attr_reader :config, :context, :collector
 
     # DSL class methods
 

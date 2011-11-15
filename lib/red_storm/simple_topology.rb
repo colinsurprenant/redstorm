@@ -4,10 +4,11 @@ module RedStorm
     attr_reader :cluster # LocalCluster reference usable in on_submit block for example
 
     class BoltDefinition
-      attr_reader :bolt_class, :id, :parallelism
+      attr_reader :clazz, :parallelism
+      attr_accessor :id, :sources
 
       def initialize(bolt_class, id, parallelism)
-        @bolt_class = bolt_class
+        @clazz = bolt_class
         @id = id
         @parallelism = parallelism
         @sources = []
@@ -34,10 +35,11 @@ module RedStorm
     end
 
     class SpoutDefinition
-      attr_reader :spout_class, :id, :parallelism
+      attr_reader :clazz, :parallelism
+      attr_accessor :id
 
       def initialize(spout_class, id, parallelism)
-        @spout_class = spout_class
+        @clazz = spout_class
         @id = id
         @parallelism = parallelism
       end
@@ -88,12 +90,14 @@ module RedStorm
     # topology proxy interface
 
     def start(base_class_path, env)
+      self.class.resolve_ids!(self.class.spouts + self.class.bolts)
+
       builder = TopologyBuilder.new
       self.class.spouts.each do |spout|
-         builder.setSpout(spout.id, JRubySpout.new(base_class_path, spout.spout_class.name), spout.parallelism)
+         builder.setSpout(spout.id, JRubySpout.new(base_class_path, spout.clazz.name), spout.parallelism)
       end
       self.class.bolts.each do |bolt|
-        storm_bolt = builder.setBolt(bolt.id, JRubyBolt.new(base_class_path, bolt.bolt_class.name), bolt.parallelism)
+        storm_bolt = builder.setBolt(bolt.id, JRubyBolt.new(base_class_path, bolt.clazz.name), bolt.parallelism)
         bolt.define_grouping(storm_bolt)
       end
 
@@ -114,6 +118,35 @@ module RedStorm
     end
 
     private
+
+    def self.resolve_ids!(components)
+      next_id = 1
+      resolved_names = {}
+
+      numeric_ids, symbolic_ids = components.map(&:id).partition{|id| id.is_a?(Fixnum)}
+
+      # map unused numeric ids to symbolic ids
+      symbolic_ids.map(&:to_s).uniq.each do |id|
+        unless resolved_names.has_key?(id)
+          next_id += 1 while numeric_ids.include?(next_id)
+          numeric_ids << next_id
+          resolved_names[id] = next_id
+        end
+      end
+
+      # reassign numeric ids in all components
+      components.each do |component|
+        unless component.id.is_a?(Fixnum)
+          component.id = resolved_names[component.id] || raise("cannot resolve #{component.clazz.name} id=#{component.id.inspect}")
+        end
+        if component.respond_to?(:sources)
+          component.sources.map! do |source_id, grouping|
+            id = source_id.is_a?(Fixnum) ? source_id : resolved_names[source_id] || raise("cannot resolve #{component.clazz.name} source id=#{source_id.inspect}")
+            [id, grouping]
+          end
+        end
+      end
+    end
 
     def self.spouts
       @spouts ||= []

@@ -163,7 +163,7 @@ describe RedStorm::SimpleTopology do
 
     it "should start in :local env" do
       class TopologyStart1 < RedStorm::SimpleTopology; end
-      
+
       builder = mock(RedStorm::TopologyBuilder)
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       builder.should_receive(:createTopology).and_return("topology")
@@ -209,8 +209,8 @@ describe RedStorm::SimpleTopology do
       RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1").and_return(jruby_spout1)
       RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass2").and_return(jruby_spout2)
 
-      builder.should_receive("setSpout").with("spout_class1", jruby_spout1, 1)
-      builder.should_receive("setSpout").with("spout_class2", jruby_spout2, 1)
+      builder.should_receive("setSpout").with(1, jruby_spout1, 1)
+      builder.should_receive("setSpout").with(2, jruby_spout2, 1)
       configurator.should_receive(:config).and_return("config")
       builder.should_receive(:createTopology).and_return("topology")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology_start4", "config", "topology")
@@ -249,12 +249,14 @@ describe RedStorm::SimpleTopology do
 
       bolt_definition1.should_receive(:define_grouping).with("storm_bolt1")
       bolt_definition2.should_receive(:define_grouping).with("storm_bolt2")
-      bolt_definition1.should_receive(:bolt_class).and_return(BoltClass1)
-      bolt_definition2.should_receive(:bolt_class).and_return(BoltClass2)
+      bolt_definition1.should_receive(:clazz).and_return(BoltClass1)
+      bolt_definition2.should_receive(:clazz).and_return(BoltClass2)
       bolt_definition1.should_receive(:parallelism).and_return(2)
       bolt_definition2.should_receive(:parallelism).and_return(3)
-      bolt_definition1.should_receive(:id).and_return("id1")
-      bolt_definition2.should_receive(:id).and_return("id2")
+      bolt_definition1.should_receive(:id).any_number_of_times.and_return("id1")
+      bolt_definition2.should_receive(:id).any_number_of_times.and_return("id2")
+      bolt_definition1.should_receive(:id=).with(1)
+      bolt_definition2.should_receive(:id=).with(2)
 
       configurator.should_receive(:config).and_return("config")
       builder.should_receive(:createTopology).and_return("topology")
@@ -285,7 +287,7 @@ describe RedStorm::SimpleTopology do
     end
 
     it "should provide local cluster reference" do
-      class TopologyStart7< RedStorm::SimpleTopology; end
+      class TopologyStart7 < RedStorm::SimpleTopology; end
 
       builder = mock(RedStorm::TopologyBuilder)
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
@@ -302,6 +304,82 @@ describe RedStorm::SimpleTopology do
       topology.start("base_path", :local)
 
       topology.cluster.should == cluster
+    end
+
+    it "should keep numeric ids" do
+      class TopologyNumericIds1 < RedStorm::SimpleTopology
+        spout SpoutClass1, :id => 1
+
+        bolt BoltClass1, :id => 2 do
+          source 1, :shuffle
+        end
+      end
+
+      TopologyNumericIds1.spouts.first.id.should == 1
+      TopologyNumericIds1.bolts.first.id.should == 2
+      TopologyNumericIds1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+
+      TopologyNumericIds1.resolve_ids!(TopologyNumericIds1.spouts + TopologyNumericIds1.bolts)
+
+      TopologyNumericIds1.spouts.first.id.should == 1
+      TopologyNumericIds1.bolts.first.id.should == 2
+      TopologyNumericIds1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+    end
+
+    it "should resolve explicit symbolic ids" do
+      class TopologySymbolicIds1 < RedStorm::SimpleTopology
+        spout SpoutClass1, :id => "id1"
+
+        bolt BoltClass1, :id => "id2" do
+          source "id1", :shuffle
+        end
+      end
+      
+      TopologySymbolicIds1.spouts.first.id.should == "id1"
+      TopologySymbolicIds1.bolts.first.id.should == "id2"
+      TopologySymbolicIds1.bolts.first.sources.first.should == ["id1", {:shuffle => nil}]
+
+      TopologySymbolicIds1.resolve_ids!(TopologySymbolicIds1.spouts + TopologySymbolicIds1.bolts)
+
+      TopologySymbolicIds1.spouts.first.id.should == 1
+      TopologySymbolicIds1.bolts.first.id.should == 2
+      TopologySymbolicIds1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+    end
+
+    it "should resolve implicit symbolic ids" do
+      class TopologySymbolicIds2 < RedStorm::SimpleTopology
+        spout SpoutClass1
+
+        bolt BoltClass1 do
+          source "spout_class1", :shuffle
+        end
+      end
+      
+      TopologySymbolicIds2.spouts.first.id.should == "spout_class1"
+      TopologySymbolicIds2.bolts.first.id.should == "bolt_class1"
+      TopologySymbolicIds2.bolts.first.sources.first.should == ["spout_class1", {:shuffle => nil}]
+
+      TopologySymbolicIds2.resolve_ids!(TopologySymbolicIds2.spouts + TopologySymbolicIds2.bolts)
+
+      TopologySymbolicIds2.spouts.first.id.should == 1
+      TopologySymbolicIds2.bolts.first.id.should == 2
+      TopologySymbolicIds2.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+    end
+
+    it "should raise on unresolvable" do
+      class TopologySymbolicIds3 < RedStorm::SimpleTopology
+        spout SpoutClass1
+
+        bolt BoltClass1 do
+          source "dummy", :shuffle
+        end
+      end
+      
+      TopologySymbolicIds3.spouts.first.id.should == "spout_class1"
+      TopologySymbolicIds3.bolts.first.id.should == "bolt_class1"
+      TopologySymbolicIds3.bolts.first.sources.first.should == ["dummy", {:shuffle => nil}]
+
+      lambda {TopologySymbolicIds3.resolve_ids!(TopologySymbolicIds3.spouts + TopologySymbolicIds3.bolts)}.should raise_error RuntimeError, "cannot resolve BoltClass1 source id=\"dummy\""
     end
 
   end

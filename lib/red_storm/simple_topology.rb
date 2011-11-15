@@ -23,10 +23,18 @@ module RedStorm
           grouper, params = grouping.first
 
           case grouper
-          when :shuffle
-            storm_bolt.shuffleGrouping(source_id)
           when :fields
             storm_bolt.fieldsGrouping(source_id, Fields.new(*params))
+          when :global
+            storm_bolt.globalGrouping(source_id)
+          when :shuffle
+            storm_bolt.shuffleGrouping(source_id)
+          when :none
+            storm_bolt.noneGrouping(source_id)
+          when :all
+            storm_bolt.allGrouping(source_id)
+          when :direct
+            storm_bolt.directGrouping(source_id)
           else
             raise("unknown grouper=#{grouper.inspect}")
           end
@@ -68,14 +76,14 @@ module RedStorm
     def self.spout(spout_class, options = {})
       spout_options = {:id => self.underscore(spout_class), :parallelism => 1}.merge(options)
       spout = SpoutDefinition.new(spout_class, spout_options[:id], spout_options[:parallelism])
-      self.spouts << spout
+      self.components << spout
     end
 
     def self.bolt(bolt_class, options = {}, &bolt_block)
       bolt_options = {:id => self.underscore(bolt_class), :parallelism => 1}.merge(options)
       bolt = BoltDefinition.new(bolt_class, bolt_options[:id], bolt_options[:parallelism])
       bolt.instance_exec(&bolt_block)
-      self.bolts << bolt
+      self.components << bolt
     end
 
     def self.configure(name = nil, &configure_block)
@@ -90,7 +98,7 @@ module RedStorm
     # topology proxy interface
 
     def start(base_class_path, env)
-      self.class.resolve_ids!(self.class.spouts + self.class.bolts)
+      self.class.resolve_ids!(self.class.components)
 
       builder = TopologyBuilder.new
       self.class.spouts.each do |spout|
@@ -120,28 +128,29 @@ module RedStorm
     private
 
     def self.resolve_ids!(components)
-      next_id = 1
+      next_numeric_id = 1
       resolved_names = {}
 
-      numeric_ids, symbolic_ids = components.map(&:id).partition{|id| id.is_a?(Fixnum)}
+      numeric_components, symbolic_components = components.partition{|c| c.id.is_a?(Fixnum)}
+      numeric_ids = numeric_components.map(&:id)
 
       # map unused numeric ids to symbolic ids
-      symbolic_ids.map(&:to_s).uniq.each do |id|
-        unless resolved_names.has_key?(id)
-          next_id += 1 while numeric_ids.include?(next_id)
-          numeric_ids << next_id
-          resolved_names[id] = next_id
-        end
+      symbolic_components.each do |component|
+        id = component.id.to_s
+        raise("duplicate symbolic id in #{component.clazz.name} on id=#{id}") if resolved_names.has_key?(id)
+        next_numeric_id += 1 while numeric_ids.include?(next_numeric_id)
+        numeric_ids << next_numeric_id
+        resolved_names[id] = next_numeric_id
       end
 
       # reassign numeric ids in all components
       components.each do |component|
         unless component.id.is_a?(Fixnum)
-          component.id = resolved_names[component.id] || raise("cannot resolve #{component.clazz.name} id=#{component.id.inspect}")
+          component.id = resolved_names[component.id.to_s] || raise("cannot resolve #{component.clazz.name} id=#{component.id.to_s}")
         end
         if component.respond_to?(:sources)
           component.sources.map! do |source_id, grouping|
-            id = source_id.is_a?(Fixnum) ? source_id : resolved_names[source_id] || raise("cannot resolve #{component.clazz.name} source id=#{source_id.inspect}")
+            id = source_id.is_a?(Fixnum) ? source_id : resolved_names[source_id.to_s] || raise("cannot resolve #{component.clazz.name} source id=#{source_id.to_s}")
             [id, grouping]
           end
         end
@@ -149,11 +158,15 @@ module RedStorm
     end
 
     def self.spouts
-      @spouts ||= []
+      self.components.select{|c| c.is_a?(SpoutDefinition)}
     end
 
     def self.bolts
-      @bolts ||= []
+      self.components.select{|c| c.is_a?(BoltDefinition)}
+    end
+
+    def self.components
+      @components ||= []
     end
 
     def self.topology_name

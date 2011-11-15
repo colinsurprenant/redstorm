@@ -13,28 +13,28 @@ module RedStorm
       @fields = fields.map(&:to_s)
     end
 
-    def self.on_send(*args, &send_block)
+    def self.on_send(*args, &on_send_block)
       options = args.last.is_a?(Hash) ? args.pop : {}
       method_name = args.first
       
       self.send_options.merge!(options)
-      @send_block = block_given? ? send_block : lambda {self.send(method_name)}
+      @on_send_block = block_given? ? on_send_block : lambda {self.send(method_name || :on_send)}
     end
 
-    def self.on_init(method_name = nil, &init_block)
-      @init_block = block_given? ? init_block : lambda {self.send(method_name)}
+    def self.on_init(method_name = nil, &on_init_block)
+      @on_init_block = block_given? ? on_init_block : lambda {self.send(method_name || :on_init)}
     end
 
-    def self.on_close(method_name = nil, &close_block)
-      @close_block = block_given? ? close_block : lambda {self.send(method_name)}
+    def self.on_close(method_name = nil, &on_close_block)
+      @on_close_block = block_given? ? on_close_block : lambda {self.send(method_name || :on_close)}
     end
 
-    def self.on_ack(method_name = nil, &ack_block)
-      @ack_block = block_given? ? ack_block : lambda {|msg_id| self.send(method_name, msg_id)}
+    def self.on_ack(method_name = nil, &on_ack_block)
+      @on_ack_block = block_given? ? on_ack_block : lambda {|msg_id| self.send(method_name || :on_ack, msg_id)}
     end
 
-    def self.on_fail(method_name = nil, &fail_block)
-      @fail_block = block_given? ? fail_block : lambda {|msg_id| self.send(method_name, msg_id)}
+    def self.on_fail(method_name = nil, &on_fail_block)
+      @on_fail_block = block_given? ? on_fail_block : lambda {|msg_id| self.send(method_name || :on_fail, msg_id)}
     end
 
     # DSL instance methods
@@ -46,7 +46,7 @@ module RedStorm
     # Spout proxy interface
 
     def next_tuple
-      output = instance_exec(&self.class.send_block)
+      output = instance_exec(&self.class.on_send_block)
       if self.class.emit?
         if output
           values = [output].flatten
@@ -61,11 +61,11 @@ module RedStorm
       @collector = collector
       @context = context
       @config = config
-      instance_exec(&self.class.init_block)
+      instance_exec(&self.class.on_init_block)
     end
 
     def close
-      instance_exec(&self.class.close_block)
+      instance_exec(&self.class.on_close_block)
     end
 
     def declare_output_fields(declarer)
@@ -77,12 +77,19 @@ module RedStorm
     end
 
     def ack(msg_id)
-      instance_exec(msg_id, &self.class.ack_block)
+      instance_exec(msg_id, &self.class.on_ack_block)
     end
 
     def fail(msg_id)
-      instance_exec(msg_id, &self.class.fail_block)
+      instance_exec(msg_id, &self.class.on_fail_block)
     end
+
+    # default optional dsl methods/callbacks
+
+    def on_init; end
+    def on_close; end
+    def on_ack(msg_id); end
+    def on_fail(msg_id); end
 
     private
 
@@ -90,24 +97,24 @@ module RedStorm
       @fields ||= []
     end
 
-    def self.send_block
-      @send_block ||= lambda {}
+    def self.on_send_block
+      @on_send_block ||= lambda {self.send(:on_send)}
     end
 
-    def self.init_block
-      @init_block ||= lambda {}
+    def self.on_init_block
+      @on_init_block ||= lambda {self.send(:on_init)}
     end
 
-    def self.close_block
-      @close_block ||= lambda {}
+    def self.on_close_block
+      @on_close_block ||= lambda {self.send(:on_close)}
     end
 
-    def self.ack_block
-      @ack_block ||= lambda {}
+    def self.on_ack_block
+      @on_ack_block ||= lambda {|msg_id| self.send(:on_ack, msg_id)}
     end
 
-    def self.fail_block
-      @fail_block ||= lambda {}
+    def self.on_fail_block
+      @on_fail_block ||= lambda {|msg_id| self.send(:on_fail, msg_id)}
     end
 
     def self.send_options

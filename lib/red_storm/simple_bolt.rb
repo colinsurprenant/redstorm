@@ -9,20 +9,20 @@ module RedStorm
       @fields = fields.map(&:to_s)
     end
 
-    def self.on_receive(*args, &receive_block)
+    def self.on_receive(*args, &on_receive_block)
       options = args.last.is_a?(Hash) ? args.pop : {}
       method_name = args.first
 
       self.receive_options.merge!(options)
-      @receive_block = block_given? ? receive_block : lambda {|tuple| self.send(method_name, tuple)}
+      @on_receive_block = block_given? ? on_receive_block : lambda {|tuple| self.send(method_name || :on_receive, tuple)}
     end
 
-    def self.on_init(method_name = nil, &init_block)
-      @init_block = block_given? ? init_block : lambda {self.send(method_name)}
+    def self.on_init(method_name = nil, &on_init_block)
+      @on_init_block = block_given? ? on_init_block : lambda {self.send(method_name || :on_init)}
     end
 
     def self.on_close(method_name = nil, &close_block)
-      @close_block = block_given? ? close_block : lambda {self.send(method_name)}
+      @close_block = block_given? ? close_block : lambda {self.send(method_name || :on_close)}
     end
 
     # DSL instance methods
@@ -38,7 +38,7 @@ module RedStorm
     # Bolt proxy interface
 
     def execute(tuple)
-      if (output = instance_exec(tuple, &self.class.receive_block)) && self.class.emit?
+      if (output = instance_exec(tuple, &self.class.on_receive_block)) && self.class.emit?
         values = [output].flatten
         self.class.anchor? ? @collector.emit(tuple, Values.new(*values)) : emit(*values)
         @collector.ack(tuple) if self.class.ack?
@@ -49,7 +49,7 @@ module RedStorm
       @collector = collector
       @context = context
       @config = config
-      instance_exec(&self.class.init_block)
+      instance_exec(&self.class.on_init_block)
     end
 
     def cleanup
@@ -60,22 +60,27 @@ module RedStorm
       declarer.declare(Fields.new(self.class.fields))
     end
 
+    # default optional dsl methods/callbacks
+
+    def on_init; end
+    def on_close; end
+
     private
 
     def self.fields
       @fields ||= []
     end
 
-    def self.receive_block
-      @receive_block ||= lambda {}
+    def self.on_receive_block
+      @on_receive_block ||= lambda {|tuple| self.send(:on_receive, tuple)}
     end
 
-    def self.init_block
-      @init_block ||= lambda {}
+    def self.on_init_block
+      @on_init_block ||= lambda {self.send(:on_init)}
     end
 
     def self.close_block
-      @close_block ||= lambda {}
+      @close_block ||= lambda {self.send(:on_close)}
     end
 
     def self.receive_options

@@ -3,6 +3,12 @@ require 'red_storm/simple_bolt'
 
 describe RedStorm::SimpleBolt do
 
+  before(:each) do
+    Object.send(:remove_const, "Bolt1") if Object.const_defined?("Bolt1")
+    Object.send(:remove_const, "Bolt2") if Object.const_defined?("Bolt2")
+    Object.send(:remove_const, "Bolt3") if Object.const_defined?("Bolt3")
+  end
+
   describe "interface" do
     it "should implement bolt proxy" do
       spout = RedStorm::SimpleBolt.new
@@ -24,37 +30,37 @@ describe RedStorm::SimpleBolt do
 
     describe "output_field statement" do
       it "should parse single argument" do
-        class BoltOutputField1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1
         end
-        bolt = BoltOutputField1.new
-        BoltOutputField1.send(:fields).should == ["f1"]
+        bolt = Bolt1.new
+        Bolt1.send(:fields).should == ["f1"]
       end
 
       it "should parse multiple arguments" do
-        class BoltOutputField2 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, :f2
         end
-        BoltOutputField2.send(:fields).should == ["f1", "f2"]
+        Bolt1.send(:fields).should == ["f1", "f2"]
       end
 
       it "should parse string and symbol arguments" do
-        class BoltOutputField3 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, "f2"
         end
-        BoltOutputField3.send(:fields).should == ["f1", "f2"]
+        Bolt1.send(:fields).should == ["f1", "f2"]
       end
 
       it "should not share state over mutiple classes" do
-        class BoltOutputField4 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1
         end
-        class BoltOutputField5 < RedStorm::SimpleBolt
+        class Bolt2 < RedStorm::SimpleBolt
           output_fields :f2
         end
         RedStorm::SimpleBolt.send(:fields).should == []
-        BoltOutputField4.send(:fields).should == ["f1"]
-        BoltOutputField5.send(:fields).should == ["f2"]
+        Bolt1.send(:fields).should == ["f1"]
+        Bolt2.send(:fields).should == ["f2"]
       end
     end
 
@@ -76,111 +82,163 @@ describe RedStorm::SimpleBolt do
       describe "with block argument" do
 
         it "should parse without options" do
-          class BoltBlockArgument1 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive {}
           end
 
-          BoltBlockArgument1.receive_options.should == DEFAULT_RECEIVE_OPTIONS
-          BoltBlockArgument1.send(:emit?).should be_true
-          BoltBlockArgument1.send(:ack?).should be_false
-          BoltBlockArgument1.send(:anchor?).should be_false
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS
+          Bolt1.send(:emit?).should be_true
+          Bolt1.send(:ack?).should be_false
+          Bolt1.send(:anchor?).should be_false
         end
 
         it "should parse :emit option" do
-          class BoltBlockArgument2 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :emit => false do
             end
           end
 
-          BoltBlockArgument2.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit => false)
-          BoltBlockArgument2.send(:emit?).should be_false
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit => false)
+          Bolt1.send(:emit?).should be_false
         end
 
         it "should parse :ack option" do
-          class BoltBlockArgument3 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :ack => true do
             end
           end
 
-          BoltBlockArgument3.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:ack => true)
-          BoltBlockArgument3.send(:ack?).should be_true
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:ack => true)
+          Bolt1.send(:ack?).should be_true
         end
 
         it "should parse :anchor option" do
-          class BoltBlockArgument4 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :anchor => true do
             end
           end
 
-          BoltBlockArgument4.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:anchor => true)
-          BoltBlockArgument4.send(:anchor?).should be_true
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:anchor => true)
+          Bolt1.send(:anchor?).should be_true
         end
 
         it "should parse multiple option" do
-          class BoltBlockArgument5 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :emit => false, :ack =>true, :anchor => true do
             end
           end
 
-          BoltBlockArgument5.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
-          BoltBlockArgument5.send(:emit?).should be_false
-          BoltBlockArgument5.send(:ack?).should be_true
-          BoltBlockArgument5.send(:anchor?).should be_true
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
+          Bolt1.send(:emit?).should be_false
+          Bolt1.send(:ack?).should be_true
+          Bolt1.send(:anchor?).should be_true
         end
       end
 
       describe "with method name" do
 
         it "should parse without options" do
-          class BoltMethodName1 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :test_method
           end
 
-          BoltMethodName1.receive_options.should == DEFAULT_RECEIVE_OPTIONS
-          BoltMethodName1.send(:emit?).should be_true
-          BoltMethodName1.send(:ack?).should be_false
-          BoltMethodName1.send(:anchor?).should be_false
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS
+          Bolt1.send(:emit?).should be_true
+          Bolt1.send(:ack?).should be_false
+          Bolt1.send(:anchor?).should be_false
         end
 
         it "should parse :emit option" do
-          class BoltMethodName2 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :test_method, :emit => false
           end
 
-          BoltMethodName2.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit => false)
-          BoltMethodName2.send(:emit?).should be_false
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit => false)
+          Bolt1.send(:emit?).should be_false
         end
 
         it "should parse :ack option" do
-          class BoltMethodName3 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :ack => true do
             end
           end
 
-          BoltMethodName3.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:ack => true)
-          BoltMethodName3.send(:ack?).should be_true
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:ack => true)
+          Bolt1.send(:ack?).should be_true
         end
 
         it "should parse :anchor option" do
-          class BoltMethodName4 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :anchor => true do
             end
           end
 
-          BoltMethodName4.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:anchor => true)
-          BoltMethodName4.send(:anchor?).should be_true
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:anchor => true)
+          Bolt1.send(:anchor?).should be_true
         end
 
         it "should parse multiple option" do
-          class BoltMethodName5 < RedStorm::SimpleBolt
+          class Bolt1 < RedStorm::SimpleBolt
             on_receive :emit => false, :ack =>true, :anchor => true do
             end
           end
 
-          BoltMethodName5.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
-          BoltMethodName5.send(:emit?).should be_false
-          BoltMethodName5.send(:ack?).should be_true
-          BoltMethodName5.send(:anchor?).should be_true
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
+          Bolt1.send(:emit?).should be_false
+          Bolt1.send(:ack?).should be_true
+          Bolt1.send(:anchor?).should be_true
+        end
+
+      end
+
+      describe "with default method" do
+
+        it "should parse without options" do
+          class Bolt1 < RedStorm::SimpleBolt
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS
+          Bolt1.send(:emit?).should be_true
+          Bolt1.send(:ack?).should be_false
+          Bolt1.send(:anchor?).should be_false
+        end
+
+        it "should parse :emit option" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive :emit => false
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit => false)
+          Bolt1.send(:emit?).should be_false
+        end
+
+        it "should parse :ack option" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive :ack => true
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:ack => true)
+          Bolt1.send(:ack?).should be_true
+        end
+
+        it "should parse :anchor option" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive :anchor => true
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:anchor => true)
+          Bolt1.send(:anchor?).should be_true
+        end
+
+        it "should parse multiple option" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive :emit => false, :ack =>true, :anchor => true
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
+          Bolt1.send(:emit?).should be_false
+          Bolt1.send(:ack?).should be_true
+          Bolt1.send(:anchor?).should be_true
         end
 
       end
@@ -189,21 +247,21 @@ describe RedStorm::SimpleBolt do
     describe "on_init statement" do
 
       it "should parse block argument" do
-        class BoltOnInitBlockArgument1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_init {self.test_block_call}
         end
 
-        bolt = BoltOnInitBlockArgument1.new
+        bolt = Bolt1.new
         bolt.should_receive(:test_block_call)
         bolt.prepare(nil, nil, nil)
       end
 
       it "should parse method name" do
-        class BoltOnInitMethodName1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_init :test_method
         end
 
-        bolt = BoltOnInitMethodName1.new
+        bolt = Bolt1.new
         bolt.should_receive(:test_method)
         bolt.prepare(nil, nil, nil)
       end
@@ -212,21 +270,21 @@ describe RedStorm::SimpleBolt do
     describe "on_close statement" do
 
       it "should parse block argument" do
-        class BoltOnCloseBlockArgument1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_close {self.test_block_call}
         end
 
-        bolt = BoltOnCloseBlockArgument1.new
+        bolt = Bolt1.new
         bolt.should_receive(:test_block_call)
         bolt.cleanup
       end
 
       it "should parse method name" do
-        class BoltOnCloseMethodName1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_close :test_method
         end
 
-        bolt = BoltOnCloseMethodName1.new
+        bolt = Bolt1.new
         bolt.should_receive(:test_method)
         bolt.cleanup
       end
@@ -237,84 +295,171 @@ describe RedStorm::SimpleBolt do
 
     describe "execute" do
 
+      class RedStorm::Values; end
+
       it "should auto emit on single value output" do
-        class BoltNextTuple1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_receive {|tuple| tuple}
         end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method
+          def my_method(tuple); tuple; end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          def on_receive(tuple); tuple; end
+        end
+
         collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("values").exactly(3).times
 
-        class RedStorm::Values; end
-        RedStorm::Values.should_receive(:new).with("output").and_return("values")
-        collector.should_receive(:emit).with("values")
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
 
-        bolt = BoltNextTuple1.new
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+
+        bolt = Bolt3.new
         bolt.prepare(nil, nil, collector)
         bolt.execute("output")
       end
 
       it "should auto emit on multiple value output" do
-        class BoltNextTuple2 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_receive {|tuple| tuple}
         end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method
+          def my_method(tuple); tuple; end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          def on_receive(tuple); tuple; end
+        end
+
         collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("values").exactly(3).times
 
-        class RedStorm::Values; end
-        RedStorm::Values.should_receive(:new).with("output1", "output2").and_return("values")
-        collector.should_receive(:emit).with("values")
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute(["output1", "output2"])
 
-        bolt = BoltNextTuple2.new
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute(["output1", "output2"])
+
+        bolt = Bolt3.new
         bolt.prepare(nil, nil, collector)
         bolt.execute(["output1", "output2"])
       end
 
       it "should anchor on single value output" do
-        class BoltNextTuple3 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_receive :anchor => true do |tuple| 
             "output"
           end
         end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method, :anchor => true 
+          def my_method(tuple) 
+            "output"
+          end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          on_receive :anchor => true 
+          def on_receive(tuple) 
+            "output"
+          end
+        end
+
         collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("tuple", "values").exactly(3).times
 
-        class RedStorm::Values; end
-        RedStorm::Values.should_receive(:new).with("output").and_return("values")
-        collector.should_receive(:emit).with("tuple", "values")
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
 
-        bolt = BoltNextTuple3.new
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+
+        bolt = Bolt3.new
         bolt.prepare(nil, nil, collector)
         bolt.execute("tuple")
       end
 
       it "should ack on single value output" do
-        class BoltNextTuple4 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_receive :anchor => true, :ack => true do |tuple| 
             "output"
           end
         end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method, :anchor => true, :ack => true
+          def my_method(tuple) 
+            "output"
+          end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          on_receive :anchor => true, :ack => true 
+          def on_receive(tuple) 
+            "output"
+          end
+        end
+
         collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("tuple", "values").exactly(3).times
+        collector.should_receive(:ack).with("tuple").exactly(3).times
 
-        class RedStorm::Values; end
-        RedStorm::Values.should_receive(:new).with("output").and_return("values")
-        collector.should_receive(:emit).with("tuple", "values")
-        collector.should_receive(:ack).with("tuple")
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
 
-        bolt = BoltNextTuple4.new
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+
+        bolt = Bolt3.new
         bolt.prepare(nil, nil, collector)
         bolt.execute("tuple")
       end
 
       it "should not emit" do
-        class BoltNextTuple5 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_receive :emit => false do |tuple| 
             tuple
           end
         end
-        collector = mock("Collector")
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method, :emit => false
+          def my_method(tuple)
+            tuple
+          end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          on_receive :emit => false
+          def on_receive(tuple) 
+            tuple
+          end
+        end
 
-        class RedStorm::Values; end
+        collector = mock("Collector")
         RedStorm::Values.should_receive(:new).never
         collector.should_receive(:emit).never
 
-        bolt = BoltNextTuple5.new
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+
+        bolt = Bolt3.new
         bolt.prepare(nil, nil, collector)
         bolt.execute("output")
       end
@@ -322,12 +467,39 @@ describe RedStorm::SimpleBolt do
 
     describe "prepare" do
       it "should assing collector, context, config and call init block" do
-        class BoltPrepare1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_init {trigger}
         end
-        bolt = BoltPrepare1.new
-        bolt.should_receive(:trigger).once
+        class Bolt2 < RedStorm::SimpleBolt
+          on_init :my_method
+          def my_method; trigger; end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          def on_init; trigger; end
+        end
 
+        bolt = Bolt1.new
+        bolt.should_receive(:trigger).once
+        bolt.config.should be_nil
+        bolt.context.should be_nil
+        bolt.collector.should be_nil
+        bolt.prepare("config", "context", "collector")
+        bolt.config.should == "config"
+        bolt.context.should == "context"
+        bolt.collector.should == "collector"
+
+        bolt = Bolt2.new
+        bolt.should_receive(:trigger).once
+        bolt.config.should be_nil
+        bolt.context.should be_nil
+        bolt.collector.should be_nil
+        bolt.prepare("config", "context", "collector")
+        bolt.config.should == "config"
+        bolt.context.should == "context"
+        bolt.collector.should == "collector"
+
+        bolt = Bolt3.new
+        bolt.should_receive(:trigger).once
         bolt.config.should be_nil
         bolt.context.should be_nil
         bolt.collector.should be_nil
@@ -340,22 +512,37 @@ describe RedStorm::SimpleBolt do
 
     describe "cleanup" do
       it "should call close block" do
-        class BoltClose1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           on_close {trigger}
         end
-        bolt = BoltClose1.new
-        bolt.should_receive(:trigger).once
+        class Bolt2 < RedStorm::SimpleBolt
+          on_close :my_method
+          def my_method; trigger; end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          def on_close; trigger; end
+        end
 
+        bolt = Bolt1.new
+        bolt.should_receive(:trigger).once
+        bolt.cleanup
+
+        bolt = Bolt2.new
+        bolt.should_receive(:trigger).once
+        bolt.cleanup
+
+        bolt = Bolt3.new
+        bolt.should_receive(:trigger).once
         bolt.cleanup
       end
     end
 
     describe "declare_output_fields" do
       it "should declare fields" do
-        class BoltDeclare1 < RedStorm::SimpleBolt
+        class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, :f2
         end
-        bolt = BoltDeclare1.new
+        bolt = Bolt1.new
         class RedStorm::Fields; end
         declarer = mock("Declarer")
         declarer.should_receive(:declare).with("fields")

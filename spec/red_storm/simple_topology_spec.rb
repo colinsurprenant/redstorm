@@ -441,12 +441,52 @@ describe RedStorm::SimpleTopology do
       Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
     end
 
-    it "should resolve implicit symbolic ids" do
+    it "should resolve implicit string ids" do
       class Topology1 < RedStorm::SimpleTopology
         spout SpoutClass1
 
         bolt BoltClass1 do
           source "spout_class1", :shuffle
+        end
+      end
+      
+      Topology1.spouts.first.id.should == "spout_class1"
+      Topology1.bolts.first.id.should == "bolt_class1"
+      Topology1.bolts.first.sources.first.should == ["spout_class1", {:shuffle => nil}]
+
+      Topology1.resolve_ids!(Topology1.spouts + Topology1.bolts)
+
+      Topology1.spouts.first.id.should == 1
+      Topology1.bolts.first.id.should == 2
+      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+    end
+
+    it "should resolve implicit symbol ids" do
+      class Topology1 < RedStorm::SimpleTopology
+        spout SpoutClass1
+
+        bolt BoltClass1 do
+          source :spout_class1, :shuffle
+        end
+      end
+      
+      Topology1.spouts.first.id.should == "spout_class1"
+      Topology1.bolts.first.id.should == "bolt_class1"
+      Topology1.bolts.first.sources.first.should == [:spout_class1, {:shuffle => nil}]
+
+      Topology1.resolve_ids!(Topology1.spouts + Topology1.bolts)
+
+      Topology1.spouts.first.id.should == 1
+      Topology1.bolts.first.id.should == 2
+      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+    end
+
+    it "should resolve implicit class ids" do
+      class Topology1 < RedStorm::SimpleTopology
+        spout SpoutClass1
+
+        bolt BoltClass1 do
+          source SpoutClass1, :shuffle
         end
       end
       

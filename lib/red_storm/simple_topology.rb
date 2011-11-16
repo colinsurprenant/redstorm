@@ -15,7 +15,7 @@ module RedStorm
       end
 
       def source(source_id, grouping)
-        @sources << [source_id, grouping.is_a?(Hash) ? grouping : {grouping => nil}]
+        @sources << [source_id.is_a?(Class) ? SimpleTopology.underscore(source_id) : source_id, grouping.is_a?(Hash) ? grouping : {grouping => nil}]
       end
 
       def define_grouping(storm_bolt)

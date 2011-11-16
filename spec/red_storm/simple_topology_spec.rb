@@ -259,8 +259,8 @@ describe RedStorm::SimpleTopology do
 
       bolt_definition1.should_receive(:define_grouping).with("storm_bolt1")
       bolt_definition2.should_receive(:define_grouping).with("storm_bolt2")
-      bolt_definition1.should_receive(:clazz).and_return(BoltClass1)
-      bolt_definition2.should_receive(:clazz).and_return(BoltClass2)
+      bolt_definition1.should_receive(:clazz).twice.and_return(BoltClass1)
+      bolt_definition2.should_receive(:clazz).twice.and_return(BoltClass2)
       bolt_definition1.should_receive(:parallelism).and_return(2)
       bolt_definition2.should_receive(:parallelism).and_return(3)
       bolt_definition1.should_receive(:id).any_number_of_times.and_return("id1")

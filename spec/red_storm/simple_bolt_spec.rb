@@ -297,7 +297,7 @@ describe RedStorm::SimpleBolt do
 
       class RedStorm::Values; end
 
-      it "should auto single emit on single value output" do
+      it "should auto emit on single value output" do
         class Bolt1 < RedStorm::SimpleBolt
           on_receive {|tuple| tuple}
         end
@@ -326,7 +326,7 @@ describe RedStorm::SimpleBolt do
         bolt.execute("output")
       end
 
-      it "should auto single emit on multiple value output" do
+      it "should auto emit on single multiple-value output" do
         class Bolt1 < RedStorm::SimpleBolt
           on_receive {|tuple| tuple}
         end
@@ -353,6 +353,37 @@ describe RedStorm::SimpleBolt do
         bolt = Bolt3.new
         bolt.prepare(nil, nil, collector)
         bolt.execute(["output1", "output2"])
+      end
+
+      it "should auto emit on multiple multiple-value output" do
+        class Bolt1 < RedStorm::SimpleBolt
+          on_receive {|tuple| tuple}
+        end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method
+          def my_method(tuple); tuple; end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          def on_receive(tuple); tuple; end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values1")
+        RedStorm::Values.should_receive(:new).with("output3", "output4").exactly(3).times.and_return("values2")
+        collector.should_receive(:emit).with("values1").exactly(3).times
+        collector.should_receive(:emit).with("values2").exactly(3).times
+
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute([["output1", "output2"], ["output3", "output4"]])
+
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute([["output1", "output2"], ["output3", "output4"]])
+
+        bolt = Bolt3.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute([["output1", "output2"], ["output3", "output4"]])
       end
 
       it "should anchor on single value output" do

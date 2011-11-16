@@ -1,16 +1,26 @@
 module RedStorm
 
   class SimpleTopology
-    attr_reader :cluster # LocalCluster reference usable in on_submit block for example
+    attr_reader :cluster # LocalCluster reference usable in on_submit block, for example
 
-    class BoltDefinition
+    class ComponentDefinition
       attr_reader :clazz, :parallelism
-      attr_accessor :id, :sources
+      attr_accessor :id
 
-      def initialize(bolt_class, id, parallelism)
-        @clazz = bolt_class
+      def initialize(component_class, id, parallelism)
+        @clazz = component_class
         @id = id
         @parallelism = parallelism
+      end
+    end
+
+    class SpoutDefinition < ComponentDefinition; end
+          
+    class BoltDefinition < ComponentDefinition
+      attr_accessor :sources
+
+      def initialize(*args)
+        super
         @sources = []
       end
 
@@ -42,17 +52,6 @@ module RedStorm
       end
     end
 
-    class SpoutDefinition
-      attr_reader :clazz, :parallelism
-      attr_accessor :id
-
-      def initialize(spout_class, id, parallelism)
-        @clazz = spout_class
-        @id = id
-        @parallelism = parallelism
-      end
-    end
-
     class Configurator
       attr_reader :config
 
@@ -71,7 +70,6 @@ module RedStorm
         s.to_s.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
       end
     end
-
 
     def self.spout(spout_class, options = {})
       spout_options = {:id => self.underscore(spout_class), :parallelism => 1}.merge(options)
@@ -134,7 +132,7 @@ module RedStorm
       numeric_components, symbolic_components = components.partition{|c| c.id.is_a?(Fixnum)}
       numeric_ids = numeric_components.map(&:id)
 
-      # map unused numeric ids to symbolic ids
+      # assign numeric ids to symbolic ids
       symbolic_components.each do |component|
         id = component.id.to_s
         raise("duplicate symbolic id in #{component.clazz.name} on id=#{id}") if resolved_names.has_key?(id)
@@ -143,7 +141,7 @@ module RedStorm
         resolved_names[id] = next_numeric_id
       end
 
-      # reassign numeric ids in all components
+      # reassign numeric ids to all components
       components.each do |component|
         unless component.id.is_a?(Fixnum)
           component.id = resolved_names[component.id.to_s] || raise("cannot resolve #{component.clazz.name} id=#{component.id.to_s}")

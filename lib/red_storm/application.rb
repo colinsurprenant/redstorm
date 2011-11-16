@@ -1,5 +1,3 @@
-require 'rake'
-
 module RedStorm
   
   class Application 

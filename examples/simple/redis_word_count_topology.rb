@@ -1,7 +1,7 @@
 require 'redis'
 require 'thread'
-
 require 'red_storm'
+
 require 'examples/simple/word_count_bolt'
 
 # RedisWordSpout reads the Redis queue "test" on localhost:6379 

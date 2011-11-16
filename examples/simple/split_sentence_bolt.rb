@@ -1,3 +1,5 @@
+require 'red_storm'
+
 class SplitSentenceBolt < RedStorm::SimpleBolt
   output_fields :word
 

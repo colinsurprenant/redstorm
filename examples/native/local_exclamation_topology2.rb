@@ -18,7 +18,7 @@ end
 # this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt
 
 class LocalExclamationTopology2
-  def start(base_class_path)
+  def start(base_class_path, env)
     builder = TopologyBuilder.new
     
     builder.setSpout(1, TestWordSpout.new, 10)     

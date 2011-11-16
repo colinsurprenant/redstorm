@@ -1,6 +1,6 @@
 require 'redis'
 require 'thread'
-require 'examples/word_count_bolt'
+require 'examples/native/word_count_bolt'
 
 # RedisWordSpout reads the Redis queue "test" on localhost:6379 
 # and emits each word items pop'ed from the queue.
@@ -41,7 +41,7 @@ class RedisWordSpout
 end
 
 class LocalRedisWordCountTopology
-  def start(base_class_path)
+  def start(base_class_path, env)
     builder = TopologyBuilder.new
     builder.setSpout(1, JRubySpout.new(base_class_path, "RedisWordSpout"), 1)
     builder.setBolt(2, JRubyBolt.new(base_class_path, "WordCountBolt"), 3).fieldsGrouping(1, Fields.new("word"))

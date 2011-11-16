@@ -1,4 +1,3 @@
-require 'red_storm'
 require 'examples/simple/random_sentence_spout'
 require 'examples/simple/split_sentence_bolt'
 require 'examples/simple/word_count_bolt'

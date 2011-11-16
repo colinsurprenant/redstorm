@@ -1,3 +1,5 @@
+require 'red_storm'
+
 class RandomSentenceSpout < RedStorm::SimpleSpout
   set :is_distributed => true
   output_fields :word

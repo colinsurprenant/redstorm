@@ -1,3 +1,5 @@
+require 'red_storm'
+
 class WordCountBolt < RedStorm::SimpleBolt
   output_fields :word, :count
   on_init {@counts = Hash.new{|h, k| h[k] = 0}}

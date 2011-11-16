@@ -1,6 +1,5 @@
 java_import 'backtype.storm.testing.TestWordSpout'
 
-require 'red_storm'
 require 'examples/simple/exclamation_bolt'
 
 # this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt

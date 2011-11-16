@@ -3,11 +3,11 @@ require 'rubygems'
 
 begin
   # will work from gem, since lib dir is in gem require_paths
-  require 'red_storm/version'
+  require 'red_storm'
 rescue LoadError
   # will work within RedStorm dev project
   $:.unshift './lib'
-  require 'red_storm/version'
+  require 'red_storm'
 end
 
 java_import 'backtype.storm.Config'
@@ -36,7 +36,9 @@ class TopologyLauncher
     env = args[0].to_sym
     class_path = args[1]
     clazz = camel_case(class_path.split('/').last.split('.').first)
+
     puts("RedStorm v#{RedStorm::VERSION} starting topology #{clazz} in #{env.to_s} environment")
+
     require class_path
     Object.module_eval(clazz).new.start(class_path, env)
   end

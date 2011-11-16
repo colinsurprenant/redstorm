@@ -18,7 +18,7 @@ TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
 TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
 
 JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
-JRUBY_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/lib/red_storm"
+JRUBY_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/lib"
 
 SRC_EXAMPLES = "#{RedStorm::REDSTORM_HOME}/examples"
 DST_EXAMPLES = "#{CWD}/examples"
@@ -35,7 +35,7 @@ task :clean do
 end
 
 task :clean_jar do
-  ant.delete :dir => "#{TARGET_DIR}/cluster-topology.jar"
+  ant.delete :file => TARGET_CLUSTER_JAR
 end
 
 task :setup do  
@@ -56,18 +56,41 @@ task :unpack do
   system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR}")
 end
 
-task :jar => [:unpack, :clean_jar] do
+task :devjar => [:unpack, :clean_jar] do
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-    fileset :dir => CWD do
-      exclude :name => "target/**/*"
+    fileset :dir => RedStorm::REDSTORM_HOME do
+      include :name => "examples/**/*"
+    end
+    fileset :dir => JRUBY_SRC_DIR do
+      exclude :name => "tasks/**"
     end
     manifest do
       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
     end
   end
-  puts("\nRedStorm jar completed. Generated jar file #{TARGET_CLUSTER_JAR}")
+  puts("\nRedStorm generated dev jar file #{TARGET_CLUSTER_JAR}")
+end
+
+task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
+  ant.jar :destfile => TARGET_CLUSTER_JAR do
+    fileset :dir => TARGET_CLASSES_DIR
+    fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
+    fileset :dir => RedStorm::REDSTORM_HOME do
+      include :name => "examples/**/*"
+    end
+    fileset :dir => JRUBY_SRC_DIR do
+      exclude :name => "tasks/**"
+    end
+    fileset :dir => CWD do
+      include :name => "#{args[:dir]}/**/*"
+    end
+    manifest do
+      attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
+    end
+  end
+  puts("\nRedStorm generated jar file #{TARGET_CLUSTER_JAR}")
 end
 
 task :examples do
@@ -92,13 +115,13 @@ end
 
 task :build => :setup do
   # compile the JRuby proxy classes to Java
-  build_jruby("#{JRUBY_SRC_DIR}/proxy")
+  build_jruby("#{JRUBY_SRC_DIR}/red_storm/proxy")
 
   # compile the generated Java proxy classes
   build_java_dir("#{TARGET_SRC_DIR}")
 
   # generate the JRuby topology launcher
-  build_jruby("#{JRUBY_SRC_DIR}/topology_launcher.rb")
+  build_jruby("#{JRUBY_SRC_DIR}/red_storm/topology_launcher.rb")
 
   # compile the JRuby proxy classes
   build_java_dir("#{JAVA_SRC_DIR}")

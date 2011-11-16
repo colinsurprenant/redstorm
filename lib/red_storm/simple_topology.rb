@@ -18,23 +18,23 @@ module RedStorm
         @sources << [source_id.is_a?(Class) ? SimpleTopology.underscore(source_id) : source_id, grouping.is_a?(Hash) ? grouping : {grouping => nil}]
       end
 
-      def define_grouping(storm_bolt)
+      def define_grouping(declarer)
         @sources.each do |source_id, grouping|
           grouper, params = grouping.first
 
           case grouper
           when :fields
-            storm_bolt.fieldsGrouping(source_id, Fields.new(*params))
+            declarer.fieldsGrouping(source_id, Fields.new(*params))
           when :global
-            storm_bolt.globalGrouping(source_id)
+            declarer.globalGrouping(source_id)
           when :shuffle
-            storm_bolt.shuffleGrouping(source_id)
+            declarer.shuffleGrouping(source_id)
           when :none
-            storm_bolt.noneGrouping(source_id)
+            declarer.noneGrouping(source_id)
           when :all
-            storm_bolt.allGrouping(source_id)
+            declarer.allGrouping(source_id)
           when :direct
-            storm_bolt.directGrouping(source_id)
+            declarer.directGrouping(source_id)
           else
             raise("unknown grouper=#{grouper.inspect}")
           end
@@ -105,8 +105,8 @@ module RedStorm
          builder.setSpout(spout.id, JRubySpout.new(base_class_path, spout.clazz.name), spout.parallelism)
       end
       self.class.bolts.each do |bolt|
-        storm_bolt = builder.setBolt(bolt.id, JRubyBolt.new(base_class_path, bolt.clazz.name), bolt.parallelism)
-        bolt.define_grouping(storm_bolt)
+        declarer = builder.setBolt(bolt.id, JRubyBolt.new(base_class_path, bolt.clazz.name), bolt.parallelism)
+        bolt.define_grouping(declarer)
       end
 
       configurator = Configurator.new

@@ -297,7 +297,7 @@ describe RedStorm::SimpleBolt do
 
       class RedStorm::Values; end
 
-      it "should auto emit on single value output" do
+      it "should auto single emit on single value output" do
         class Bolt1 < RedStorm::SimpleBolt
           on_receive {|tuple| tuple}
         end
@@ -326,7 +326,7 @@ describe RedStorm::SimpleBolt do
         bolt.execute("output")
       end
 
-      it "should auto emit on multiple value output" do
+      it "should auto single emit on multiple value output" do
         class Bolt1 < RedStorm::SimpleBolt
           on_receive {|tuple| tuple}
         end

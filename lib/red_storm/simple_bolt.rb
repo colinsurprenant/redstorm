@@ -39,8 +39,8 @@ module RedStorm
 
     def execute(tuple)
       if (output = instance_exec(tuple, &self.class.on_receive_block)) && self.class.emit?
-        values = [output].flatten
-        self.class.anchor? ? @collector.emit(tuple, Values.new(*values)) : emit(*values)
+        values_list = !output.is_a?(Array) ? [[output]] : !output.first.is_a?(Array) ? [output] : output
+        values_list.each{|values| self.class.anchor? ? @collector.emit(tuple, Values.new(*values)) : @collector.emit(Values.new(*values))}
         @collector.ack(tuple) if self.class.ack?
       end
     end

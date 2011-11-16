@@ -1,8 +1,9 @@
 class WordCountBolt < RedStorm::SimpleBolt
   output_fields :word, :count
-
   on_init {@counts = Hash.new{|h, k| h[k] = 0}}
 
+  # block declaration style using auto-emit (default)
+  #
   on_receive do |tuple|
     word = tuple.getString(0)
     @counts[word] += 1
@@ -10,18 +11,3 @@ class WordCountBolt < RedStorm::SimpleBolt
     [word, @counts[word]]
   end
 end
-
-# below is the same bolt but passing a method name to on_tuple
-
-# class WordCountBolt < RedStorm::SimpleBolt
-#   output_fields :word, :count
-#   on_init {@counts = Hash.new{|h, k| h[k] = 0}}
-#   on_receive :count_word
-#
-#   def count_word(tuple)
-#     word = tuple.getString(0)
-#     @counts[word] += 1
-#
-#     [word, @counts[word]]
-#   end
-# end

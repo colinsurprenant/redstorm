@@ -3,7 +3,7 @@ require 'examples/simple/random_sentence_spout'
 require 'examples/simple/split_sentence_bolt'
 require 'examples/simple/word_count_bolt'
 
-class LocalWordCountTopology < RedStorm::SimpleTopology
+class WordCountTopology < RedStorm::SimpleTopology
   spout RandomSentenceSpout, :parallelism => 5
   
   bolt SplitSentenceBolt, :parallelism => 8 do
@@ -15,8 +15,15 @@ class LocalWordCountTopology < RedStorm::SimpleTopology
   end
 
   configure :word_count do |env|
-    debug true
-    max_task_parallelism 3
+    case env
+    when :local
+      debug true
+      max_task_parallelism 3
+    when :cluster
+      debug true
+      num_workers 20
+      max_spout_pending(1000);
+    end
   end
 
   on_submit do |env|

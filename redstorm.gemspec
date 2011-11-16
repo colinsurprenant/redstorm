@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.required_rubygems_version = ">= 1.3.0"
   s.rubyforge_project = "redstorm"
   
-  s.files         = Dir.glob("{lib/**/*.rb}") + Dir.glob("{examples/**/*.rb}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(Rakefile pom.xml README.md CHANGELOG.md LICENSE.md)
+  s.files         = Dir.glob("{lib/**/*}") + Dir.glob("{examples/**/*.rb}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(Rakefile pom.xml README.md CHANGELOG.md LICENSE.md)
   s.require_paths = %w[lib]
   s.bindir        = 'bin'
   s.executables   = ['redstorm']

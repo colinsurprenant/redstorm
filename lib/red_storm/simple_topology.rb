@@ -3,6 +3,9 @@ module RedStorm
   class SimpleTopology
     attr_reader :cluster # LocalCluster reference usable in on_submit block, for example
 
+    DEFAULT_SPOUT_PARALLELISM = 1
+    DEFAULT_BOLT_PARALLELISM = 1
+
     class ComponentDefinition
       attr_reader :clazz, :parallelism
       attr_accessor :id
@@ -72,13 +75,13 @@ module RedStorm
     end
 
     def self.spout(spout_class, options = {})
-      spout_options = {:id => self.underscore(spout_class), :parallelism => 1}.merge(options)
+      spout_options = {:id => self.underscore(spout_class), :parallelism => DEFAULT_SPOUT_PARALLELISM}.merge(options)
       spout = SpoutDefinition.new(spout_class, spout_options[:id], spout_options[:parallelism])
       self.components << spout
     end
 
     def self.bolt(bolt_class, options = {}, &bolt_block)
-      bolt_options = {:id => self.underscore(bolt_class), :parallelism => 1}.merge(options)
+      bolt_options = {:id => self.underscore(bolt_class), :parallelism => DEFAULT_BOLT_PARALLELISM}.merge(options)
       bolt = BoltDefinition.new(bolt_class, bolt_options[:id], bolt_options[:parallelism])
       bolt.instance_exec(&bolt_block)
       self.components << bolt
@@ -100,10 +103,12 @@ module RedStorm
 
       builder = TopologyBuilder.new
       self.class.spouts.each do |spout|
-         builder.setSpout(spout.id, JRubySpout.new(base_class_path, spout.clazz.name), spout.parallelism)
+        is_java = spout.clazz.name.split('::').first == 'Java'
+        builder.setSpout(spout.id, is_java ? spout.clazz.new : JRubySpout.new(base_class_path, spout.clazz.name), spout.parallelism)
       end
       self.class.bolts.each do |bolt|
-        declarer = builder.setBolt(bolt.id, JRubyBolt.new(base_class_path, bolt.clazz.name), bolt.parallelism)
+        is_java = bolt.clazz.name.split('::').first == 'Java'
+        declarer = builder.setBolt(bolt.id, is_java ? bolt.clazz.new : JRubyBolt.new(base_class_path, bolt.clazz.name), bolt.parallelism)
         bolt.define_grouping(declarer)
       end
 

@@ -4,7 +4,7 @@ RedStorm provides the JRuby integration for the [Storm][storm] distributed realt
 
 ## Changes from 0.1.x
 
-- This release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopoloy, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See [examples/simple](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple).
+- This release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopology, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See [examples/simple](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple).
 - Use the same SimpleTopology class for local development cluster or remote production cluster.
 - The `redstorm` command has a new syntax.
 
@@ -429,6 +429,57 @@ end
 - [ExclamationBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/exclamation_bolt.rb)
 - [SplitSentenceBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/split_sentence_bolt.rb)
 - [WordCountBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/word_count_bolt.rb)
+
+## Development
+
+### Requirements
+
+- JRuby 1.6.5
+- rake gem
+- ruby-maven gem
+- rspec gem
+
+### Contribute
+
+Fork the project, create a branch and submit a pull request.
+
+Some ways you can contribute:
+
+- by reporting bugs using the issue tracker
+- by suggesting new features using the issue tracker
+- by writing or editing documentation
+- by writing specs
+- by writing code
+- by refactoring code
+- ...
+
+### Workflow
+
+- fork project
+- create branch
+- install dependencies in `target/dependencies`
+
+```sh
+$ rake deps
+```
+
+- generate and build Java source into `target/classes`
+
+```sh
+$ rake build
+```
+
+- run topology in local dev cluster
+
+```sh
+$ bin/redstorm local path/to/topology_class.rb
+```
+
+- generate remote cluster topology jar into `target/cluster-topology.jar`
+
+```sh
+$ rake devjar
+```
 
 ## Author
 Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][needium], [colin.surprenant@gmail.com][gmail], [http://github.com/colinsurprenant][github]

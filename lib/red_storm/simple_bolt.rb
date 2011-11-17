@@ -27,8 +27,12 @@ module RedStorm
 
     # DSL instance methods
 
-    def emit(*values)
+    def unanchored_emit(*values)
       @collector.emit(Values.new(*values)) 
+    end
+
+    def anchored_emit(tuple, *values)
+      @collector.emit(tuple, Values.new(*values)) 
     end
 
     def ack(tuple)
@@ -40,7 +44,7 @@ module RedStorm
     def execute(tuple)
       if (output = instance_exec(tuple, &self.class.on_receive_block)) && self.class.emit?
         values_list = !output.is_a?(Array) ? [[output]] : !output.first.is_a?(Array) ? [output] : output
-        values_list.each{|values| self.class.anchor? ? @collector.emit(tuple, Values.new(*values)) : @collector.emit(Values.new(*values))}
+        values_list.each{|values| self.class.anchor? ? anchored_emit(tuple, *values) : unanchored_emit(*values)}
         @collector.ack(tuple) if self.class.ack?
       end
     end

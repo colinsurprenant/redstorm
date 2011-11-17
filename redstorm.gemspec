@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["colin.surprenant@gmail.com"]
   s.homepage    = "https://github.com/colinsurprenant/redstorm"
   s.summary     = "JRuby on Storm"
-  s.description = "JRuby integration for the Storm distributed realtime computation system"
+  s.description = "JRuby integration & DSL for the Storm distributed realtime computation system"
  
   s.required_rubygems_version = ">= 1.3.0"
   s.rubyforge_project = "redstorm"

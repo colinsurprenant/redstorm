@@ -4,20 +4,20 @@ RedStorm provides the JRuby integration for the [Storm][storm] distributed realt
 
 ## Changes from 0.1.x
 
-- This release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopoloy, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See `examples/simple`.
+- This release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopoloy, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See [examples/simple](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple).
 - Use the same SimpleTopology class for local development cluster or remote production cluster.
 - The `redstorm` command has a new syntax.
 
-## dependencies
+## Dependencies
 
 This has been tested on OSX 10.6.8 and Linux 10.04 using Storm 0.5.4 and JRuby 1.6.5
 
-## installation
+## Installation
 ``` sh
 $ gem install redstorm
 ```
 
-## usage overview
+## Usage overview
 
 - create a new empty project directory.
 - install the [RedStorm gem](http://rubygems.org/gems/redstorm).
@@ -25,7 +25,7 @@ $ gem install redstorm
 - perform the initial setup as described below to install the dependencies in the `target/` subdir of your project directory.
 - run your topology in local mode and/or on a production cluster as described below.
 
-### initial setup
+### Initial setup
 
 Install RedStom dependencies; from your project root directory execute:
 
@@ -35,7 +35,7 @@ $ redstorm install
 
 The `install` command will install all Java jars dependencies using [ruby-maven][ruby-maven] in `target/dependency` and generate & compile the Java bindings in `target/classes`
 
-### run in local mode
+### Run in local mode
 
 Create a topology class. The *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
 
@@ -45,7 +45,7 @@ $ redstorm local <path/to/topology_class_file_name.rb>
 
 **See examples below** to run examples in local mode or on a production cluster.
 
-### run on production cluster
+### Run on production cluster
 
 - generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies from the `target/` directory:
 
@@ -53,7 +53,7 @@ $ redstorm local <path/to/topology_class_file_name.rb>
 $ redstorm jar <sources_directory>
 ```
 
-- submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
+- submit the cluster topology jar file to the cluster. Assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
 
 ``` sh
 storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher cluster <path/to/topology_class_file_name.rb>
@@ -61,9 +61,9 @@ storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher cluster <path/
 
 Basically you must follow the [Storm instructions](https://github.com/nathanmarz/storm/wiki) to [setup a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster) and [submit your topology to the cluster](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
 
-## examples
+## Examples
 
-Install the example files into `examples/`:
+Install the [example files](https://github.com/colinsurprenant/redstorm/tree/master/examples) in your project. The `examples/` dir will be created in your project root dir.
 
 ``` sh
 $ redstorm examples
@@ -71,7 +71,7 @@ $ redstorm examples
 
 All examples using the **simple DSL** are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
 
-### local mode
+### Local mode
 
 ``` sh
 $ redstorm local examples/simple/exclamation_topology.rb
@@ -87,11 +87,11 @@ $ redstorm local examples/simple/redis_word_count_topology.rb
 
 Using `redis-cli`, push words into the `test` list and watch Storm pick them up
 
-### production cluster
+### Production cluster
 
-All examples using the **simple DSL** can also run on a productions cluster. The only **native** example compatible with a production cluster is <a href='https://github.com/colinsurprenant/redstorm/tree/master/examples/native/cluster_word_count_topology.rb'>examples/native/cluster_word_count_topology.rb</a>
+All examples using the **simple DSL** can also run on a productions cluster. The only **native** example compatible with a production cluster is the [ClusterWordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/native/cluster_word_count_topology.rb)
 
-- genererate the `target/cluster-topology.jar`
+- genererate the `target/cluster-topology.jar` and include the `examples/` directory.
 
 ``` sh
 $ redstorm jar examples
@@ -100,14 +100,14 @@ $ redstorm jar examples
 - submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
 
 ``` sh
-storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher ckuster examples/simple/word_count_topology.rb
+$ storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher cluster examples/simple/word_count_topology.rb
 ```
 
 Basically you must follow the [Storm instructions](https://github.com/nathanmarz/storm/wiki) to [setup a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster) and [submit your topology to the cluster](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
 
 ## DSL usage
 
-Your project can all be included in a single file containing all spouts, bolts and topology classes or each classes can be in its own file, your choice. The project contains [many examples](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple) for the *simple* DSL.
+Your project can be created in a single file containing all spouts, bolts and topology classes or each classes can be in its own file, your choice. There are [many examples](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple) for the *simple* DSL.
 
 The DSL uses a **callback metaphor** to attach code to the topology/spout/bolt execution contexts using `on_*` DSL constructs (ex.: on_submit, on_send, ...). When using `on_*` you can attach you code in 3 different ways:
 
@@ -139,7 +139,9 @@ def my_method(tuple)
 end
 ```
 
-### topology DSL
+The [example SplitSentenceBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/split_sentence_bolt.rb) shows the 3 different coding style.
+
+### Topology DSL
 
 Normally Storm topology components are assigned and referenced using numeric ids. In the SimpleTopology DSL **ids are optional**. By default the DSL will use the component class name as an implicit symbolic id and bolt source ids can use these implicit ids. The DSL will automatically resolve and assign numeric ids upon topology submission. If two components are of the same class, creating a conflict, then the id can be explicitly defined using either a numeric value, a symbol or a string. Numeric values will be used as-is at topology submission while symbols and strings will be resolved and assigned a numeric id.
 
@@ -242,7 +244,14 @@ on_submit do |env|
 end
 ```
 
-### spout DSL
+#### Examples
+
+- [ExclamationTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/exclamation_topology.rb)
+- [ExclamationTopology2](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/exclamation_topology2.rb)
+- [WordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/word_count_topology.rb)
+- [RedisWordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/redis_word_count_topology.rb)
+
+### Spout DSL
 
 ```ruby
 require 'red_storm'
@@ -349,7 +358,12 @@ end
 
 `on_fail` relates to the Java spout `fail` method. 
 
-### bolt DSL
+#### Examples
+
+- [RandomSentenceSpout](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/random_sentence_spout.rb)
+- [RedisWordSpout](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/redis_word_count_topology.rb)
+
+### Bolt DSL
 
 ```ruby
 require 'red_storm'
@@ -379,7 +393,7 @@ on_receive options do
 end
 ```
 
-`on_receive` relates to the Java bolt `execute` method and is called upon tuple reception by storm. When using auto-emit, the block return value will be auto emited. A single value return will be emited as a single-field tuple. An array of values `[a, b]` will be emited as a multiple-fields tuple. An array of arrays `[[a, b], [c, d]]` will be emited as multiple-fields multiple tuples. When not using auto-emit, the `unanchored_emit(value, ...)` and `anchored_emit(tuple, value, ...)` method can be used to emit a single tuple. When using auto-anchor (disabled by default) the sent tuples will be anchored to the received tuple. When using auto-ack (disabled by default) the received tuple will be ack'ed after emitting the return value. When not using auto-ack, the `ack(tuple)` method can be used to ack the tuple. 
+`on_receive` relates to the Java bolt `execute` method and is called upon tuple reception by Storm. When using auto-emit, the block return value will be auto emited. A single value return will be emited as a single-field tuple. An array of values `[a, b]` will be emited as a multiple-fields tuple. An array of arrays `[[a, b], [c, d]]` will be emited as multiple-fields multiple tuples. When not using auto-emit, the `unanchored_emit(value, ...)` and `anchored_emit(tuple, value, ...)` method can be used to emit a single tuple. When using auto-anchor (disabled by default) the sent tuples will be anchored to the received tuple. When using auto-ack (disabled by default) the received tuple will be ack'ed after emitting the return value. When not using auto-ack, the `ack(tuple)` method can be used to ack the tuple. 
 
 Note that setting auto-ack and auto-anchor is possible **only** when auto-emit is enabled.
 
@@ -408,10 +422,16 @@ end
 
 `on_close` relates to the Java bolt `cleanup` method. 
 
-## author
+#### Examples
+
+- [ExclamationBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/exclamation_bolt.rb)
+- [SplitSentenceBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/split_sentence_bolt.rb)
+- [WordCountBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/word_count_bolt.rb)
+
+## Author
 Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][needium], [colin.surprenant@gmail.com][gmail], [http://github.com/colinsurprenant][github]
 
-## license
+## License
 Apache License, Version 2.0. See the LICENSE.md file.
 
 [needium]: colin.surprenant@needium.com

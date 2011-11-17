@@ -11,7 +11,7 @@ class ExclamationTopology < RedStorm::SimpleTopology
     source TestWordSpout, :shuffle
   end
   
-  bolt ExclamationBolt, :id => :exclamation_bolt2, :parallelism => 2 do
+  bolt ExclamationBolt, :id => :ignore, :parallelism => 2 do
     source ExclamationBolt, :shuffle
   end
 

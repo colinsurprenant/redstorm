@@ -35,6 +35,8 @@ $ redstorm install
 
 The `install` command will install all Java jars dependencies using [ruby-maven][ruby-maven] in `target/dependency` and generate & compile the Java bindings in `target/classes`
 
+***DON'T PANIC*** it's Maven. The first time you run `$ redstorm install` Maven will take a few minutes resolving dependencies and in the end will download and install the dependency jar files.
+
 ### Run in local mode
 
 Create a topology class. The *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
@@ -79,7 +81,7 @@ $ redstorm local examples/simple/exclamation_topology2.rb
 $ redstorm local examples/simple/word_count_topology.rb
 ```
 
-This next example requires the use of a [Redis][redis] server on `localhost:6379`
+This next example requires the use of the [Redis Gem](https://github.com/ezmobius/redis-rb) and a [Redis][redis] server runnig on `localhost:6379`
 
 ``` sh
 $ redstorm local examples/simple/redis_word_count_topology.rb

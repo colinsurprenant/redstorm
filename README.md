@@ -89,7 +89,7 @@ Using `redis-cli`, push words into the `test` list and watch Storm pick them up
 
 ### production cluster
 
-All examples using the **simple DSL** can also run on a productions cluster. The only **native** example compatible with a production cluster is `examples/native/cluster_word_count_topology.rb`
+All examples using the **simple DSL** can also run on a productions cluster. The only **native** example compatible with a production cluster is <a href='https://github.com/colinsurprenant/redstorm/tree/master/examples/native/cluster_word_count_topology.rb'>examples/native/cluster_word_count_topology.rb</a>
 
 - genererate the `target/cluster-topology.jar`
 
@@ -107,13 +107,45 @@ Basically you must follow the [Storm instructions](https://github.com/nathanmarz
 
 ## DSL usage
 
-Your project can all be included in a single file containing all spouts, bolts and topology classes or each classes can be in its own file, your choice.
+Your project can all be included in a single file containing all spouts, bolts and topology classes or each classes can be in its own file, your choice. The project contains [many examples](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple) for the *simple* DSL.
+
+The DSL uses a **callback metaphor** to attach code to the topology/spout/bolt execution contexts using `on_*` DSL constructs (ex.: on_submit, on_send, ...). When using `on_*` you can attach you code in 3 different ways:
+
+- using a code block
+
+```ruby
+on_receive (:ack => true, :anchor => true) {|tuple| do_something_with(tuple)}
+
+on_receive :ack => true, :anchor => true do |tuple| 
+  do_something_with(tuple)
+end
+```
+
+- defining the corresponding method
+
+```ruby
+on_receive :ack => true, :anchor => true 
+def on_receive(tuple)
+  do_something_with(tuple)
+end
+```
+
+- defining an arbitrary method
+
+```ruby
+on_receive :my_method, :ack => true, :anchor => true 
+def my_method(tuple)
+  do_something_with(tuple)
+end
+```
 
 ### topology DSL
 
-Normally Storm topology components are assigned and referenced using numeric ids. In the SimpleTopology DSL **ids are optional**. By default the DSL will use the component class name as an implicit symbolic id and bolt source ids can use these implicit ids. The DSL will automatically resolve and assign numeric ids upon topology submission. If two components are of the same class, creating a conflict, then the id can be explicitely defined using either a numeric value, a symbol or a string. Numeric values will be used as-is at the submission, symbols and strings will be resolved and assigned a numeric id at the submission.
+Normally Storm topology components are assigned and referenced using numeric ids. In the SimpleTopology DSL **ids are optional**. By default the DSL will use the component class name as an implicit symbolic id and bolt source ids can use these implicit ids. The DSL will automatically resolve and assign numeric ids upon topology submission. If two components are of the same class, creating a conflict, then the id can be explicitly defined using either a numeric value, a symbol or a string. Numeric values will be used as-is at topology submission while symbols and strings will be resolved and assigned a numeric id.
 
-``` ruby
+```ruby
+require 'red_storm'
+
 class MyTopology < RedStorm::SimpleTopology
   
   spout spout_class, options 
@@ -136,7 +168,7 @@ end
 
 #### spout statement
 
-```
+```ruby
 spout spout_class, options
 ```
 
@@ -147,7 +179,7 @@ spout spout_class, options
 
 #### bolt statement
 
-```
+```ruby
 bolt bolt_class, options do
   source source_id, grouping
   ...
@@ -160,7 +192,7 @@ end
   - `:parallelism` — bolt parallelism (**default** is 1)
 - `source_id` — source id reference. can be the source class name if unique or the explicit id if defined
 - `grouping`
-  - `:fields => ["field", ...]` — fieldsGrouping for the given fields
+  - `:fields => ["field", ...]` — fieldsGrouping using fields on the source_id
   - `:shuffle` —  shuffleGrouping on the source_id
   - `:global` — globalGrouping on the source_id
   - `:none` — noneGrouping on the source_id
@@ -169,7 +201,7 @@ end
 
 #### configure statement
 
-```
+```ruby
 configure topology_name do |env|
   configuration_field value
   ...
@@ -180,7 +212,7 @@ The `configure` statement is **optional**.
 
 - `topology_name` — alternate topology name (**default** is topology class name)
 - `env` — is set to `:local` or `:cluster` for you to set enviroment specific configurations
-- `config_attribute` — the Storm Config attribute name. See Storm for complete list
+- `config_attribute` — the Storm Config attribute name. See Storm for complete list. The attribute name correspond to the Java setter method, without the "set" prefix and the suffix converted from CamelCase to underscore. Ex.: `setMaxTaskParallelism` is `:max_task_parallelism`.
   - `:debug`
   - `:max_task_parallelism` 
   - `:num_workers`
@@ -189,7 +221,7 @@ The `configure` statement is **optional**.
 
 #### on_submit statement
 
-```
+```ruby
 on_submit do |env|
   ...
 end
@@ -199,9 +231,22 @@ The `on_submit` statement is **optional**. Use it to execute code after the topo
 
 - `env` — is set to `:local` or `:cluster`
 
+For example, you can use `on_submit` to shutdown the LocalCluster after some time. The LocalCluster instance is available usign the `cluster` method. 
+
+```ruby
+on_submit do |env|
+  if env == :local
+    sleep(5)
+    cluster.shutdown
+  end
+end
+```
+
 ### spout DSL
 
-```
+```ruby
+require 'red_storm'
+
 class MySpout < RedStorm::SimpleSpout
   set spout_attribute => value
   ...
@@ -220,11 +265,11 @@ class MySpout < RedStorm::SimpleSpout
     ...
   end
 
-  on_ack do
+  on_ack do |msg_id|
     ...
   end
 
-  on_fail do
+  on_fail do |msg_id|
     ...
   end
 end
@@ -232,7 +277,7 @@ end
 
 #### set statement
 
-```
+```ruby
 set spout_attribute => value
 ```
 
@@ -243,7 +288,7 @@ The `set` statement is **optional**. Use it to set spout specific attributes.
 
 #### output_fields statement
 
-```
+```ruby
 output_fields :field, ...
 ```
 
@@ -253,19 +298,115 @@ Define the output fields for this spout.
 
 #### on_send statement
 
-```
+```ruby
 on_send options do
   ...
 end
 ```
 
-`on_send` is called periodically by storm to allow the spout to output tuples. When using auto-emit, the block return value will be auto emited. A single value return will be emited as a single-field tuple. An array of values `[a, b]` will be emited as a multiple-fields tuple. An array of arrays `[[a, b], [c, d]]` will be emited as multiple-fields multiple tuples. Array of arrays can be used for single-field tuple too `[[a]]`. When not using auto-emit, the `emit(value, ...)` method can be used to emit a single tuple.
+`on_send` relates to the Java spout `nextTuple` method and is called periodically by storm to allow the spout to output a tuple. When using auto-emit (default), the block return value will be auto emited. A single value return will be emited as a single-field tuple. An array of values `[a, b]` will be emited as a multiple-fields tuple. Normally a spout [should only output a single tuple per on_send invocation](https://groups.google.com/forum/#!topic/storm-user/SGwih7vPiDE/discussion).
 
 - `:options`
   - `:emit` — set to `false` to disable auto-emit (**default** is `true`)
 
+#### on_init statement
+
+```ruby
+on_init do
+  ...
+end
+```
+
+`on_init` relates to the Java spout `open` method. When `on_init` is called, the `config`, `context` and `collector` are set to return the Java spout config `Map`, `TopologyContext` and `SpoutOutputCollector`.
+
+#### on_close statement
+
+```ruby
+on_close do
+  ...
+end
+```
+
+`on_close` relates to the Java spout `close` method. 
+
+#### on_ack statement
+
+```ruby
+on_ack do |msg_id|
+  ...
+end
+```
+
+`on_ack` relates to the Java spout `ack` method. 
+
+#### on_fail statement
+
+```ruby
+on_fail do |msg_id|
+  ...
+end
+```
+
+`on_fail` relates to the Java spout `fail` method. 
 
 ### bolt DSL
+
+```ruby
+require 'red_storm'
+
+class MyBolt < RedStorm::SimpleBolt
+  output_fields :field, ...
+
+  on_receive options do
+    ...
+  end
+
+  on_init do
+    ...
+  end
+
+  on_close do
+    ...
+  end
+end
+```
+
+#### on_receive statement
+
+```ruby
+on_receive options do
+  ...
+end
+```
+
+`on_receive` relates to the Java bolt `execute` method and is called upon tuple reception by storm. When using auto-emit, the block return value will be auto emited. A single value return will be emited as a single-field tuple. An array of values `[a, b]` will be emited as a multiple-fields tuple. An array of arrays `[[a, b], [c, d]]` will be emited as multiple-fields multiple tuples. When not using auto-emit, the `unanchored_emit(value, ...)` and `anchored_emit(tuple, value, ...)` method can be used to emit a single tuple. When using auto-anchor (disabled by default) the sent tuples will be anchored to the received tuple. When using auto-ack (disabled by default) the received tuple will be ack'ed after emitting the return value. When not using auto-ack, the `ack(tuple)` method can be used to ack the tuple. 
+
+Note that setting auto-ack and auto-anchor is possible **only** when auto-emit is enabled.
+
+- `:options`
+  - `:emit` — set to `false` to disable auto-emit (**default** is `true`)
+  - `:ack`  — set to `true` to enable auto-ack (**default** is `false`)
+  - `:anchor`  — set to `true` to enable auto-anchor (**default** is `false`)
+
+#### on_init statement
+
+```ruby
+on_init do
+  ...
+end
+```
+
+`on_init` relates to the Java bolt `prepare` method. When `on_init` is called, the `config`, `context` and `collector` are set to return the Java spout config `Map`, `TopologyContext` and `SpoutOutputCollector`.
+
+#### on_close statement
+
+```ruby
+on_close do
+  ...
+end
+```
+
+`on_close` relates to the Java bolt `cleanup` method. 
 
 ## author
 Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][needium], [colin.surprenant@gmail.com][gmail], [http://github.com/colinsurprenant][github]

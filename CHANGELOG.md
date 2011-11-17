@@ -5,4 +5,8 @@
 - issue #1 cannot find redstorm gem when using rbenv
 
 # 0.2.0, 11-16-2011
-- simple DSL
+- issue #2 redstorm examples fails when directory examples already exists
+- new *simple* DSL
+- examples using simple DSL
+- redstorm command usage syntax change
+- more doc in README

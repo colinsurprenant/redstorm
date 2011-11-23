@@ -81,9 +81,6 @@ task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
     fileset :dir => TARGET_GEMS_DIR
-    fileset :dir => RedStorm::REDSTORM_HOME do
-      include :name => "examples/**/*"
-    end
     fileset :dir => JRUBY_SRC_DIR do
       exclude :name => "tasks/**"
     end

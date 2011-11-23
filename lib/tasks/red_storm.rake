@@ -15,6 +15,7 @@ TARGET_SRC_DIR = "#{TARGET_DIR}/src"
 TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"  
 TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
 TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
+TARGET_GEMS_DIR = "#{TARGET_DIR}/gems"
 TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
 
 JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
@@ -42,6 +43,7 @@ task :setup do
   ant.mkdir :dir => TARGET_DIR 
   ant.mkdir :dir => TARGET_CLASSES_DIR 
   ant.mkdir :dir => TARGET_SRC_DIR
+  ant.mkdir :dir => TARGET_GEMS_DIR
   ant.path :id => 'classpath' do  
     fileset :dir => TARGET_DEPENDENCY_DIR  
     fileset :dir => TARGET_CLASSES_DIR  
@@ -60,6 +62,7 @@ task :devjar => [:unpack, :clean_jar] do
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
+    fileset :dir => TARGET_GEMS_DIR
     fileset :dir => RedStorm::REDSTORM_HOME do
       include :name => "examples/**/*"
     end
@@ -77,6 +80,7 @@ task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
+    fileset :dir => TARGET_GEMS_DIR
     fileset :dir => RedStorm::REDSTORM_HOME do
       include :name => "examples/**/*"
     end

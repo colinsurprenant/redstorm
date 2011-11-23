@@ -1,3 +1,5 @@
+require 'rubygems'
+
 module RedStorm
 
   class SimpleSpout

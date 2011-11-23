@@ -504,10 +504,10 @@ $ rake build
 $ bin/redstorm local path/to/topology_class.rb
 ```
 
-- generate remote cluster topology jar into `target/cluster-topology.jar`
+- generate remote cluster topology jar into `target/cluster-topology.jar`, including the `examples/` directory.
 
 ```sh
-$ rake devjar
+$ rake jar['examples']
 ```
 
 ## Author

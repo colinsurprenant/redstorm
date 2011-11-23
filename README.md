@@ -1,12 +1,13 @@
-# RedStorm v0.2.0 - JRuby on Storm
+# RedStorm v0.2.1 - JRuby on Storm
 
 RedStorm provides the JRuby integration for the [Storm][storm] distributed realtime computation system.
 
 ## Changes from 0.1.x
 
-- This release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopology, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See [examples/simple](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple).
-- Use the same SimpleTopology class for local development cluster or remote production cluster.
-- The `redstorm` command has a new syntax.
+- this release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopology, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See [examples/simple](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple).
+- use the same SimpleTopology class for local development cluster or remote production cluster.
+- the `redstorm` command has a new syntax.
+- gems support in production cluster
 
 ## Dependencies
 
@@ -27,7 +28,7 @@ $ gem install redstorm
 
 ### Initial setup
 
-Install RedStom dependencies; from your project root directory execute:
+- install RedStom dependencies; from your project root directory execute:
 
 ``` sh
 $ redstorm install
@@ -37,9 +38,21 @@ The `install` command will install all Java jars dependencies using [ruby-maven]
 
 ***DON'T PANIC*** it's Maven. The first time you run `$ redstorm install` Maven will take a few minutes resolving dependencies and in the end will download and install the dependency jar files.
 
-### Run in local mode
+- create a topology class. The *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
 
-Create a topology class. The *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
+### Gems
+
+Until this is better integrated, you can use **gems** in local mode and on a production cluster:
+
+- **local mode**: simply install your gems the usual way, they will be picked up when run in local mode.
+
+- **production cluster**: install your gem in the `target/gems` folder using:
+
+```sh
+gem install <the gem> --install-dir target/gems/ --no-ri --no-rdoc
+```
+
+### Run in local mode
 
 ``` sh
 $ redstorm local <path/to/topology_class_file_name.rb>
@@ -81,7 +94,7 @@ $ redstorm local examples/simple/exclamation_topology2.rb
 $ redstorm local examples/simple/word_count_topology.rb
 ```
 
-This next example requires the use of the [Redis Gem](https://github.com/ezmobius/redis-rb) and a [Redis][redis] server runnig on `localhost:6379`
+This next example requires the use of the [Redis Gem](https://github.com/ezmobius/redis-rb) and a [Redis][redis] server running on `localhost:6379`
 
 ``` sh
 $ redstorm local examples/simple/redis_word_count_topology.rb
@@ -104,6 +117,22 @@ $ redstorm jar examples
 ``` sh
 $ storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher cluster examples/simple/word_count_topology.rb
 ```
+
+- to run `examples/simple/redis_word_count_topology.rb` you need a [Redis][redis] server running on `localhost:6379` and the Redis gem in `target/gems` using:
+
+```sh
+gem install redis --install-dir target/gems/ --no-ri --no-rdoc
+```
+
+- generate jar and submit:
+
+``` sh
+$ redstorm jar examples
+$ storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher cluster examples/simple/redis_word_count_topology.rb
+```
+
+- using `redis-cli`, push words into the `test` list and watch Storm pick them up
+
 
 Basically you must follow the [Storm instructions](https://github.com/nathanmarz/storm/wiki) to [setup a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster) and [submit your topology to the cluster](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
 

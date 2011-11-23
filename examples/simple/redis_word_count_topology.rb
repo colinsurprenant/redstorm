@@ -1,3 +1,4 @@
+require 'rubygems'
 require 'redis'
 require 'thread'
 require 'red_storm'

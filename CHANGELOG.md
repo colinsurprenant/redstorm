@@ -10,3 +10,6 @@
 - examples using simple DSL
 - redstorm command usage syntax change
 - more doc in README
+
+# 0.2.1, 11-23-2011
+- gems support in production cluster

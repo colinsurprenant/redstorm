@@ -4,7 +4,7 @@
 
   <groupId>redstorm</groupId>
   <artifactId>redstorm</artifactId>
-  <version>0.2.1</version>
+  <version>0.3.0</version>
   <name>RedStorm JRuby on Storm</name>
 
   <properties>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>storm</groupId>
       <artifactId>storm</artifactId>
-      <version>0.5.4</version>
+      <version>0.6.0</version>
     </dependency>
   
     <dependency>

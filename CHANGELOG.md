@@ -13,3 +13,6 @@
 
 # 0.2.1, 11-23-2011
 - gems support in production cluster
+
+# 0.3.0, 12-08-2011
+- support Storm 0.6.0

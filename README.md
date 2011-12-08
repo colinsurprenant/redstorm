@@ -1,17 +1,10 @@
-# RedStorm v0.2.1 - JRuby on Storm
+# RedStorm v0.3.0 - JRuby on Storm
 
 RedStorm provides the JRuby integration for the [Storm][storm] distributed realtime computation system.
 
-## Changes from 0.1.x
-
-- this release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopology, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See [examples/simple](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple).
-- use the same SimpleTopology class for local development cluster or remote production cluster.
-- the `redstorm` command has a new syntax.
-- gems support in production cluster
-
 ## Dependencies
 
-This has been tested on OSX 10.6.8 and Linux 10.04 using Storm 0.5.4 and JRuby 1.6.5
+This has been tested on OSX 10.6.8 and Linux 10.04 using Storm 0.6.0 and JRuby 1.6.5
 
 ## Installation
 ``` sh

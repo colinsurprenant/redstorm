@@ -7,9 +7,9 @@ class LocalExclamationTopology
   def start(base_class_path, env)
     builder = TopologyBuilder.new
     
-    builder.setSpout(1, TestWordSpout.new, 10)     
-    builder.setBolt(2, JRubyBolt.new(base_class_path, "ExclamationBolt"), 3).shuffleGrouping(1)
-    builder.setBolt(3, JRubyBolt.new(base_class_path, "ExclamationBolt"), 2).shuffleGrouping(2)
+    builder.setSpout('1', TestWordSpout.new, 10)     
+    builder.setBolt('2', JRubyBolt.new(base_class_path, "ExclamationBolt"), 3).shuffleGrouping('1')
+    builder.setBolt('3', JRubyBolt.new(base_class_path, "ExclamationBolt"), 2).shuffleGrouping('2')
             
     conf = Config.new
     conf.setDebug(true)

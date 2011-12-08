@@ -8,11 +8,11 @@ module RedStorm
 
     class ComponentDefinition
       attr_reader :clazz, :parallelism
-      attr_accessor :id
+      attr_accessor :id # ids are forced to string
 
       def initialize(component_class, id, parallelism)
         @clazz = component_class
-        @id = id
+        @id = id.to_s
         @parallelism = parallelism
       end
     end
@@ -28,7 +28,7 @@ module RedStorm
       end
 
       def source(source_id, grouping)
-        @sources << [source_id.is_a?(Class) ? SimpleTopology.underscore(source_id) : source_id, grouping.is_a?(Hash) ? grouping : {grouping => nil}]
+        @sources << [source_id.is_a?(Class) ? SimpleTopology.underscore(source_id) : source_id.to_s, grouping.is_a?(Hash) ? grouping : {grouping => nil}]
       end
 
       def define_grouping(declarer)
@@ -131,33 +131,44 @@ module RedStorm
     private
 
     def self.resolve_ids!(components)
-      next_numeric_id = 1
-      resolved_names = {}
-
-      numeric_components, symbolic_components = components.partition{|c| c.id.is_a?(Fixnum)}
-      numeric_ids = numeric_components.map(&:id)
-
-      # assign numeric ids to symbolic ids
-      symbolic_components.each do |component|
-        id = component.id.to_s
-        raise("duplicate symbolic id in #{component.clazz.name} on id=#{id}") if resolved_names.has_key?(id)
-        next_numeric_id += 1 while numeric_ids.include?(next_numeric_id)
-        numeric_ids << next_numeric_id
-        resolved_names[id] = next_numeric_id
-      end
-
-      # reassign numeric ids to all components
-      components.each do |component|
-        unless component.id.is_a?(Fixnum)
-          component.id = resolved_names[component.id.to_s] || raise("cannot resolve #{component.clazz.name} id=#{component.id.to_s}")
-        end
+      # verify duplicate implicit ids
+      ids = components.map(&:id)
+      components.reverse.each do |component|
+        raise("duplicate id in #{component.clazz.name} on id=#{component.id}") if ids.select{|id| id == component.id}.size > 1
         if component.respond_to?(:sources)
-          component.sources.map! do |source_id, grouping|
-            id = source_id.is_a?(Fixnum) ? source_id : resolved_names[source_id.to_s] || raise("cannot resolve #{component.clazz.name} source id=#{source_id.to_s}")
-            [id, grouping]
-          end
+          component.sources.each{|source_id, grouping| raise("cannot resolve #{component.clazz.name} source id=#{source_id}") unless ids.include?(source_id)}
         end
       end
+
+
+      # next_numeric_id = 1
+      # resolved_names = {}
+
+
+      # numeric_components, symbolic_components = components.partition{|c| c.id.is_a?(Fixnum) || c.id.to_s =~ /^\d+$/ }
+      # numeric_ids = numeric_components.map(&:id).map(&:to_i)
+
+      # symbolic_components.each do |component|
+      #   id = component.id.to_s
+      #   raise("duplicate symbolic id in #{component.clazz.name} on id=#{id}") if resolved_names.has_key?(id)
+      #   # next_numeric_id += 1 while numeric_ids.include?(next_numeric_id)
+      #   # numeric_ids << next_numeric_id
+      #   # resolved_names[id] = next_numeric_id
+      #   resolved_names[id] = true
+      # end
+
+      # # reassign numeric ids to all components
+      # components.each do |component|
+      #   unless component.id.is_a?(Fixnum)
+      #     component.id = resolved_names[component.id.to_s] || raise("cannot resolve #{component.clazz.name} id=#{component.id.to_s}")
+      #   end
+      #   if component.respond_to?(:sources)
+      #     component.sources.map! do |source_id, grouping|
+      #       id = source_id.is_a?(Fixnum) ? source_id : resolved_names[source_id.to_s] || raise("cannot resolve #{component.clazz.name} source id=#{source_id.to_s}")
+      #       [id, grouping]
+      #     end
+      #   end
+      # end
     end
 
     def self.spouts

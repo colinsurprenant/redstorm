@@ -219,8 +219,8 @@ describe RedStorm::SimpleTopology do
       RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1").and_return(jruby_spout1)
       RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass2").and_return(jruby_spout2)
 
-      builder.should_receive("setSpout").with(1, jruby_spout1, 1)
-      builder.should_receive("setSpout").with(2, jruby_spout2, 1)
+      builder.should_receive("setSpout").with('spout_class1', jruby_spout1, 1)
+      builder.should_receive("setSpout").with('spout_class2', jruby_spout2, 1)
       configurator.should_receive(:config).and_return("config")
       builder.should_receive(:createTopology).and_return("topology")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
@@ -265,8 +265,8 @@ describe RedStorm::SimpleTopology do
       bolt_definition2.should_receive(:parallelism).and_return(3)
       bolt_definition1.should_receive(:id).any_number_of_times.and_return("id1")
       bolt_definition2.should_receive(:id).any_number_of_times.and_return("id2")
-      bolt_definition1.should_receive(:id=).with(1)
-      bolt_definition2.should_receive(:id=).with(2)
+      # bolt_definition1.should_receive(:id=).with('1')
+      # bolt_definition2.should_receive(:id=).with('2')
 
       configurator.should_receive(:config).and_return("config")
       builder.should_receive(:createTopology).and_return("topology")
@@ -282,11 +282,14 @@ describe RedStorm::SimpleTopology do
         builder = mock(RedStorm::TopologyBuilder)
         configurator = mock(RedStorm::SimpleTopology::Configurator)
         jruby_bolt = mock(RedStorm::JRubyBolt)
+        jruby_spout = mock(RedStorm::JRubySpout)
         @declarer = mock("InputDeclarer")
         RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
         RedStorm::SimpleTopology::Configurator.should_receive(:new).and_return(configurator)
         RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1").and_return(jruby_bolt)
-        builder.should_receive("setBolt").with(1, jruby_bolt, 1).and_return(@declarer)
+        RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1").and_return(jruby_spout)
+        builder.should_receive("setBolt").with('bolt_class1', jruby_bolt, 1).and_return(@declarer)
+        builder.should_receive("setSpout").with('1', jruby_spout, 1).and_return(@declarer)
         configurator.should_receive(:config).and_return("config")
         builder.should_receive(:createTopology).and_return("topology")
         RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
@@ -294,68 +297,74 @@ describe RedStorm::SimpleTopology do
 
       it "should support fields" do
         class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
           bolt BoltClass1 do
             source 1, :fields => "f1"
           end
         end
 
         RedStorm::Fields.should_receive(:new).with("f1").and_return("fields")
-        @declarer.should_receive("fieldsGrouping").with(1, "fields")
+        @declarer.should_receive("fieldsGrouping").with('1', "fields")
         Topology1.new.start("base_path", :cluster)
       end
 
       it "should support shuffle" do
         class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
           bolt BoltClass1 do
             source 1, :shuffle
           end
         end
         
-        @declarer.should_receive("shuffleGrouping").with(1)
+        @declarer.should_receive("shuffleGrouping").with('1')
         Topology1.new.start("base_path", :cluster)
       end
 
       it "should support none" do
         class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
           bolt BoltClass1 do
             source 1, :none
           end
         end
         
-        @declarer.should_receive("noneGrouping").with(1)
+        @declarer.should_receive("noneGrouping").with('1')
         Topology1.new.start("base_path", :cluster)
       end
 
       it "should support global" do
         class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
           bolt BoltClass1 do
             source 1, :global
           end
         end
         
-        @declarer.should_receive("globalGrouping").with(1)
+        @declarer.should_receive("globalGrouping").with('1')
         Topology1.new.start("base_path", :cluster)
       end
 
       it "should support all" do
         class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
           bolt BoltClass1 do
             source 1, :all
           end
         end
         
-        @declarer.should_receive("allGrouping").with(1)
+        @declarer.should_receive("allGrouping").with('1')
         Topology1.new.start("base_path", :cluster)
       end
 
       it "should support direct" do
         class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
           bolt BoltClass1 do
             source 1, :direct
           end
         end
         
-        @declarer.should_receive("directGrouping").with(1)
+        @declarer.should_receive("directGrouping").with('1')
         Topology1.new.start("base_path", :cluster)
       end
     end
@@ -401,7 +410,7 @@ describe RedStorm::SimpleTopology do
       topology.cluster.should == cluster
     end
 
-    it "should keep numeric ids" do
+    it "should support explicit numeric ids" do
       class Topology1 < RedStorm::SimpleTopology
         spout SpoutClass1, :id => 1
 
@@ -410,18 +419,12 @@ describe RedStorm::SimpleTopology do
         end
       end
 
-      Topology1.spouts.first.id.should == 1
-      Topology1.bolts.first.id.should == 2
-      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
-
-      Topology1.resolve_ids!(Topology1.spouts + Topology1.bolts)
-
-      Topology1.spouts.first.id.should == 1
-      Topology1.bolts.first.id.should == 2
-      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+      Topology1.spouts.first.id.should == '1'
+      Topology1.bolts.first.id.should == '2'
+      Topology1.bolts.first.sources.first.should == ['1', {:shuffle => nil}]
     end
 
-    it "should resolve explicit symbolic ids" do
+    it "should support explicit string ids" do
       class Topology1 < RedStorm::SimpleTopology
         spout SpoutClass1, :id => "id1"
 
@@ -433,15 +436,9 @@ describe RedStorm::SimpleTopology do
       Topology1.spouts.first.id.should == "id1"
       Topology1.bolts.first.id.should == "id2"
       Topology1.bolts.first.sources.first.should == ["id1", {:shuffle => nil}]
-
-      Topology1.resolve_ids!(Topology1.spouts + Topology1.bolts)
-
-      Topology1.spouts.first.id.should == 1
-      Topology1.bolts.first.id.should == 2
-      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
     end
 
-    it "should resolve implicit string ids" do
+    it "should support implicit string ids" do
       class Topology1 < RedStorm::SimpleTopology
         spout SpoutClass1
 
@@ -453,15 +450,9 @@ describe RedStorm::SimpleTopology do
       Topology1.spouts.first.id.should == "spout_class1"
       Topology1.bolts.first.id.should == "bolt_class1"
       Topology1.bolts.first.sources.first.should == ["spout_class1", {:shuffle => nil}]
-
-      Topology1.resolve_ids!(Topology1.spouts + Topology1.bolts)
-
-      Topology1.spouts.first.id.should == 1
-      Topology1.bolts.first.id.should == 2
-      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
     end
 
-    it "should resolve implicit symbol ids" do
+    it "should support implicit symbol ids" do
       class Topology1 < RedStorm::SimpleTopology
         spout SpoutClass1
 
@@ -472,16 +463,10 @@ describe RedStorm::SimpleTopology do
       
       Topology1.spouts.first.id.should == "spout_class1"
       Topology1.bolts.first.id.should == "bolt_class1"
-      Topology1.bolts.first.sources.first.should == [:spout_class1, {:shuffle => nil}]
-
-      Topology1.resolve_ids!(Topology1.spouts + Topology1.bolts)
-
-      Topology1.spouts.first.id.should == 1
-      Topology1.bolts.first.id.should == 2
-      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
+      Topology1.bolts.first.sources.first.should == ['spout_class1', {:shuffle => nil}]
     end
 
-    it "should resolve implicit class ids" do
+    it "should support implicit class ids" do
       class Topology1 < RedStorm::SimpleTopology
         spout SpoutClass1
 
@@ -493,12 +478,6 @@ describe RedStorm::SimpleTopology do
       Topology1.spouts.first.id.should == "spout_class1"
       Topology1.bolts.first.id.should == "bolt_class1"
       Topology1.bolts.first.sources.first.should == ["spout_class1", {:shuffle => nil}]
-
-      Topology1.resolve_ids!(Topology1.spouts + Topology1.bolts)
-
-      Topology1.spouts.first.id.should == 1
-      Topology1.bolts.first.id.should == 2
-      Topology1.bolts.first.sources.first.should == [1, {:shuffle => nil}]
     end
 
     it "should raise on unresolvable" do
@@ -526,7 +505,7 @@ describe RedStorm::SimpleTopology do
       Topology1.spouts.first.id.should == "spout_class1"
       Topology1.spouts.last.id.should == "spout_class1"
 
-      lambda {Topology1.resolve_ids!(Topology1.spouts)}.should raise_error RuntimeError, "duplicate symbolic id in SpoutClass1 on id=spout_class1"
+      lambda {Topology1.resolve_ids!(Topology1.spouts)}.should raise_error RuntimeError, "duplicate id in SpoutClass1 on id=spout_class1"
     end
 
   end

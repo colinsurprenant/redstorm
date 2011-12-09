@@ -234,7 +234,7 @@ configure topology_name do |env|
 end
 ```
 
-The `configure` statement is **optional**.
+The `configure` statement is **required**.
 
 - `topology_name` — alternate topology name (**default** is topology class name)
 - `env` — is set to `:local` or `:cluster` for you to set enviroment specific configurations

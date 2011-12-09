@@ -41,6 +41,8 @@ class RedisWordSpout
 end
 
 class LocalRedisWordCountTopology
+  RedStorm::Configuration.topology_class = self
+
   def start(base_class_path, env)
     builder = TopologyBuilder.new
     builder.setSpout('1', JRubySpout.new(base_class_path, "RedisWordSpout"), 1)

@@ -18,6 +18,8 @@ end
 # this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt
 
 class LocalExclamationTopology2
+  RedStorm::Configuration.topology_class = self
+
   def start(base_class_path, env)
     builder = TopologyBuilder.new
     

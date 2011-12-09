@@ -1,3 +1,5 @@
+require 'red_storm/configuration'
+
 module RedStorm
 
   class SimpleTopology
@@ -88,6 +90,7 @@ module RedStorm
     end
 
     def self.configure(name = nil, &configure_block)
+      Configuration.topology_class = self
       @topology_name = name if name
       @configure_block = configure_block if block_given?
     end

@@ -24,7 +24,7 @@ java_import 'redstorm.storm.jruby.JRubySpout'
 java_package 'redstorm'
 
 # TopologyLauncher is the application entry point when launching a topology. Basically it will 
-# call require on the specified Ruby topology/project class file path and call its start method
+# call require on the specified Ruby topology class file path and call its start method
 class TopologyLauncher
 
   java_signature 'void main(String[])'
@@ -35,12 +35,12 @@ class TopologyLauncher
     end
     env = args[0].to_sym
     class_path = args[1]
-    clazz = camel_case(class_path.split('/').last.split('.').first)
-
-    puts("RedStorm v#{RedStorm::VERSION} starting topology #{clazz} in #{env.to_s} environment")
 
     require class_path
-    Object.module_eval(clazz).new.start(class_path, env)
+
+    topology_name = RedStorm::Configuration.topology_class.respond_to?(:topology_name) ? "/#{RedStorm::Configuration.topology_class.topology_name}" : ''
+    puts("RedStorm v#{RedStorm::VERSION} starting topology #{RedStorm::Configuration.topology_class.name}#{topology_name} in #{env.to_s} environment")
+    RedStorm::Configuration.topology_class.new.start(class_path, env)
   end
 
   private 

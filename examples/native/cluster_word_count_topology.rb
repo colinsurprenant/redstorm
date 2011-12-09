@@ -3,6 +3,8 @@ require 'examples/native/split_sentence_bolt'
 require 'examples/native/word_count_bolt'
 
 class ClusterWordCountTopology
+  RedStorm::Configuration.topology_class = self
+
   def start(base_class_path, env)
     builder = TopologyBuilder.new
     builder.setSpout('1', JRubySpout.new(base_class_path, "RandomSentenceSpout"), 5)

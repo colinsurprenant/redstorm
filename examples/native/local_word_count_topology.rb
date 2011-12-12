@@ -1,3 +1,4 @@
+require 'lib/red_storm'
 require 'examples/native/random_sentence_spout'
 require 'examples/native/split_sentence_bolt'
 require 'examples/native/word_count_bolt'
@@ -9,16 +10,16 @@ module Examples
 
     def start(base_class_path, env)
       builder = TopologyBuilder.new
-      builder.setSpout('1', JRubySpout.new(base_class_path, "RandomSentenceSpout"), 5)
-      builder.setBolt('2', JRubyBolt.new(base_class_path, "SplitSentenceBolt"), 8).shuffleGrouping('1')
-      builder.setBolt('3', JRubyBolt.new(base_class_path, "WordCountBolt"), 12).fieldsGrouping('2', Fields.new("word"))
+      builder.setSpout('RandomSentenceSpout', JRubySpout.new(base_class_path, "RedStorm::Examples::RandomSentenceSpout"), 5)
+      builder.setBolt('SplitSentenceBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::SplitSentenceBolt"), 8).shuffleGrouping('RandomSentenceSpout')
+      builder.setBolt('WordCountBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::WordCountBolt"), 12).fieldsGrouping('SplitSentenceBolt', Fields.new("word"))
 
       conf = Config.new
       conf.setDebug(true)
       conf.setMaxTaskParallelism(3)
 
       cluster = LocalCluster.new
-      cluster.submitTopology("word-count", conf, builder.createTopology)
+      cluster.submitTopology("word_count", conf, builder.createTopology)
       sleep(5)
       cluster.shutdown
     end

@@ -68,12 +68,12 @@ describe RedStorm::SimpleTopology do
         bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "bolt_class1", 1)
         RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "bolt_class1", 1).and_return(bolt_definition)
         bolt_definition.should_receive(:source).with(1, {:fields => ["f1"]})
-        class TopologyBolt1 < RedStorm::SimpleTopology
+        class Topology1 < RedStorm::SimpleTopology
           bolt BoltClass1 do
             source 1, :fields => ["f1"]
           end
         end
-        TopologyBolt1.bolts.should == [bolt_definition]
+        Topology1.bolts.should == [bolt_definition]
       end
 
       it "should parse single bolt with options" do
@@ -104,6 +104,30 @@ describe RedStorm::SimpleTopology do
           end
         end
         Topology1.bolts.should == [bolt_definition1, bolt_definition2]
+      end
+
+      it "should parse single symbolic fields" do
+        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "bolt_class1", 1)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "bolt_class1", 1).and_return(bolt_definition)
+        bolt_definition.should_receive(:source).with(1, {:fields => :g1})
+        class Topology1 < RedStorm::SimpleTopology
+          bolt BoltClass1 do
+            source 1, :fields => :g1
+          end
+        end
+        Topology1.bolts.should == [bolt_definition]
+      end
+
+      it "should parse symbolic fields array" do
+        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "bolt_class1", 1)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "bolt_class1", 1).and_return(bolt_definition)
+        bolt_definition.should_receive(:source).with(1, {:fields => [:g1, :g2]})
+        class Topology1 < RedStorm::SimpleTopology
+          bolt BoltClass1 do
+            source 1, :fields => [:g1, :g2]
+          end
+        end
+        Topology1.bolts.should == [bolt_definition]
       end
 
     end
@@ -295,7 +319,7 @@ describe RedStorm::SimpleTopology do
         RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
       end
 
-      it "should support fields" do
+      it "should support single string fields" do
         class Topology1 < RedStorm::SimpleTopology
           spout SpoutClass1, :id => 1
           bolt BoltClass1 do
@@ -304,6 +328,45 @@ describe RedStorm::SimpleTopology do
         end
 
         RedStorm::Fields.should_receive(:new).with("f1").and_return("fields")
+        @declarer.should_receive("fieldsGrouping").with('1', "fields")
+        Topology1.new.start("base_path", :cluster)
+      end
+
+      it "should support single symbolic fields" do
+        class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
+          bolt BoltClass1 do
+            source 1, :fields => :s1
+          end
+        end
+
+        RedStorm::Fields.should_receive(:new).with("s1").and_return("fields")
+        @declarer.should_receive("fieldsGrouping").with('1', "fields")
+        Topology1.new.start("base_path", :cluster)
+      end
+
+      it "should support string array fields" do
+        class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
+          bolt BoltClass1 do
+            source 1, :fields => ["f1", "f2"]
+          end
+        end
+
+        RedStorm::Fields.should_receive(:new).with("f1", "f2").and_return("fields")
+        @declarer.should_receive("fieldsGrouping").with('1', "fields")
+        Topology1.new.start("base_path", :cluster)
+      end
+
+      it "should support symbolic array fields" do
+        class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
+          bolt BoltClass1 do
+            source 1, :fields => [:s1, :s2]
+          end
+        end
+
+        RedStorm::Fields.should_receive(:new).with("s1", "s2").and_return("fields")
         @declarer.should_receive("fieldsGrouping").with('1', "fields")
         Topology1.new.start("base_path", :cluster)
       end

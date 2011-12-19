@@ -36,10 +36,10 @@ module RedStorm
       def define_grouping(declarer)
         @sources.each do |source_id, grouping|
           grouper, params = grouping.first
-
+            # declarer.fieldsGrouping(source_id, Fields.new())
           case grouper
           when :fields
-            declarer.fieldsGrouping(source_id, Fields.new(*params))
+            declarer.fieldsGrouping(source_id, Fields.new(*([params].flatten.map(&:to_s))))
           when :global
             declarer.globalGrouping(source_id)
           when :shuffle

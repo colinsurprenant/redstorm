@@ -148,5 +148,5 @@ end
 
 def build_jruby(source_path)
   puts("\n--> Compiling JRuby")
-  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-0.5.3.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
+  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-0.6.0.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
 end

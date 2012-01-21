@@ -27,13 +27,13 @@
     <dependency>
       <groupId>storm</groupId>
       <artifactId>storm</artifactId>
-      <version>0.6.0</version>
+      <version>0.6.2</version>
     </dependency>
   
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-complete</artifactId>
-      <version>1.6.5</version>
+      <version>1.6.5.1</version>
     </dependency>
   </dependencies>
 

@@ -50,7 +50,7 @@
               <artifactId>jruby-complete</artifactId>
               <version>1.6.5</version>
               <type>jar</type>
-              <overWrite>false</overWrite>
+              <overWrite>true</overWrite>
             </artifactItem>
           </artifactItems>
         </configuration>

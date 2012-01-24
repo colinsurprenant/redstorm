@@ -53,6 +53,7 @@
               <overWrite>false</overWrite>
             </artifactItem>
           </artifactItems>
+          <markersDirectory>${markersDirectory}</markersDirectory>
         </configuration>
         <executions>
           <execution>

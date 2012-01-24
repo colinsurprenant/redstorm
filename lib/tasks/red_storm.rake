@@ -15,6 +15,7 @@ TARGET_SRC_DIR = "#{TARGET_DIR}/src"
 TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"  
 TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
 TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
+TARGET_MARKERS_DIR = "#{TARGET_DIR}/dependency-markers"
 TARGET_GEMS_DIR = "#{TARGET_DIR}/gems"
 TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
 
@@ -55,7 +56,7 @@ task :install => [:deps, :build] do
 end
 
 task :unpack do
-  system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR}")
+  system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} -DmarkersDirectory=#{TARGET_MARKERS_DIR}")
 end
 
 task :devjar => [:unpack, :clean_jar] do
@@ -111,7 +112,7 @@ task :examples do
 end
 
 task :deps do
-  system("rmvn dependency:copy-dependencies -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_DIR}")
+  system("rmvn dependency:copy-dependencies -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_DIR} -DmarkersDirectory=#{TARGET_MARKERS_DIR}")
 end
 
 task :build => :setup do

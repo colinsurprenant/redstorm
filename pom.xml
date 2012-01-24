@@ -50,9 +50,10 @@
               <artifactId>jruby-complete</artifactId>
               <version>1.6.5</version>
               <type>jar</type>
-              <overWrite>true</overWrite>
+              <overWrite>false</overWrite>
             </artifactItem>
           </artifactItems>
+          <markersDirectory>${markersDirectory}</markersDirectory>
         </configuration>
         <executions>
           <execution>

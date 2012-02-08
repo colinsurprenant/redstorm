@@ -1,10 +1,10 @@
-# RedStorm v0.3.0 - JRuby on Storm
+# RedStorm v0.4.0 - JRuby on Storm
 
 RedStorm provides the JRuby integration for the [Storm][storm] distributed realtime computation system.
 
 ## Dependencies
 
-This has been tested on OSX 10.6.8 and Linux 10.04 using Storm 0.6.0 and JRuby 1.6.5
+This has been tested on OSX 10.6.8 and Linux 10.04 using Storm 0.6.2 and JRuby 1.6.6
 
 ## Installation
 ``` sh
@@ -456,10 +456,10 @@ end
 
 ### Requirements
 
-- JRuby 1.6.5
-- rake gem
-- ruby-maven gem
-- rspec gem
+- JRuby 1.6.6
+- rake gem ~> 0.9.2.2
+- ruby-maven gem ~> 3.0.3.0.28.5
+- rspec gem ~> 2.8.0
 
 ### Contribute
 

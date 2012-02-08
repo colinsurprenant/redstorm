@@ -4,7 +4,7 @@
 
   <groupId>redstorm</groupId>
   <artifactId>redstorm</artifactId>
-  <version>0.3.0</version>
+  <version>0.4.0</version>
   <name>RedStorm JRuby on Storm</name>
 
   <properties>
@@ -27,13 +27,13 @@
     <dependency>
       <groupId>storm</groupId>
       <artifactId>storm</artifactId>
-      <version>0.6.0</version>
+      <version>0.6.2</version>
     </dependency>
   
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-complete</artifactId>
-      <version>1.6.5</version>
+      <version>1.6.6</version>
     </dependency>
   </dependencies>
 
@@ -48,7 +48,7 @@
             <artifactItem>
               <groupId>org.jruby</groupId>
               <artifactId>jruby-complete</artifactId>
-              <version>1.6.5</version>
+              <version>1.6.6</version>
               <type>jar</type>
               <overWrite>false</overWrite>
             </artifactItem>

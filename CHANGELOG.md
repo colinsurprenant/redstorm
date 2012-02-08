@@ -15,4 +15,8 @@
 - gems support in production cluster
 
 # 0.3.0, 12-08-2011
-- support Storm 0.6.0
+- Storm 0.6.0
+
+# 0.4.0, 02-08-2012
+- Storm 0.6.2
+- JRuby 1.6.6

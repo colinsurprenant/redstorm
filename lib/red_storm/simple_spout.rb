@@ -9,6 +9,10 @@ module RedStorm
       self.spout_options.merge!(options)
     end
 
+    def self.log
+      @log ||= Logger.getLogger(self.name)
+    end
+
     def self.output_fields(*fields)
       @fields = fields.map(&:to_s)
     end
@@ -41,6 +45,10 @@ module RedStorm
 
     def emit(*values)
       @collector.emit(Values.new(*values)) 
+    end
+
+    def log
+      self.class.log
     end
 
     # Spout proxy interface

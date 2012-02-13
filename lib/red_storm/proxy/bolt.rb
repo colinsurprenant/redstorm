@@ -8,6 +8,7 @@ java_import 'backtype.storm.tuple.Tuple'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Values'
 java_import 'java.util.Map'
+java_import 'org.apache.log4j.Logger'
 
 java_package 'redstorm.proxy'
 

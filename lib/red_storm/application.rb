@@ -13,15 +13,19 @@ module RedStorm
         if ["install", "examples", "jar"].include?(args[0])
           load(TASKS_FILE)
           Rake::Task[args.shift].invoke(*args)
-        elsif args.size == 2 && ["local"].include?(args[0]) && File.exist?(args[1])
-          load(TASKS_FILE)
-          Rake::Task['launch'].invoke(*args)
-        else
-          usage
+          exit
+        elsif args.size >= 2 && args.include?("local") 
+          args.delete("local")
+          version = args.delete("--1.8") || args.delete("--1.9") || "--1.8"
+          if args.size == 1
+            file = args[0]
+            load(TASKS_FILE)
+            Rake::Task['launch'].invoke("local", version, file)
+            exit
+          end
         end
-      else
-        usage
       end
+      usage
     end
   end
 end

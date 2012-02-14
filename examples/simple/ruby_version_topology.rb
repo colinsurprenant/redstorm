@@ -15,10 +15,10 @@ module RedStorm
             
       configure do |env|
         debug true
-        
+
         # set the JRuby version property for this topology. this will only affect remote cluster execution
         # for local execution use the --1.8|--1.9 switch when launching
-        set("topology.worker.childopts", "-Djruby.compat.version=RUBY1_9")
+        set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
       end
 
       on_submit do |env|

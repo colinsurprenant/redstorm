@@ -72,12 +72,11 @@ module RedStorm
       declarer.declare(Fields.new(self.class.fields))
     end
 
-    # default optional dsl methods/callbacks
+    private
 
+    # default noop optional dsl callbacks
     def on_init; end
     def on_close; end
-
-    private
 
     def self.fields
       @fields ||= []

@@ -92,14 +92,13 @@ module RedStorm
       instance_exec(msg_id, &self.class.on_fail_block)
     end
 
-    # default optional dsl methods/callbacks
+    private
 
+    # default optional noop dsl methods/callbacks
     def on_init; end
     def on_close; end
     def on_ack(msg_id); end
     def on_fail(msg_id); end
-
-    private
 
     def self.fields
       @fields ||= []

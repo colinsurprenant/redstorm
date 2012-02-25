@@ -1,9 +1,11 @@
-require 'rubygems'
+require 'rubygems' # needed for remote cluster exec where TopolyLauncher require rubygems is not called
+require 'red_storm'
+require 'bundler/setup'
+
 require 'redis'
 require 'thread'
-require 'red_storm'
-
 require 'examples/simple/word_count_bolt'
+
 
 module RedStorm
   module Examples

@@ -45,6 +45,8 @@ task :setup do
   ant.mkdir :dir => TARGET_CLASSES_DIR 
   ant.mkdir :dir => TARGET_SRC_DIR
   ant.mkdir :dir => TARGET_GEMS_DIR
+  ant.mkdir :dir => "#{TARGET_GEMS_DIR}/gems"
+  ant.mkdir :dir => "#{TARGET_GEMS_DIR}/bundler"
   ant.path :id => 'classpath' do  
     fileset :dir => TARGET_DEPENDENCY_DIR  
     fileset :dir => TARGET_CLASSES_DIR  
@@ -67,6 +69,10 @@ task :devjar => [:unpack, :clean_jar] do
     fileset :dir => RedStorm::REDSTORM_HOME do
       include :name => "examples/**/*"
     end
+    fileset :dir => RedStorm::REDSTORM_HOME do
+      include :name => "Gemfile"
+      include :name => "Gemfile.lock"
+    end
     fileset :dir => JRUBY_SRC_DIR do
       exclude :name => "tasks/**"
     end
@@ -82,6 +88,10 @@ task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
     fileset :dir => TARGET_GEMS_DIR
+    fileset :dir => CWD do
+      include :name => "Gemfile"
+      include :name => "Gemfile.lock"
+    end
     fileset :dir => JRUBY_SRC_DIR do
       exclude :name => "tasks/**"
     end

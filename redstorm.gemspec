@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency "rubyforge"
 
-  s.add_runtime_dependency "rake", ["~> 0.9.2"]
+  s.add_runtime_dependency "rake", ["~> 0.9.2.2"]
   s.add_runtime_dependency "ruby-maven", ["~> 3.0.3.0.28.5"]
 end
 

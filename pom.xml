@@ -5,7 +5,7 @@
   <groupId>redstorm</groupId>
   <artifactId>redstorm</artifactId>
   <version>0.4.0</version>
-  <name>RedStorm JRuby on Storm</name>
+  <name>RedStorm</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

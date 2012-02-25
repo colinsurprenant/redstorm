@@ -80,6 +80,11 @@ module RedStorm
       end
     end
 
+    def self.log
+      @log ||= Logger.getLogger(self.name)
+    end
+
+
     def self.spout(spout_class, options = {})
       spout_options = {:id => self.underscore(spout_class), :parallelism => DEFAULT_SPOUT_PARALLELISM}.merge(options)
       spout = SpoutDefinition.new(spout_class, spout_options[:id], spout_options[:parallelism])

@@ -10,8 +10,6 @@ java_import 'backtype.storm.tuple.Values'
 java_import 'java.util.Map'
 java_import 'org.apache.log4j.Logger'
 
-java_import 'org.apache.log4j.Logger'
-
 java_package 'redstorm.proxy'
 
 # the Spout class is a proxy to the real spout to avoid having to deal with all the

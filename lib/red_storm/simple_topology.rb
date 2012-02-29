@@ -81,7 +81,7 @@ module RedStorm
     end
 
     def self.log
-      @log ||= Logger.getLogger(self.name)
+      @log ||= org.apache.log4j.Logger.getLogger(self.name)
     end
 
 

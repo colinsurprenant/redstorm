@@ -21,8 +21,6 @@ java_import 'backtype.storm.tuple.Values'
 java_import 'redstorm.storm.jruby.JRubyBolt'
 java_import 'redstorm.storm.jruby.JRubySpout'
 
-java_import 'org.apache.log4j.Logger'
-
 java_package 'redstorm'
 
 # TopologyLauncher is the application entry point when launching a topology. Basically it will 

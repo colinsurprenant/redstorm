@@ -1,3 +1,4 @@
+raise("rubygems must be loaded prior to loading red_storm") unless defined?(Gem)
 
 module RedStorm
   LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
@@ -16,6 +17,12 @@ module RedStorm
     BUNDLE_PATH = "#{TARGET_PATH}/target/gems/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
     GEM_PATH = "#{TARGET_PATH}/target/gems/gems"
   end
+
+  # setup bundler environment
+  ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
+  ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
+  ENV["GEM_PATH"] = RedStorm::GEM_PATH
+  ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"  
 end
 
 require 'red_storm/version'
@@ -25,10 +32,6 @@ require 'red_storm/simple_bolt'
 require 'red_storm/simple_spout'
 require 'red_storm/simple_topology'
 
-ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
-ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
-ENV["GEM_PATH"] = RedStorm::GEM_PATH
-ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
 
 # puts("************************ PWD=#{Dir.pwd}")
 # puts("************************ RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")

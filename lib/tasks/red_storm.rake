@@ -83,7 +83,7 @@ task :devjar => [:unpack, :clean_jar] do
   puts("\nRedStorm generated dev jar file #{TARGET_CLUSTER_JAR}")
 end
 
-task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
+task :jar, [:dirs] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
@@ -96,7 +96,9 @@ task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
       exclude :name => "tasks/**"
     end
     fileset :dir => CWD do
-      include :name => "#{args[:dir]}/**/*"
+      args[:dirs].split(":").each { |dir|
+        include :name => "#{dir}/**/*"
+      }
     end
     manifest do
       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"

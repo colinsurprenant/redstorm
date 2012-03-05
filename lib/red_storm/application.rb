@@ -12,7 +12,7 @@ module RedStorm
       if args.size > 0
         if ["install", "examples", "jar"].include?(args[0])
           load(TASKS_FILE)
-          Rake::Task[args.shift].invoke(*args)
+          Rake::Task[args.shift].invoke(args.join(":"))
         elsif args.size == 2 && ["local"].include?(args[0]) && File.exist?(args[1])
           load(TASKS_FILE)
           Rake::Task['launch'].invoke(*args)

@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'bundler/setup'
+
 load 'lib/tasks/red_storm.rake'
 
 task :default => :spec

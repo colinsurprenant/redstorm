@@ -4,11 +4,11 @@ $:.unshift lib unless $:.include?(lib)
 require 'red_storm/version'
 
 Gem::Specification.new do |s|  
-  s.name        = "redstorm"
+  s.name        = "eqm-redstorm"
   s.version     = RedStorm::VERSION
   s.authors     = ["Colin Surprenant"]
   s.email       = ["colin.surprenant@gmail.com"]
-  s.homepage    = "https://github.com/colinsurprenant/redstorm"
+  s.homepage    = "https://github.com/EqualMedia/redstorm"
   s.summary     = "JRuby on Storm"
   s.description = "JRuby integration & DSL for the Storm distributed realtime computation system"
  
@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
   s.executables   = ['redstorm']
 
   s.add_development_dependency "rubyforge"
+  s.add_development_dependency "rspec"
 
   s.add_runtime_dependency "rake", ["~> 0.9.2"]
   s.add_runtime_dependency "ruby-maven", ["~> 3.0.3.0.28.5"]

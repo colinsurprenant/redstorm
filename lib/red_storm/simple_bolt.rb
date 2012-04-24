@@ -5,6 +5,10 @@ module RedStorm
 
     # DSL class methods
 
+    def self.log
+      @log ||= Logger.getLogger(self.name)
+    end
+
     def self.output_fields(*fields)
       @fields = fields.map(&:to_s)
     end
@@ -26,6 +30,10 @@ module RedStorm
     end
 
     # DSL instance methods
+
+    def log
+      self.class.log
+    end
 
     def unanchored_emit(*values)
       @collector.emit(Values.new(*values)) 
@@ -64,12 +72,11 @@ module RedStorm
       declarer.declare(Fields.new(self.class.fields))
     end
 
-    # default optional dsl methods/callbacks
+    private
 
+    # default noop optional dsl callbacks
     def on_init; end
     def on_close; end
-
-    private
 
     def self.fields
       @fields ||= []

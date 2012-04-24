@@ -11,18 +11,27 @@ describe RedStorm::SimpleBolt do
 
   describe "interface" do
     it "should implement bolt proxy" do
-      spout = RedStorm::SimpleBolt.new
-      spout.should respond_to :execute
-      spout.should respond_to :cleanup
-      spout.should respond_to :prepare
-      spout.should respond_to :declare_output_fields
+      bolt = RedStorm::SimpleBolt.new
+      bolt.should respond_to :execute
+      bolt.should respond_to :cleanup
+      bolt.should respond_to :prepare
+      bolt.should respond_to :declare_output_fields
     end
 
-    it "should implement dsl statement" do
+    it "should implement dsl class statements" do
       RedStorm::SimpleBolt.should respond_to :output_fields
       RedStorm::SimpleBolt.should respond_to :on_init
       RedStorm::SimpleBolt.should respond_to :on_close
       RedStorm::SimpleBolt.should respond_to :on_receive
+      RedStorm::SimpleBolt.should respond_to :log
+    end
+
+    it "should implement dsl instance statements" do
+      bolt = RedStorm::SimpleBolt.new
+      bolt.should respond_to :unanchored_emit
+      bolt.should respond_to :anchored_emit
+      bolt.should respond_to :ack
+      bolt.should respond_to :log
     end
   end
 
@@ -188,7 +197,6 @@ describe RedStorm::SimpleBolt do
           Bolt1.send(:ack?).should be_true
           Bolt1.send(:anchor?).should be_true
         end
-
       end
 
       describe "with default method" do
@@ -240,7 +248,6 @@ describe RedStorm::SimpleBolt do
           Bolt1.send(:ack?).should be_true
           Bolt1.send(:anchor?).should be_true
         end
-
       end
     end
 
@@ -287,6 +294,77 @@ describe RedStorm::SimpleBolt do
         bolt = Bolt1.new
         bolt.should_receive(:test_method)
         bolt.cleanup
+      end
+    end
+
+    # log specs are mostly the same ats in the spout specs. if these are modified, sync with spout
+    describe "log statement" do
+
+      class Logger; end # mock log4j Logger class which does not exists in the specs context
+
+      describe "in class" do
+        it "should proxy to storm log4j logger" do
+          logger = mock(Logger)
+          Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
+          logger.should_receive(:info).with("test")
+
+          class Bolt1 < RedStorm::SimpleBolt
+            log.info("test")
+          end
+        end
+
+        it "should use own class name as logger id" do
+          logger1 = mock(Logger)
+          logger2 = mock(Logger)
+          Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
+          Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
+          logger1.should_receive(:info).with("test1")
+          logger2.should_receive(:info).with("test2")
+
+          class Bolt1 < RedStorm::SimpleBolt
+            log.info("test1")
+          end
+          class Bolt2 < RedStorm::SimpleBolt
+            log.info("test2")
+          end
+        end
+      end
+
+      describe "in instance" do
+        it "should proxy to storm log4j logger" do
+          logger = mock(Logger)
+          Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
+
+          class Bolt1 < RedStorm::SimpleBolt
+            on_init {log.info("test")}
+          end
+
+          logger.should_receive(:info).with("test")
+          bolt = Bolt1.new
+          bolt.prepare(nil, nil, nil)
+        end
+
+        it "should use own class name as logger id" do
+          logger1 = mock(Logger)
+          logger2 = mock(Logger)
+          Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
+          Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
+
+          class Bolt1 < RedStorm::SimpleBolt
+            on_init {log.info("test1")}
+          end
+          class Bolt2 < RedStorm::SimpleBolt
+            on_init {log.info("test2")}
+          end
+
+          logger1.should_receive(:info).with("test1")
+          bolt1 = Bolt1.new
+          bolt1.prepare(nil, nil, nil)
+
+          logger2.should_receive(:info).with("test2")
+          bolt2 = Bolt2.new
+          bolt2.prepare(nil, nil, nil)
+        end
       end
     end
   end

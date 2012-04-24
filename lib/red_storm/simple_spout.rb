@@ -9,6 +9,10 @@ module RedStorm
       self.spout_options.merge!(options)
     end
 
+    def self.log
+      @log ||= Logger.getLogger(self.name)
+    end
+
     def self.output_fields(*fields)
       @fields = fields.map(&:to_s)
     end
@@ -41,6 +45,10 @@ module RedStorm
 
     def emit(*values)
       @collector.emit(Values.new(*values)) 
+    end
+
+    def log
+      self.class.log
     end
 
     # Spout proxy interface
@@ -84,14 +92,13 @@ module RedStorm
       instance_exec(msg_id, &self.class.on_fail_block)
     end
 
-    # default optional dsl methods/callbacks
+    private
 
+    # default optional noop dsl methods/callbacks
     def on_init; end
     def on_close; end
     def on_ack(msg_id); end
     def on_fail(msg_id); end
-
-    private
 
     def self.fields
       @fields ||= []

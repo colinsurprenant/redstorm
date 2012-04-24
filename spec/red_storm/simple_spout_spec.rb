@@ -21,7 +21,7 @@ describe RedStorm::SimpleSpout do
       spout.should respond_to :fail
     end
 
-    it "should implement dsl statement" do
+    it "should implement dsl class statement" do
       RedStorm::SimpleSpout.should respond_to :set
       RedStorm::SimpleSpout.should respond_to :output_fields
       RedStorm::SimpleSpout.should respond_to :on_init
@@ -29,7 +29,15 @@ describe RedStorm::SimpleSpout do
       RedStorm::SimpleSpout.should respond_to :on_send
       RedStorm::SimpleSpout.should respond_to :on_ack
       RedStorm::SimpleSpout.should respond_to :on_fail      
+      RedStorm::SimpleSpout.should respond_to :log      
     end
+
+    it "should implement dsl instance statements" do
+      spout = RedStorm::SimpleSpout.new
+      spout.should respond_to :emit
+      spout.should respond_to :log
+    end
+
   end
 
   describe "dsl" do
@@ -316,6 +324,76 @@ describe RedStorm::SimpleSpout do
       end
     end
 
+    # log specs are mostly the same ats in the bolt specs. if these are modified, sync with bolt
+    describe "log statement" do
+
+      class Logger; end # mock log4j Logger class which does not exists in the specs context
+
+      describe "in class" do
+        it "should proxy to storm log4j logger" do
+          logger = mock(Logger)
+          Logger.should_receive("getLogger").with("Spout1").and_return(logger)
+          logger.should_receive(:info).with("test")
+
+          class Spout1 < RedStorm::SimpleSpout
+            log.info("test")
+          end
+        end
+
+        it "should use own class name as logger id" do
+          logger1 = mock(Logger)
+          logger2 = mock(Logger)
+          Logger.should_receive("getLogger").with("Spout1").and_return(logger1)
+          Logger.should_receive("getLogger").with("Spout2").and_return(logger2)
+          logger1.should_receive(:info).with("test1")
+          logger2.should_receive(:info).with("test2")
+
+          class Spout1 < RedStorm::SimpleSpout
+            log.info("test1")
+          end
+          class Spout2 < RedStorm::SimpleSpout
+            log.info("test2")
+          end
+        end
+      end
+
+      describe "in instance" do
+        it "should proxy to storm log4j logger" do
+          logger = mock(Logger)
+          Logger.should_receive("getLogger").with("Spout1").and_return(logger)
+
+          class Spout1 < RedStorm::SimpleSpout
+            on_init {log.info("test")}
+          end
+
+          logger.should_receive(:info).with("test")
+          spout = Spout1.new
+          spout.open(nil, nil, nil)
+        end
+
+        it "should use own class name as logger id" do
+          logger1 = mock(Logger)
+          logger2 = mock(Logger)
+          Logger.should_receive("getLogger").with("Spout1").and_return(logger1)
+          Logger.should_receive("getLogger").with("Spout2").and_return(logger2)
+
+          class Spout1 < RedStorm::SimpleSpout
+            on_init {log.info("test1")}
+          end
+          class Spout2 < RedStorm::SimpleSpout
+            on_init {log.info("test2")}
+          end
+
+          logger1.should_receive(:info).with("test1")
+          spout1 = Spout1.new
+          spout1.open(nil, nil, nil)
+
+          logger2.should_receive(:info).with("test2")
+          spout2 = Spout2.new
+          spout2.open(nil, nil, nil)
+        end
+      end
+    end
   end
 
   describe "spout" do

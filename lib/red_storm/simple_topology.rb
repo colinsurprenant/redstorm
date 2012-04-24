@@ -64,6 +64,10 @@ module RedStorm
         @config = Config.new
       end
 
+      def set(attribute, value)
+        @config.put(attribute, value)
+      end
+
       def method_missing(sym, *args)
         config_method = "set#{self.class.camel_case(sym)}"
         @config.send(config_method, *args)

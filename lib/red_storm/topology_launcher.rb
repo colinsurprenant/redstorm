@@ -10,7 +10,11 @@ rescue LoadError
   require 'red_storm'
 end
 
-java_import 'backtype.storm.Config'
+# see https://github.com/colinsurprenant/redstorm/issues/7
+module Backtype
+  java_import 'backtype.storm.Config'
+end
+
 java_import 'backtype.storm.LocalCluster'
 java_import 'backtype.storm.StormSubmitter'
 java_import 'backtype.storm.topology.TopologyBuilder'

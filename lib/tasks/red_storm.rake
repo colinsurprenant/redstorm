@@ -93,6 +93,10 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
       include :name => "Gemfile"
       include :name => "Gemfile.lock"
     end
+    fileset :dir => RedStorm::REDSTORM_HOME do
+      include :name => "Gemfile"
+      include :name => "Gemfile.lock"
+    end
     fileset :dir => JRUBY_SRC_DIR do
       exclude :name => "tasks/**"
     end

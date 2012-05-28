@@ -47,6 +47,7 @@ module RedStorm
 
       configure do |env|
         debug true
+        set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
         case env
         when :local
           max_task_parallelism 3

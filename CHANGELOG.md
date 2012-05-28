@@ -20,3 +20,8 @@
 # 0.4.0, 02-08-2012
 - Storm 0.6.2
 - JRuby 1.6.6
+
+# 0.5.0, 05-28-2012
+- JRuby 1.6.7
+- Support for 1.8/1.9 Ruby compatibility mode
+- Bundler support

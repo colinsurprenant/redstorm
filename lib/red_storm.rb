@@ -1,4 +1,6 @@
-raise("rubygems must be loaded prior to loading red_storm") unless defined?(Gem)
+# we depends on rubygems begings loaded at this point for setting up gem/bundle environments
+# explicitely requiring rubygems is required in remote cluster environment
+require 'rubygems'
 
 module RedStorm
   LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
@@ -25,13 +27,15 @@ module RedStorm
   ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
 end
 
+$:.unshift RedStorm::TARGET_PATH
+
+
 require 'red_storm/version'
 require 'red_storm/configuration'
 require 'red_storm/application'
 require 'red_storm/simple_bolt'
 require 'red_storm/simple_spout'
 require 'red_storm/simple_topology'
-
 
 # puts("************************ PWD=#{Dir.pwd}")
 # puts("************************ RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")

@@ -62,29 +62,29 @@ task :unpack do
   system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} -DmarkersDirectory=#{TARGET_MARKERS_DIR}")
 end
 
-task :devjar => [:unpack, :clean_jar] do
-  ant.jar :destfile => TARGET_CLUSTER_JAR do
-    fileset :dir => TARGET_CLASSES_DIR
-    fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-    fileset :dir => TARGET_GEMS_DIR
-    fileset :dir => RedStorm::REDSTORM_HOME do
-      include :name => "examples/**/*"
-    end
-    fileset :dir => RedStorm::REDSTORM_HOME do
-      include :name => "Gemfile"
-      include :name => "Gemfile.lock"
-    end
-    fileset :dir => JRUBY_SRC_DIR do
-      exclude :name => "tasks/**"
-    end
-    manifest do
-      attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
-    end
-  end
-  puts("\nRedStorm generated dev jar file #{TARGET_CLUSTER_JAR}")
-end
+# task :devjar => [:unpack, :clean_jar] do
+#   ant.jar :destfile => TARGET_CLUSTER_JAR do
+#     fileset :dir => TARGET_CLASSES_DIR
+#     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
+#     fileset :dir => TARGET_GEMS_DIR
+#     fileset :dir => RedStorm::REDSTORM_HOME do
+#       include :name => "examples/**/*"
+#     end
+#     fileset :dir => RedStorm::REDSTORM_HOME do
+#       include :name => "Gemfile"
+#       include :name => "Gemfile.lock"
+#     end
+#     fileset :dir => JRUBY_SRC_DIR do
+#       exclude :name => "tasks/**"
+#     end
+#     manifest do
+#       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
+#     end
+#   end
+#   puts("\nRedStorm generated dev jar file #{TARGET_CLUSTER_JAR}")
+# end
 
-task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
+task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
@@ -97,7 +97,7 @@ task :jar, [:dir] => [:unpack, :clean_jar] do |t, args|
       exclude :name => "tasks/**"
     end
     fileset :dir => CWD do
-      include :name => "#{args[:dir]}/**/*"
+      include :name => "#{args[:include_dir]}/**/*"
     end
     manifest do
       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
@@ -122,7 +122,7 @@ task :examples do
   puts("\nRedStorm examples completed. All examples copied in #{DST_EXAMPLES}")
 end
 
-task :deps do
+task :deps => :setup do
   system("rmvn dependency:copy-dependencies -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_DIR} -DmarkersDirectory=#{TARGET_MARKERS_DIR}")
 end
 
@@ -141,7 +141,13 @@ task :build => :setup do
 
   # compile the JRuby proxy classes
   build_java_dir("#{TARGET_SRC_DIR}")
-end 
+end
+
+task :gems => :setup do
+  system("gem install bundler --install-dir target/gems/gems --no-ri --no-rdoc")
+  system("gem install rake --version 0.9.2.2  --install-dir target/gems/gems --no-ri --no-rdoc")
+  system("bundle install --path target/gems/bundler/")
+end
 
 def build_java_dir(source_folder)
   puts("\n--> Compiling Java")

@@ -2,4 +2,4 @@ language: ruby
 rvm:
   - jruby-19mode
 install: jruby --1.9 -S bundle install
-script: jruby --1.9 -S bundle exec rake spec
+script: jruby --1.9 -S rake spec

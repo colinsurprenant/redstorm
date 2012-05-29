@@ -187,12 +187,14 @@ describe RedStorm::SimpleTopology do
 
   describe "topology proxy" do
 
+    # mock Storm imported classes
+    module Backtype; end
     class RedStorm::TopologyBuilder; end
     class RedStorm::LocalCluster; end
     class RedStorm::StormSubmitter; end
     class RedStorm::JRubySpout; end
     class RedStorm::JRubyBolt; end
-    class RedStorm::Config; end
+    class Backtype::Config; end
     class RedStorm::Fields; end
 
     it "should start in :local env" do
@@ -440,8 +442,8 @@ describe RedStorm::SimpleTopology do
         end
       end
 
-      config = mock(RedStorm::Config)
-      RedStorm::Config.should_receive(:new).and_return(config)
+      config = mock(Backtype::Config)
+      Backtype::Config.should_receive(:new).and_return(config)
       config.should_receive(:setDebug).with(true)
       config.should_receive(:setMaxTaskParallelism).with(3)
 

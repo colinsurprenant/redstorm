@@ -18,7 +18,7 @@ module RedStorm
 
         if ["install", "examples", "jar", "gems", "deps", "build"].include?(args[0])
           load(TASKS_FILE)
-          Rake::Task[args.shift].invoke(*args)
+          Rake::Task[args.shift].invoke(args.join(":"))
           exit
         elsif args.size >= 2 && args.include?("local") 
           args.delete("local")

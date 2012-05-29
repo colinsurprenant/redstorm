@@ -61,7 +61,7 @@ module RedStorm
       attr_reader :config
 
       def initialize
-        @config = Config.new
+        @config = Backtype::Config.new
       end
 
       def set(attribute, value)

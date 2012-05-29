@@ -25,8 +25,8 @@ JRUBY_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/lib"
 SRC_EXAMPLES = "#{RedStorm::REDSTORM_HOME}/examples"
 DST_EXAMPLES = "#{CWD}/examples"
 
-task :launch, :env, :version, :class_file do |t, args|
-  version_token = args[:version] == "--1.9" ? "RUBY1_9" : "RUBY1_8"
+task :launch, :env, :class_file do |t, args|
+  version_token = RedStorm::RUNTIME['RUBY_VERSION'] == "--1.9" ? "RUBY1_9" : "RUBY1_8"
   gem_home = ENV["GEM_HOME"].to_s.empty? ? " -Djruby.gem.home=`gem env home`" : ""
   command = "java -Djruby.compat.version=#{version_token} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\"#{gem_home} redstorm.TopologyLauncher #{args[:env]} #{args[:class_file]}"
   puts("launching #{command}")
@@ -148,9 +148,9 @@ task :build => :setup do
 end
 
 task :gems => :setup do
-  system("gem install bundler --install-dir target/gems/gems --no-ri --no-rdoc")
-  system("gem install rake --version 0.9.2.2  --install-dir target/gems/gems --no-ri --no-rdoc")
-  system("bundle install --path target/gems/bundler/")
+  system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
+  system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
+  system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install --path #{TARGET_GEMS_DIR}/bundler/")
 end
 
 def build_java_dir(source_folder)

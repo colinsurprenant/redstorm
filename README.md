@@ -10,7 +10,7 @@ Chances are new versions of RedStorm will introduce changes that will break comp
 
 ### v0.4.x gem
 
-- [RedStorm Gem v0.4.x Documentation](wiki/RedStorm-Gem-v0.4.x-Documentation)
+- [RedStorm Gem v0.4.x Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.4.x-Documentation)
 
 ## Dependencies
 
@@ -106,7 +106,7 @@ Install the [example files](https://github.com/colinsurprenant/redstorm/tree/mas
 $ redstorm examples
 ```
 
-All examples using the [simple DSL](wiki/Ruby-DSL-Documentation) are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
+All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
 
 ### Local mode
 
@@ -134,7 +134,7 @@ Using `redis-cli`, push words into the `test` list and watch Storm pick them up
 
 ### Production cluster
 
-All examples using the [simple DSL](wiki/Ruby-DSL-Documentation) can also run on a productions cluster. The only **native** example compatible with a production cluster is the [ClusterWordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/native/cluster_word_count_topology.rb)
+All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) can also run on a productions cluster. The only **native** example compatible with a production cluster is the [ClusterWordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/native/cluster_word_count_topology.rb)
 
 - If gems are required for the topology fist create a Gemfile with the required gems in it and run
 
@@ -172,7 +172,7 @@ Basically you must follow the [Storm instructions](https://github.com/nathanmarz
 
 ## Ruby DSL
 
-[Ruby DSL Documentation](wiki/Ruby-DSL-Documentation)
+[Ruby DSL Documentation](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation)
 
 ## RedStorm Development
 

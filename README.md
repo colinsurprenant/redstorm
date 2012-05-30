@@ -66,11 +66,13 @@ $ gem install redstorm-x.y.z.gem
 
 ### Gems in your topology
 
-RedStorm now supports Bundler for using gems in your topology. Basically supply a *Bundler* `Gemfile` in the root of your project directory and execute this command to install these gems into the `target/gems` directory. Note that if you change the Gemfile you must rerun this command.
+RedStorm now support [Bundler](http://gembundler.com/) for using gems in your topology. Basically supply a `Gemfile` in the root of your project directory and execute this command to install the gems into the `target/gems` directory. **Note that if you change the Gemfile you must rerun this command**.
 
   ``` sh
   $ redstorm --1.9 gems
   ```
+
+Basically, the `redstorm --1.9 gems` command installs the *Bundler* and *Rake* gems and all the gems specified in the Gemfile into the `target/gems` directory. The idea is that in order for the topology to run in a Storm cluster, everything, including the fully *installed* gems, must be packaged and self-contained into a single JAR file. This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the JAR file. This could possibly lead to problems if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have *native* C/FFI extensions.
 
 ### Run in local mode
 
@@ -85,7 +87,7 @@ $ redstorm --1.9 local <path/to/topology_class_file_name.rb>
 - generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies from the `target/` directory:
 
   ``` sh
-  $ redstorm --1.9 jar <sources_directory>
+  $ redstorm --1.9 jar <sources_directory1> <sources_directory2> ...
   ```
 
 - submit the cluster topology jar file to the cluster. Assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
@@ -136,12 +138,6 @@ Using `redis-cli`, push words into the `test` list and watch Storm pick them up
 
 All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) can also run on a productions cluster. The only **native** example compatible with a production cluster is the [ClusterWordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/native/cluster_word_count_topology.rb)
 
-- If gems are required for the topology fist create a Gemfile with the required gems in it and run
-
-  ``` sh
-  $ redstorm --1.9 gems
-  ```
-
 - genererate the `target/cluster-topology.jar` and include the `examples/` directory.
 
   ``` sh
@@ -158,15 +154,15 @@ All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/
 
 - to run `examples/simple/redis_word_count_topology.rb` you need a [Redis][redis] server running on `localhost:6379` and a Gemfile with the required Redis gem
 
-- generate jar and submit:
+  - install gems, generate jar and submit:
 
-  ``` sh
-  $ redstorm --1.9 gems
-  $ redstorm --1.9 jar examples
-  $ storm jar ./target/cluster-topology.jar -Djruby.compat.version=RUBY1_9 redstorm.TopologyLauncher cluster examples/simple/redis_word_count_topology.rb
-  ```
+    ``` sh
+    $ redstorm --1.9 gems
+    $ redstorm --1.9 jar examples
+    $ storm jar ./target/cluster-topology.jar -Djruby.compat.version=RUBY1_9 redstorm.TopologyLauncher cluster examples/simple/redis_word_count_topology.rb
+    ```
 
-- using `redis-cli`, push words into the `test` list and watch Storm pick them up
+  - using `redis-cli`, push words into the `test` list and watch Storm pick them up
 
 Basically you must follow the [Storm instructions](https://github.com/nathanmarz/storm/wiki) to [setup a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster) and [submit your topology to the cluster](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
 
@@ -197,12 +193,6 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
   $ bin/redstorm --1.9 deps
   ```
 
-- install topology gems in `target/gems`
-
-  ```sh
-  $ bin/redstorm --1.9 gems
-  ```
-
 - generate and build Java source into `target/classes`
 
   ```sh
@@ -210,6 +200,12 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
   ```
 
   if you modify any of the Java binding code, you need to run this to rebuild the bindings
+
+- install topology gems in `target/gems`
+
+  ```sh
+  $ bin/redstorm --1.9 gems
+  ```
 
 - run topology in **local** Storm mode
 
@@ -222,7 +218,7 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 - generate remote cluster topology jar into `target/cluster-topology.jar`, including the `mydir/` directory.
 
   ```sh
-  $ bin/redstorm --1.9 jar mydir
+  $ bin/redstorm --1.9 jar mydir otherdir1 otherdir2 ...
   ```
 
 ### How to Contribute
@@ -240,13 +236,11 @@ Some ways you can contribute:
 - ...
 
 ## Author
-Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][needium], [colin.surprenant@gmail.com][gmail], [http://github.com/colinsurprenant][github]
+Colin Surprenant, [@colinsurprenant][twitter], [http://github.com/colinsurprenant][github], colin.surprenant@gmail.com, colin.surprenant@needium.com
 
 ## License
 Apache License, Version 2.0. See the LICENSE.md file.
 
-[needium]: colin.surprenant@needium.com
-[gmail]: colin.surprenant@gmail.com
 [twitter]: http://twitter.com/colinsurprenant
 [github]: http://github.com/colinsurprenant
 [rvm]: http://beginrescueend.com/

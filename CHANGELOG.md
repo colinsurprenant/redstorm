@@ -22,6 +22,11 @@
 - JRuby 1.6.6
 
 # 0.5.0, 05-28-2012
+- issue #16, Bundler support for topology gems
+- issue #19, support for multiple dirs in jar
+- issue #20, update to Storm 0.7.1
+- issue #21, proper support for 1.8/1.9 Ruby compatibility mode
+- issue #22, fixed Config class name clash
 - JRuby 1.6.7
-- Support for 1.8/1.9 Ruby compatibility mode
-- Bundler support
+- DSL Support for per bolt/spout configuration in Storm 0.7.x
+- consistent workflow using the redstorm command in local dev or gem mode

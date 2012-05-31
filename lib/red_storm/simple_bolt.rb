@@ -1,3 +1,5 @@
+require 'red_storm/configurator'
+
 module RedStorm
 
   class SimpleBolt
@@ -11,6 +13,10 @@ module RedStorm
 
     def self.output_fields(*fields)
       @fields = fields.map(&:to_s)
+    end
+
+    def self.configure(&configure_block)
+      @configure_block = block_given? ? configure_block : lambda {}
     end
 
     def self.on_receive(*args, &on_receive_block)
@@ -73,8 +79,9 @@ module RedStorm
     end
 
     def get_component_configuration
-      # TODO: dummy implemetation
-      Backtype::Config.new
+      configurator = Configurator.new
+      configurator.instance_exec(&self.class.configure_block)
+      configurator.config
     end
 
     private
@@ -85,6 +92,10 @@ module RedStorm
 
     def self.fields
       @fields ||= []
+    end
+
+    def self.configure_block
+      @configure_block ||= lambda {}
     end
 
     def self.on_receive_block

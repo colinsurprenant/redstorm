@@ -15,17 +15,22 @@ describe RedStorm::SimpleSpout do
       spout.should respond_to :next_tuple
       spout.should respond_to :open
       spout.should respond_to :close
+      spout.should respond_to :activate
+      spout.should respond_to :deactivate
+      spout.should respond_to :close
+      spout.should respond_to :get_component_configuration
       spout.should respond_to :declare_output_fields
-      spout.should respond_to :is_distributed
       spout.should respond_to :ack
       spout.should respond_to :fail
     end
 
     it "should implement dsl class statement" do
-      RedStorm::SimpleSpout.should respond_to :set
+      RedStorm::SimpleSpout.should respond_to :configure
       RedStorm::SimpleSpout.should respond_to :output_fields
       RedStorm::SimpleSpout.should respond_to :on_init
       RedStorm::SimpleSpout.should respond_to :on_close
+      RedStorm::SimpleSpout.should respond_to :on_activate
+      RedStorm::SimpleSpout.should respond_to :on_deactivate
       RedStorm::SimpleSpout.should respond_to :on_send
       RedStorm::SimpleSpout.should respond_to :on_ack
       RedStorm::SimpleSpout.should respond_to :on_fail      
@@ -43,19 +48,15 @@ describe RedStorm::SimpleSpout do
   describe "dsl" do
 
     describe "set statement" do
-      DEFAULT_SPOUT_OPTIONS = {:is_distributed => false}
+      DEFAULT_SPOUT_OPTIONS = {}
 
-      it "should have default options" do
-        RedStorm::SimpleSpout.send(:is_distributed?).should be_false
-      end
-
-      it "should parse options" do
-        class IsDistributedClass < RedStorm::SimpleSpout
-          set :is_distributed => true
-        end
-        IsDistributedClass.send(:spout_options).should == DEFAULT_SPOUT_OPTIONS.merge(:is_distributed => true)
-        IsDistributedClass.send(:is_distributed?).should be_true
-      end
+      # it "should parse options" do
+      #   class IsDistributedClass < RedStorm::SimpleSpout
+      #     set :is_distributed => true
+      #   end
+      #   IsDistributedClass.send(:spout_options).should == DEFAULT_SPOUT_OPTIONS.merge(:is_distributed => true)
+      #   IsDistributedClass.send(:is_distributed?).should be_true
+      # end
     end
 
     describe "output_field statement" do
@@ -614,16 +615,16 @@ describe RedStorm::SimpleSpout do
       end
     end
 
-    describe "is_distributed" do
-      it "should report is_distributed" do
-        RedStorm::SimpleSpout.is_distributed?.should be_false
-        class Spout1 < RedStorm::SimpleSpout
-          set :is_distributed => true
-        end
-        spout = Spout1.new
-        spout.is_distributed.should be_true
-      end
-    end
+    # describe "is_distributed" do
+    #   it "should report is_distributed" do
+    #     RedStorm::SimpleSpout.is_distributed?.should be_false
+    #     class Spout1 < RedStorm::SimpleSpout
+    #       set :is_distributed => true
+    #     end
+    #     spout = Spout1.new
+    #     spout.is_distributed.should be_true
+    #   end
+    # end
 
     describe "ack" do
       it "should call ack block" do

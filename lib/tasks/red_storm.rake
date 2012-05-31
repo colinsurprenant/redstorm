@@ -91,10 +91,6 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
     fileset :dir => TARGET_GEMS_DIR
-    fileset :dir => CWD do
-      include :name => "Gemfile"
-      include :name => "Gemfile.lock"
-    end
     fileset :dir => JRUBY_SRC_DIR do
       exclude :name => "tasks/**"
     end
@@ -145,12 +141,17 @@ task :build => :setup do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
-task :gems, [:gemfile] => :setup do |t, args|
-  bundler_options = args[:gemfile].split(":").join(" ")
+task :gems, [:bundler_options] => :setup do |t, args|
+  bundler_options = args[:bundler_options].split(":").join(" ")
 
   system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
   system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
   system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
+  if bundler_options =~ /--gemfile\s+([^\s]+)/
+    gemfile = $1
+    system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/")
+    system("cp #{gemfile}.lock #{TARGET_GEMS_DIR}/bundler/")
+  end
 end
 
 def build_java_dir(source_folder)

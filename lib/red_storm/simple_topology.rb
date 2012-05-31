@@ -1,6 +1,9 @@
 require 'red_storm/configuration'
+require 'red_storm/configurator'
 
 module RedStorm
+
+  class TopologyDefinitionError < StandardError; end
 
   class SimpleTopology
     attr_reader :cluster # LocalCluster reference usable in on_submit block, for example
@@ -8,18 +11,27 @@ module RedStorm
     DEFAULT_SPOUT_PARALLELISM = 1
     DEFAULT_BOLT_PARALLELISM = 1
 
-    class ComponentDefinition
+    class ComponentDefinition < Configurator
       attr_reader :clazz, :parallelism
       attr_accessor :id # ids are forced to string
 
       def initialize(component_class, id, parallelism)
+        super()
         @clazz = component_class
         @id = id.to_s
         @parallelism = parallelism
       end
+
+      def is_java?
+        @clazz.name.split('::').first.downcase == 'java'
+      end
     end
 
-    class SpoutDefinition < ComponentDefinition; end
+    class SpoutDefinition < ComponentDefinition
+      def new_instance(base_class_path)
+        is_java? ? @clazz.new : JRubySpout.new(base_class_path, @clazz.name)
+      end
+    end
           
     class BoltDefinition < ComponentDefinition
       attr_accessor :sources
@@ -55,28 +67,9 @@ module RedStorm
           end
         end
       end
-    end
 
-    class Configurator
-      attr_reader :config
-
-      def initialize
-        @config = Backtype::Config.new
-      end
-
-      def set(attribute, value)
-        @config.put(attribute, value)
-      end
-
-      def method_missing(sym, *args)
-        config_method = "set#{self.class.camel_case(sym)}"
-        @config.send(config_method, *args)
-      end
-
-      private
-
-      def self.camel_case(s)
-        s.to_s.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
+      def new_instance(base_class_path)
+        is_java? ? @clazz.new : JRubyBolt.new(base_class_path, @clazz.name)
       end
     end
 
@@ -84,16 +77,17 @@ module RedStorm
       @log ||= org.apache.log4j.Logger.getLogger(self.name)
     end
 
-
-    def self.spout(spout_class, options = {})
+    def self.spout(spout_class, options = {}, &spout_block)
       spout_options = {:id => self.underscore(spout_class), :parallelism => DEFAULT_SPOUT_PARALLELISM}.merge(options)
       spout = SpoutDefinition.new(spout_class, spout_options[:id], spout_options[:parallelism])
+      spout.instance_exec(&spout_block) if block_given?
       self.components << spout
     end
 
     def self.bolt(bolt_class, options = {}, &bolt_block)
       bolt_options = {:id => self.underscore(bolt_class), :parallelism => DEFAULT_BOLT_PARALLELISM}.merge(options)
       bolt = BoltDefinition.new(bolt_class, bolt_options[:id], bolt_options[:parallelism])
+      raise(TopologyDefinitionError, "#{bolt.clazz.name}, #{bolt.id}, bolt definition body required") unless block_given?
       bolt.instance_exec(&bolt_block)
       self.components << bolt
     end
@@ -115,12 +109,12 @@ module RedStorm
 
       builder = TopologyBuilder.new
       self.class.spouts.each do |spout|
-        is_java = spout.clazz.name.split('::').first == 'Java'
-        builder.setSpout(spout.id, is_java ? spout.clazz.new : JRubySpout.new(base_class_path, spout.clazz.name), spout.parallelism)
+        declarer = builder.setSpout(spout.id, spout.new_instance(base_class_path), spout.parallelism)
+        declarer.addConfigurations(spout.config)
       end
       self.class.bolts.each do |bolt|
-        is_java = bolt.clazz.name.split('::').first == 'Java'
-        declarer = builder.setBolt(bolt.id, is_java ? bolt.clazz.new : JRubyBolt.new(base_class_path, bolt.clazz.name), bolt.parallelism)
+        declarer = builder.setBolt(bolt.id, bolt.new_instance(base_class_path), bolt.parallelism)
+        declarer.addConfigurations(bolt.config)
         bolt.define_grouping(declarer)
       end
 

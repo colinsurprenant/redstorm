@@ -16,9 +16,11 @@ describe RedStorm::SimpleBolt do
       bolt.should respond_to :cleanup
       bolt.should respond_to :prepare
       bolt.should respond_to :declare_output_fields
-    end
+      bolt.should respond_to :get_component_configuration
+   end
 
     it "should implement dsl class statements" do
+      RedStorm::SimpleBolt.should respond_to :configure
       RedStorm::SimpleBolt.should respond_to :output_fields
       RedStorm::SimpleBolt.should respond_to :on_init
       RedStorm::SimpleBolt.should respond_to :on_close

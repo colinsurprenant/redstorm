@@ -7,22 +7,27 @@ require 'examples/simple/exclamation_bolt'
 module RedStorm
   module Examples
     class ExclamationTopology < RedStorm::SimpleTopology
-      spout TestWordSpout, :parallelism => 10
+      spout TestWordSpout, :parallelism => 5 do
+        debug true
+      end
       
-      bolt ExclamationBolt, :parallelism => 3 do
+      bolt ExclamationBolt, :parallelism => 2 do
         source TestWordSpout, :shuffle
+        # max_task_parallelism 1
       end
       
       bolt ExclamationBolt, :id => :ExclamationBolt2, :parallelism => 2 do
         source ExclamationBolt, :shuffle
+        # max_task_parallelism 1
+        debug true
       end
 
       configure do |env|
-        debug true
+        debug false
         set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
         case env
         when :local
-          max_task_parallelism 3
+          max_task_parallelism 40
         when :cluster
           num_workers 20
           max_spout_pending(1000);

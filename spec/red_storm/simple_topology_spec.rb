@@ -203,8 +203,8 @@ describe RedStorm::SimpleTopology do
       builder = mock(RedStorm::TopologyBuilder)
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       builder.should_receive(:createTopology).and_return("topology")
-      configurator = mock(RedStorm::SimpleTopology::Configurator)
-      RedStorm::SimpleTopology::Configurator.should_receive(:new).and_return(configurator)
+      configurator = mock(RedStorm::Configurator)
+      RedStorm::Configurator.should_receive(:new).and_return(configurator)
       configurator.should_receive(:config).and_return("config")
       cluster = mock(RedStorm::LocalCluster)
       RedStorm::LocalCluster.should_receive(:new).and_return(cluster)
@@ -217,8 +217,8 @@ describe RedStorm::SimpleTopology do
       builder = mock(RedStorm::TopologyBuilder)
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       builder.should_receive(:createTopology).and_return("topology")
-      configurator = mock(RedStorm::SimpleTopology::Configurator)
-      RedStorm::SimpleTopology::Configurator.should_receive(:new).and_return(configurator)
+      configurator = mock(RedStorm::Configurator)
+      RedStorm::Configurator.should_receive(:new).and_return(configurator)
       configurator.should_receive(:config).and_return("config")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
       Topology1.new.start("base_path", :cluster)
@@ -236,17 +236,19 @@ describe RedStorm::SimpleTopology do
       end
       
       builder = mock(RedStorm::TopologyBuilder)
-      configurator = mock(RedStorm::SimpleTopology::Configurator)
+      configurator = mock(RedStorm::Configurator)
       jruby_spout1 = mock(RedStorm::JRubySpout)
       jruby_spout2 = mock(RedStorm::JRubySpout)
+      declarer = mock("Declarer")
 
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
-      RedStorm::SimpleTopology::Configurator.should_receive(:new).and_return(configurator)
+      RedStorm::Configurator.should_receive(:new).and_return(configurator)
       RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1").and_return(jruby_spout1)
       RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass2").and_return(jruby_spout2)
 
-      builder.should_receive("setSpout").with('spout_class1', jruby_spout1, 1)
-      builder.should_receive("setSpout").with('spout_class2', jruby_spout2, 1)
+      builder.should_receive("setSpout").with('spout_class1', jruby_spout1, 1).and_return(declarer)
+      builder.should_receive("setSpout").with('spout_class2', jruby_spout2, 1).and_return(declarer)
+      declarer.should_receive("addConfigurations").twice
       configurator.should_receive(:config).and_return("config")
       builder.should_receive(:createTopology).and_return("topology")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
@@ -271,28 +273,24 @@ describe RedStorm::SimpleTopology do
       end
       
       builder = mock(RedStorm::TopologyBuilder)
-      configurator = mock(RedStorm::SimpleTopology::Configurator)
+      configurator = mock(RedStorm::Configurator)
       jruby_bolt1 = mock(RedStorm::JRubyBolt)
       jruby_bolt2 = mock(RedStorm::JRubyBolt)
+      declarer = mock("Declarer")
 
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
-      RedStorm::SimpleTopology::Configurator.should_receive(:new).and_return(configurator)
+      RedStorm::Configurator.should_receive(:new).and_return(configurator)
       RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1").and_return(jruby_bolt1)
       RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass2").and_return(jruby_bolt2)
 
-      builder.should_receive("setBolt").with("id1", jruby_bolt1, 2).and_return("storm_bolt1")
-      builder.should_receive("setBolt").with("id2", jruby_bolt2, 3).and_return("storm_bolt2") 
+      builder.should_receive("setBolt").with("id1", jruby_bolt1, 2).and_return(declarer)
+      builder.should_receive("setBolt").with("id2", jruby_bolt2, 3).and_return(declarer) 
+      declarer.should_receive("addConfigurations").twice
 
-      bolt_definition1.should_receive(:define_grouping).with("storm_bolt1")
-      bolt_definition2.should_receive(:define_grouping).with("storm_bolt2")
-      bolt_definition1.should_receive(:clazz).twice.and_return(BoltClass1)
-      bolt_definition2.should_receive(:clazz).twice.and_return(BoltClass2)
+      bolt_definition1.should_receive(:define_grouping).with(declarer)
+      bolt_definition2.should_receive(:define_grouping).with(declarer)
       bolt_definition1.should_receive(:parallelism).and_return(2)
       bolt_definition2.should_receive(:parallelism).and_return(3)
-      bolt_definition1.should_receive(:id).any_number_of_times.and_return("id1")
-      bolt_definition2.should_receive(:id).any_number_of_times.and_return("id2")
-      # bolt_definition1.should_receive(:id=).with('1')
-      # bolt_definition2.should_receive(:id=).with('2')
 
       configurator.should_receive(:config).and_return("config")
       builder.should_receive(:createTopology).and_return("topology")
@@ -306,16 +304,17 @@ describe RedStorm::SimpleTopology do
 
       before(:each) do
         builder = mock(RedStorm::TopologyBuilder)
-        configurator = mock(RedStorm::SimpleTopology::Configurator)
+        configurator = mock(RedStorm::Configurator)
         jruby_bolt = mock(RedStorm::JRubyBolt)
         jruby_spout = mock(RedStorm::JRubySpout)
         @declarer = mock("InputDeclarer")
         RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
-        RedStorm::SimpleTopology::Configurator.should_receive(:new).and_return(configurator)
+        RedStorm::Configurator.should_receive(:new).and_return(configurator)
         RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1").and_return(jruby_bolt)
         RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1").and_return(jruby_spout)
         builder.should_receive("setBolt").with('bolt_class1', jruby_bolt, 1).and_return(@declarer)
         builder.should_receive("setSpout").with('1', jruby_spout, 1).and_return(@declarer)
+        @declarer.should_receive("addConfigurations").twice
         configurator.should_receive(:config).and_return("config")
         builder.should_receive(:createTopology).and_return("topology")
         RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
@@ -461,8 +460,8 @@ describe RedStorm::SimpleTopology do
       builder = mock(RedStorm::TopologyBuilder)
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       builder.should_receive(:createTopology).and_return("topology")
-      configurator = mock(RedStorm::SimpleTopology::Configurator)
-      RedStorm::SimpleTopology::Configurator.should_receive(:new).and_return(configurator)
+      configurator = mock(RedStorm::Configurator)
+      RedStorm::Configurator.should_receive(:new).and_return(configurator)
       configurator.should_receive(:config).and_return("config")
 
       cluster = mock(RedStorm::LocalCluster)

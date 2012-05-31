@@ -9,13 +9,13 @@ module RedStorm
   if JAR_CONTEXT
     REDSTORM_HOME = LAUNCH_PATH
     TARGET_PATH = LAUNCH_PATH
-    BUNDLE_GEMFILE = "#{TARGET_PATH}/Gemfile"
+    BUNDLE_GEMFILE = "#{TARGET_PATH}/bundler/Gemfile"
     BUNDLE_PATH = "#{TARGET_PATH}/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
     GEM_PATH = "#{TARGET_PATH}/gems/"
   else
     REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/..')
     TARGET_PATH = Dir.pwd
-    BUNDLE_GEMFILE = "#{TARGET_PATH}/Gemfile"
+    BUNDLE_GEMFILE = "#{TARGET_PATH}/target/gems/bundler/Gemfile"
     BUNDLE_PATH = "#{TARGET_PATH}/target/gems/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
     GEM_PATH = "#{TARGET_PATH}/target/gems/gems"
   end

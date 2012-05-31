@@ -1,3 +1,5 @@
+require 'red_storm/configurator'
+
 module RedStorm
 
   class SimpleSpout
@@ -5,8 +7,8 @@ module RedStorm
 
     # DSL class methods
 
-    def self.set(options = {})
-      self.spout_options.merge!(options)
+    def self.configure(&configure_block)
+      @configure_block = block_given? ? configure_block : lambda {}
     end
 
     def self.log
@@ -105,8 +107,9 @@ module RedStorm
     end
 
     def get_component_configuration
-      # TODO: dummy implemetation
-      Backtype::Config.new
+      configurator = Configurator.new
+      configurator.instance_exec(&self.class.configure_block)
+      configurator.config
     end
 
     private
@@ -121,6 +124,10 @@ module RedStorm
 
     def self.fields
       @fields ||= []
+    end
+
+    def self.configure_block
+      @configure_block ||= lambda {}
     end
 
     def self.on_send_block
@@ -153,11 +160,6 @@ module RedStorm
 
     def self.send_options
       @send_options ||= {:emit => true}
-    end
-
-    def self.spout_options
-      # TODO remove is_distributed
-      @spout_options ||= {:is_distributed => false}
     end
 
     def self.emit?

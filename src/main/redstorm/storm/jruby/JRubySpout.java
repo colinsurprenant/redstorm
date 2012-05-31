@@ -34,15 +34,6 @@ public class JRubySpout implements IRichSpout {
   }
 
   @Override
-  public boolean isDistributed() {
-    // isDistributed is executed in the topology creation time before serialisation.
-    // do not set the _proxySpout instance variable here to avoid JRuby serialization
-    // issues. Just create tmp spout instance to call isDistributed.
-    IRichSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
-    return spout.isDistributed();
-  }
-
-  @Override
   public void open(final Map conf, final TopologyContext context, final SpoutOutputCollector collector) {
     // create instance of the jruby proxy class here, after deserialization in the workers.
     _proxySpout = newProxySpout(_baseClassPath, _realSpoutClassName);
@@ -52,6 +43,16 @@ public class JRubySpout implements IRichSpout {
   @Override
   public void close() {
     _proxySpout.close();
+  }
+
+  @Override
+  public void activate() {
+    _proxySpout.activate();
+  }
+
+  @Override
+  public void deactivate() {
+    _proxySpout.deactivate();
   }
 
   @Override
@@ -78,6 +79,15 @@ public class JRubySpout implements IRichSpout {
     spout.declareOutputFields(declarer);
   }  
 
+  @Override
+  public Map<String, Object> getComponentConfiguration() {
+    // getComponentConfiguration is executed in the topology creation time before serialisation.
+    // do not set the _proxySpout instance variable here to avoid JRuby serialization
+    // issues. Just create tmp spout instance to call declareOutputFields.
+    IRichSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
+    return spout.getComponentConfiguration();
+  }
+ 
   private static IRichSpout newProxySpout(String baseClassPath, String realSpoutClassName) {
     try {
       redstorm.proxy.Spout proxy = new redstorm.proxy.Spout(baseClassPath, realSpoutClassName);

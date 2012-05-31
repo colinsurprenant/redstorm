@@ -72,6 +72,11 @@ module RedStorm
       declarer.declare(Fields.new(self.class.fields))
     end
 
+    def get_component_configuration
+      # TODO: dummy implemetation
+      Backtype::Config.new
+    end
+
     private
 
     # default noop optional dsl callbacks

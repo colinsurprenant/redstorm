@@ -33,6 +33,14 @@ module RedStorm
       @on_close_block = block_given? ? on_close_block : lambda {self.send(method_name || :on_close)}
     end
 
+    def self.on_activate(method_name = nil, &on_activate_block)
+      @on_activate_block = block_given? ? on_activate_block : lambda {self.send(method_name || :on_activate)}
+    end
+
+    def self.on_deactivate(method_name = nil, &on_deactivate_block)
+      @on_deactivate_block = block_given? ? on_deactivate_block : lambda {self.send(method_name || :on_deactivate)}
+    end
+
     def self.on_ack(method_name = nil, &on_ack_block)
       @on_ack_block = block_given? ? on_ack_block : lambda {|msg_id| self.send(method_name || :on_ack, msg_id)}
     end
@@ -76,12 +84,16 @@ module RedStorm
       instance_exec(&self.class.on_close_block)
     end
 
-    def declare_output_fields(declarer)
-      declarer.declare(Fields.new(self.class.fields))
+    def activate
+      instance_exec(&self.class.on_activate_block)
     end
 
-    def is_distributed
-      self.class.is_distributed?
+    def deactivate
+      instance_exec(&self.class.on_deactivate_block)
+    end
+
+    def declare_output_fields(declarer)
+      declarer.declare(Fields.new(self.class.fields))
     end
 
     def ack(msg_id)
@@ -92,11 +104,18 @@ module RedStorm
       instance_exec(msg_id, &self.class.on_fail_block)
     end
 
+    def get_component_configuration
+      # TODO: dummy implemetation
+      Backtype::Config.new
+    end
+
     private
 
     # default optional noop dsl methods/callbacks
     def on_init; end
     def on_close; end
+    def on_activate; end
+    def on_deactivate; end
     def on_ack(msg_id); end
     def on_fail(msg_id); end
 
@@ -116,6 +135,14 @@ module RedStorm
       @on_close_block ||= lambda {self.send(:on_close)}
     end
 
+    def self.on_activate_block
+      @on_activate_block ||= lambda {self.send(:on_activate)}
+    end
+
+    def self.on_deactivate_block
+      @on_deactivate_block ||= lambda {self.send(:on_deactivate)}
+    end
+
     def self.on_ack_block
       @on_ack_block ||= lambda {|msg_id| self.send(:on_ack, msg_id)}
     end
@@ -129,11 +156,8 @@ module RedStorm
     end
 
     def self.spout_options
+      # TODO remove is_distributed
       @spout_options ||= {:is_distributed => false}
-    end
-
-    def self.is_distributed?
-      !!self.spout_options[:is_distributed]
     end
 
     def self.emit?

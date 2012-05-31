@@ -53,4 +53,9 @@ class Bolt
   def declareOutputFields(declarer)
     @real_bolt.declare_output_fields(declarer)
   end
+
+  java_signature 'Map<String, Object> getComponentConfiguration()'
+  def getComponentConfiguration
+    @real_bolt.get_component_configuration
+  end
 end

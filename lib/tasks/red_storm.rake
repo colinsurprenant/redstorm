@@ -9,6 +9,8 @@ rescue LoadError
   require 'red_storm'
 end
 
+STORM_VERSION = "0.7.1"
+
 CWD = Dir.pwd
 TARGET_DIR = "#{CWD}/target"
 TARGET_SRC_DIR = "#{TARGET_DIR}/src"
@@ -143,10 +145,12 @@ task :build => :setup do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
-task :gems => :setup do
+task :gems, [:gemfile] => :setup do |t, args|
+  bundler_options = args[:gemfile].split(":").join(" ")
+
   system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
   system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
-  system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install --path #{TARGET_GEMS_DIR}/bundler/")
+  system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
 end
 
 def build_java_dir(source_folder)
@@ -161,10 +165,12 @@ def build_java_dir(source_folder)
     :includeantruntime => "no",
     :verbose => false,
     :listfiles => true
-  )
+  ) do
+    # compilerarg :value => "-Xlint:unchecked"
+  end 
 end  
 
 def build_jruby(source_path)
   puts("\n--> Compiling JRuby")
-  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-0.6.2.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
+  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-#{STORM_VERSION}.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
 end

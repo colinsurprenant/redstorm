@@ -3,7 +3,6 @@ require 'red_storm'
 module RedStorm
   module Examples
     class RandomSentenceSpout < RedStorm::SimpleSpout
-      set :is_distributed => true
       output_fields :word
 
       on_send {@sentences[rand(@sentences.length)]}

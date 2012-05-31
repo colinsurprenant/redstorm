@@ -58,6 +58,16 @@ public class JRubyBolt implements IRichBolt {
     bolt.declareOutputFields(declarer);
   }
 
+  @Override
+  public Map<String, Object> getComponentConfiguration() {
+    // getComponentConfiguration is executed in the topology creation time, before serialisation.
+    // do not set the _proxyBolt instance variable here to avoid JRuby serialization
+    // issues. Just create tmp bolt instance to call declareOutputFields.
+    IRichBolt bolt = newProxyBolt(_baseClassPath, _realBoltClassName);
+    return bolt.getComponentConfiguration();
+  }
+ 
+
   private static IRichBolt newProxyBolt(String baseClassPath, String realBoltClassName) {
     try {
       redstorm.proxy.Bolt proxy = new redstorm.proxy.Bolt(baseClassPath, realBoltClassName);

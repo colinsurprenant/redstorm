@@ -69,8 +69,10 @@ $ gem install redstorm-x.y.z.gem
 RedStorm now support [Bundler](http://gembundler.com/) for using gems in your topology. Basically supply a `Gemfile` in the root of your project directory and execute this command to install the gems into the `target/gems` directory. **Note that if you change the Gemfile you must rerun this command**.
 
   ``` sh
-  $ redstorm --1.9 gems
+  $ redstorm --1.9 gems [--gemfile=GEMFILE]
   ```
+
+All `bundle install` command options can be passed as options to `redstorm --1.9 gem` like `--gemfile=GEMFILE` to specify a Gemfile in an alternate path.
 
 Basically, the `redstorm --1.9 gems` command installs the *Bundler* and *Rake* gems and all the gems specified in the Gemfile into the `target/gems` directory. The idea is that in order for the topology to run in a Storm cluster, everything, including the fully *installed* gems, must be packaged and self-contained into a single JAR file. This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the JAR file. This could possibly lead to problems if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have *native* C/FFI extensions.
 
@@ -118,12 +120,10 @@ $ redstorm --1.9 local examples/simple/exclamation_topology2.rb
 $ redstorm --1.9 local examples/simple/word_count_topology.rb
 ```
 
-This next example requires the use of the [Redis Gem](https://github.com/ezmobius/redis-rb) and a [Redis][redis] server running on `localhost:6379`
-
-Fist create a Gemfile with the Redis gem in it and run
+To run `examples/simple/redis_word_count_topology.rb` you need a [Redis][redis] server running on `localhost:6379`
 
 ``` sh
-$ redstorm --1.9 gems
+$ redstorm --1.9 gems --gemfile examples/simple/Gemfile
 ```
 
 Run the topology in local mode
@@ -152,15 +152,13 @@ All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/
 
   Note the **-Djruby.compat.version=RUBY1_9** parameter.
 
-- to run `examples/simple/redis_word_count_topology.rb` you need a [Redis][redis] server running on `localhost:6379` and a Gemfile with the required Redis gem
+- to run `examples/simple/redis_word_count_topology.rb` you need a [Redis][redis] server running on `localhost:6379`
 
-  - install gems, generate jar and submit:
-
-    ``` sh
-    $ redstorm --1.9 gems
-    $ redstorm --1.9 jar examples
-    $ storm jar ./target/cluster-topology.jar -Djruby.compat.version=RUBY1_9 redstorm.TopologyLauncher cluster examples/simple/redis_word_count_topology.rb
-    ```
+   ``` sh
+  $ redstorm --1.9 gems --gemfile examples/simple/Gemfile
+  $ redstorm --1.9 jar examples
+  $ storm jar ./target/cluster-topology.jar -Djruby.compat.version=RUBY1_9 redstorm.TopologyLauncher cluster examples/simple/redis_word_count_topology.rb
+  ```
 
   - using `redis-cli`, push words into the `test` list and watch Storm pick them up
 

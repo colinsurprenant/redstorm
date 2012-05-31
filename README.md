@@ -33,7 +33,7 @@ For each of these contexts, 1.9 mode has to be explicitly specified to avoid any
 $ gem install redstorm
 ```
 
-### Current development state
+### From github master
 
 - clone/fork project
 
@@ -58,7 +58,7 @@ $ gem install redstorm-x.y.z.gem
   $ redstorm --1.9 install
   ```
 
-  The `install` command will install all Java jars dependencies using [ruby-maven][ruby-maven] in `target/dependency` and generate & compile the Java bindings in `target/classes`
+  The `install` command will install all Java jars dependencies using [ruby-maven][ruby-maven] in `target/dependency`, generate & compile the Java bindings in `target/classes` and install gems in `target/gems`.
 
   ***DON'T PANIC*** it's Maven. The first time you run `$ redstorm --1.9 install` Maven will take a few minutes resolving dependencies and in the end will download and install the dependency jar files.
 
@@ -199,12 +199,6 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 
   if you modify any of the Java binding code, you need to run this to rebuild the bindings
 
-- install topology gems in `target/gems`
-
-  ```sh
-  $ bin/redstorm --1.9 gems
-  ```
-
 - run topology in **local** Storm mode
 
   ```sh
@@ -218,6 +212,13 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
   ```sh
   $ bin/redstorm --1.9 jar mydir otherdir1 otherdir2 ...
   ```
+
+- **if you add/change** Gemfile for your topology, install gems in `target/gems`. Alternate gemfile path can be specified using --gemfile=GEMFILE
+
+  ```sh
+  $ bin/redstorm --1.9 gems [--gemfile=GEMFILE]
+  ```
+
 
 ### How to Contribute
 

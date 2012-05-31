@@ -10,6 +10,7 @@ rescue LoadError
 end
 
 STORM_VERSION = "0.7.1"
+DEFAULT_GEMFILE = "Gemfile"
 
 CWD = Dir.pwd
 TARGET_DIR = "#{CWD}/target"
@@ -56,7 +57,7 @@ task :setup do
   end  
 end
 
-task :install => [:deps, :build] do
+task :install => [:deps, :build, :gems] do
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
@@ -142,15 +143,20 @@ task :build => :setup do
 end
 
 task :gems, [:bundler_options] => :setup do |t, args|
-  bundler_options = args[:bundler_options].split(":").join(" ")
+  bundler_options = args[:bundler_options].to_s.split(":").join(" ")
+  gemfile = bundler_options =~ /--gemfile\s+([^\s]+)/ ? $1 : DEFAULT_GEMFILE
 
-  system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
-  system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc")
-  system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
-  if bundler_options =~ /--gemfile\s+([^\s]+)/
-    gemfile = $1
+  puts("\n--> Installing gems in #{TARGET_GEMS_DIR}/gems")
+  system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
+  system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
+
+  if File.exist?(gemfile)
+    puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler")
+    system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
     system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/")
     system("cp #{gemfile}.lock #{TARGET_GEMS_DIR}/bundler/")
+  elsif gemfile != DEFAULT_GEMFILE
+    puts("WARNING: #{gemfile} not found, cannot bundle gems")
   end
 end
 

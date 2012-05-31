@@ -2,4 +2,10 @@ storm/lib/
 storm/classes/
 tmp/
 target/
+.bundle
+.rvmrc
+notes.txt
 *.gem
+storm-*
+storm
+examples/simple/Gemfile.lock

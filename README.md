@@ -219,6 +219,8 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
   $ bin/redstorm --1.9 gems [--gemfile=GEMFILE]
   ```
 
+  **do not forget** to rerurn `bin/redstorm --1.9 jar` to pick up these gems, before submitting your topology on a remote cluster.
+
 
 ### How to Contribute
 

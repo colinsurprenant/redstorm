@@ -76,7 +76,10 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-    fileset :dir => TARGET_GEMS_DIR
+    fileset :dir => TARGET_GEMS_DIR do
+      # remove bundler config dir to avoid setting BUNDLE_PATH
+      exclude :name => "bundler/.bundle/**"
+    end
     fileset :dir => JRUBY_SRC_DIR do
       exclude :name => "tasks/**"
     end
@@ -135,16 +138,22 @@ end
 
 task :gems, [:bundler_options] => :setup do |t, args|
   bundler_options = args[:bundler_options].to_s.split(":").join(" ")
+
+  # basically copy original Gemfile to target/gems/bundler and install into this dir
   gemfile = bundler_options =~ /--gemfile\s+([^\s]+)/ ? $1 : DEFAULT_GEMFILE
+  if bundler_options =~ /--gemfile\s+[^\s]+/
+    bundler_options.gsub!(/--gemfile\s+[^\s]+/, "--gemfile #{TARGET_GEMS_DIR}/bundler/Gemfile")
+  else
+    bundler_options = bundler_options + " --gemfile #{TARGET_GEMS_DIR}/bundler/Gemfile"
+  end
 
   puts("\n--> Installing gems in #{TARGET_GEMS_DIR}/gems")
   system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
-  # system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
   system("gem install rake --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
 
   if File.exist?(gemfile)
     puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler using #{gemfile}")
-    system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/")
+    system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/Gemfile")
     system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
   elsif gemfile != DEFAULT_GEMFILE
     puts("WARNING: #{gemfile} not found, cannot bundle gems")

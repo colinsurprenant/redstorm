@@ -5,7 +5,7 @@
 
   <groupId>redstorm</groupId>
   <artifactId>redstorm</artifactId>
-  <version>0.5.0</version>
+  <version>0.5.1</version>
   <name>RedStorm</name>
 
   <properties>

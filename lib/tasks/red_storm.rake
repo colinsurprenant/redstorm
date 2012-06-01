@@ -9,7 +9,8 @@ rescue LoadError
   require 'red_storm'
 end
 
-STORM_VERSION = "0.7.1"
+INSTALL_STORM_VERSION = "0.7.1"
+INSTALL_JRUBY_VERSION = "1.6.7"
 DEFAULT_GEMFILE = "Gemfile"
 
 CWD = Dir.pwd
@@ -44,7 +45,8 @@ task :clean_jar do
   ant.delete :file => TARGET_CLUSTER_JAR
 end
 
-task :setup do  
+task :setup do
+  puts("\n--> Setting up target directories")
   ant.mkdir :dir => TARGET_DIR 
   ant.mkdir :dir => TARGET_CLASSES_DIR 
   ant.mkdir :dir => TARGET_SRC_DIR
@@ -62,30 +64,13 @@ task :install => [:deps, :build, :gems] do
 end
 
 task :unpack do
-  system("rmvn dependency:unpack -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} -DmarkersDirectory=#{TARGET_MARKERS_DIR}")
+  system("rmvn dependency:unpack \
+          -f #{RedStorm::REDSTORM_HOME}/pom.xml \
+          -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} \
+          -DmarkersDirectory=#{TARGET_MARKERS_DIR} \
+          -Dstorm-storm.version=#{INSTALL_STORM_VERSION} \
+          -Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
 end
-
-# task :devjar => [:unpack, :clean_jar] do
-#   ant.jar :destfile => TARGET_CLUSTER_JAR do
-#     fileset :dir => TARGET_CLASSES_DIR
-#     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-#     fileset :dir => TARGET_GEMS_DIR
-#     fileset :dir => RedStorm::REDSTORM_HOME do
-#       include :name => "examples/**/*"
-#     end
-#     fileset :dir => RedStorm::REDSTORM_HOME do
-#       include :name => "Gemfile"
-#       include :name => "Gemfile.lock"
-#     end
-#     fileset :dir => JRUBY_SRC_DIR do
-#       exclude :name => "tasks/**"
-#     end
-#     manifest do
-#       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
-#     end
-#   end
-#   puts("\nRedStorm generated dev jar file #{TARGET_CLUSTER_JAR}")
-# end
 
 task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
@@ -122,7 +107,13 @@ task :examples do
 end
 
 task :deps => :setup do
-  system("rmvn dependency:copy-dependencies -f #{RedStorm::REDSTORM_HOME}/pom.xml -DoutputDirectory=#{TARGET_DEPENDENCY_DIR} -DmarkersDirectory=#{TARGET_MARKERS_DIR}")
+  puts("\n--> Installing dependencies")
+  system("rmvn dependency:copy-dependencies \
+          -f #{RedStorm::REDSTORM_HOME}/pom.xml \
+          -DoutputDirectory=#{TARGET_DEPENDENCY_DIR} \
+          -DmarkersDirectory=#{TARGET_MARKERS_DIR} \
+          -Dstorm-storm.version=#{INSTALL_STORM_VERSION} \
+          -Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
 end
 
 task :build => :setup do
@@ -148,13 +139,13 @@ task :gems, [:bundler_options] => :setup do |t, args|
 
   puts("\n--> Installing gems in #{TARGET_GEMS_DIR}/gems")
   system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
-  system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
+  # system("gem install rake --version 0.9.2.2  --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
+  system("gem install rake --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
 
   if File.exist?(gemfile)
-    puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler")
-    system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
+    puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler using #{gemfile}")
     system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/")
-    system("cp #{gemfile}.lock #{TARGET_GEMS_DIR}/bundler/")
+    system("jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
   elsif gemfile != DEFAULT_GEMFILE
     puts("WARNING: #{gemfile} not found, cannot bundle gems")
   end
@@ -179,5 +170,5 @@ end
 
 def build_jruby(source_path)
   puts("\n--> Compiling JRuby")
-  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-#{STORM_VERSION}.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
+  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-#{INSTALL_STORM_VERSION}.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
 end

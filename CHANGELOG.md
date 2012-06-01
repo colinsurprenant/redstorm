@@ -28,5 +28,5 @@
 - issue #21, proper support for 1.8/1.9 Ruby compatibility mode
 - issue #22, fixed Config class name clash
 - JRuby 1.6.7
-- DSL Support for per bolt/spout configuration in Storm 0.7.x
+- DSL Support for per bolt/spout configuration and spout activate/deactivate in Storm 0.7.x
 - consistent workflow using the redstorm command in local dev or gem mode

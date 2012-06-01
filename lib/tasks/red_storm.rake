@@ -136,20 +136,16 @@ task :build => :setup do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
-task :gems, [:bundler_options] => :setup do |t, args|
+task :bundle, [:bundler_options] => :gems do |t, args|
   bundler_options = args[:bundler_options].to_s.split(":").join(" ")
 
-  # basically copy original Gemfile to target/gems/bundler and install into this dir
+  # basically copy specified Gemfile to target/gems/bundler and install into this dir
   gemfile = bundler_options =~ /--gemfile\s+([^\s]+)/ ? $1 : DEFAULT_GEMFILE
   if bundler_options =~ /--gemfile\s+[^\s]+/
     bundler_options.gsub!(/--gemfile\s+[^\s]+/, "--gemfile #{TARGET_GEMS_DIR}/bundler/Gemfile")
   else
     bundler_options = bundler_options + " --gemfile #{TARGET_GEMS_DIR}/bundler/Gemfile"
   end
-
-  puts("\n--> Installing gems in #{TARGET_GEMS_DIR}/gems")
-  system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
-  system("gem install rake --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
 
   if File.exist?(gemfile)
     puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler using #{gemfile}")
@@ -158,6 +154,12 @@ task :gems, [:bundler_options] => :setup do |t, args|
   elsif gemfile != DEFAULT_GEMFILE
     puts("WARNING: #{gemfile} not found, cannot bundle gems")
   end
+end
+
+task :gems => :setup do
+  puts("\n--> Installing base gems in #{TARGET_GEMS_DIR}/gems")
+  system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
+  system("gem install rake --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
 end
 
 def build_java_dir(source_folder)

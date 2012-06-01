@@ -7,7 +7,7 @@ module RedStorm
     TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake" 
 
     def usage
-      puts("usage: redstorm install|gems|examples|jar <project_directory>|local <topology_class_file>")
+      puts("usage: redstorm [--1.8|--1.9]  install | deps | build | examples | gems [--gemfile GEMFILE_PATH] | jar DIR1, DIR2, ... | local TOPOLOGY_CLASS_PATH")
       exit(1)
     end
 

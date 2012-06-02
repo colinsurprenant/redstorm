@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    redstorm (0.5.0)
+    redstorm (0.5.1)
       rake
       ruby-maven (~> 3.0.3.0.28.5)
 

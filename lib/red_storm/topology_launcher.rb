@@ -37,8 +37,22 @@ class TopologyLauncher
       puts("Usage: redstorm local|cluster topology_class_file_name")
       exit(1)
     end
+
+    puts("****TOPOLOGY LAUNCHER ** PWD=#{Dir.pwd}")
+    puts("****TOPOLOGY LAUNCHER ** RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
+    puts("****TOPOLOGY LAUNCHER ** RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
+    puts("****TOPOLOGY LAUNCHER ** RedStorm::REDSTORM_HOME=#{RedStorm::REDSTORM_HOME}")
+    puts("****TOPOLOGY LAUNCHER ** RedStorm::TARGET_PATH=#{RedStorm::TARGET_PATH}")
+    puts("****TOPOLOGY LAUNCHER ** RedStorm::GEM_PATH=#{RedStorm::GEM_PATH}")
+    puts("****TOPOLOGY LAUNCHER ** ENV['BUNDLE_GEMFILE']=#{ENV['BUNDLE_GEMFILE']}")
+    puts("****TOPOLOGY LAUNCHER ** ENV['BUNDLE_PATH']=#{ENV['BUNDLE_PATH']}")
+    puts("****TOPOLOGY LAUNCHER ** ENV['GEM_PATH']=#{ENV['GEM_PATH']}")
+
+    RedStorm.setup_gems
+
     env = args[0].to_sym
     class_path = args[1]
+
 
     require "./#{class_path}" # ./ for 1.9 compatibility
 

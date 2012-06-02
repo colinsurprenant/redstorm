@@ -12,6 +12,11 @@ module RedStorm
     BUNDLE_GEMFILE = "#{TARGET_PATH}/bundler/Gemfile"
     BUNDLE_PATH = "#{TARGET_PATH}/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
     GEM_PATH = "#{TARGET_PATH}/gems/"
+
+    ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
+    ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
+    ENV["GEM_PATH"] = RedStorm::GEM_PATH
+    ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
   else
     REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/..')
     TARGET_PATH = Dir.pwd
@@ -20,11 +25,16 @@ module RedStorm
     GEM_PATH = "#{TARGET_PATH}/target/gems/gems"
   end
 
-  # setup bundler environment
-  ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
-  ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
-  ENV["GEM_PATH"] = RedStorm::GEM_PATH
-  ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
+  def setup_gems
+    unless JAR_CONTEXT
+      ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
+      ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
+      ENV["GEM_PATH"] = RedStorm::GEM_PATH
+      ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
+    end
+  end
+
+  module_function :setup_gems
 end
 
 $:.unshift RedStorm::TARGET_PATH
@@ -37,12 +47,12 @@ require 'red_storm/simple_bolt'
 require 'red_storm/simple_spout'
 require 'red_storm/simple_topology'
 
-# puts("************************ PWD=#{Dir.pwd}")
-# puts("************************ RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
-# puts("************************ RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
-# puts("************************ RedStorm::REDSTORM_HOME=#{RedStorm::REDSTORM_HOME}")
-# puts("************************ RedStorm::TARGET_PATH=#{RedStorm::TARGET_PATH}")
-# puts("************************ RedStorm::GEM_PATH=#{RedStorm::GEM_PATH}")
-# puts("************************ ENV['BUNDLE_GEMFILE']=#{ENV['BUNDLE_GEMFILE']}")
-# puts("************************ ENV['BUNDLE_PATH']=#{ENV['BUNDLE_PATH']}")
-# puts("************************ ENV['GEM_PATH']=#{ENV['GEM_PATH']}")
+puts("************************ PWD=#{Dir.pwd}")
+puts("************************ RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
+puts("************************ RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
+puts("************************ RedStorm::REDSTORM_HOME=#{RedStorm::REDSTORM_HOME}")
+puts("************************ RedStorm::TARGET_PATH=#{RedStorm::TARGET_PATH}")
+puts("************************ RedStorm::GEM_PATH=#{RedStorm::GEM_PATH}")
+puts("************************ ENV['BUNDLE_GEMFILE']=#{ENV['BUNDLE_GEMFILE']}")
+puts("************************ ENV['BUNDLE_PATH']=#{ENV['BUNDLE_PATH']}")
+puts("************************ ENV['GEM_PATH']=#{ENV['GEM_PATH']}")

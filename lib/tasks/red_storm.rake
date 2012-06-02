@@ -8,7 +8,7 @@ rescue LoadError
   $:.unshift './lib'
   require 'red_storm'
 end
-
+ 
 INSTALL_STORM_VERSION = "0.7.1"
 INSTALL_JRUBY_VERSION = "1.6.7"
 DEFAULT_GEMFILE = "Gemfile"
@@ -31,7 +31,8 @@ DST_EXAMPLES = "#{CWD}/examples"
 
 task :launch, :env, :class_file do |t, args|
   version_token = RedStorm::RUNTIME['RUBY_VERSION'] == "--1.9" ? "RUBY1_9" : "RUBY1_8"
-  gem_home = ENV["GEM_HOME"].to_s.empty? ? " -Djruby.gem.home=`gem env home`" : ""
+  # gem_home = ENV["GEM_HOME"].to_s.empty? ? " -Djruby.gem.home=`gem env home`" : ""
+  gem_home = " -Djruby.gem.home=#{RedStorm::GEM_PATH}" 
   command = "java -Djruby.compat.version=#{version_token} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\"#{gem_home} redstorm.TopologyLauncher #{args[:env]} #{args[:class_file]}"
   puts("launching #{command}")
   system(command)

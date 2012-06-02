@@ -152,7 +152,7 @@ task :bundle, [:bundler_options] => :gems do |t, args|
     puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler using #{gemfile}")
     system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/Gemfile")
     system("export BUNDLE_GEMFILE=; \
-            export GEM_PATH=RedStorm::GEM_PATH; \
+            export GEM_PATH=#{RedStorm::GEM_PATH}; \
             jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options} --path #{TARGET_GEMS_DIR}/bundler/")
   elsif gemfile != DEFAULT_GEMFILE
     puts("WARNING: #{gemfile} not found, cannot bundle gems")

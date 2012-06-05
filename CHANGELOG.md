@@ -30,3 +30,8 @@
 - JRuby 1.6.7
 - DSL Support for per bolt/spout configuration and spout activate/deactivate in Storm 0.7.x
 - consistent workflow using the redstorm command in local dev or gem mode
+
+# 0.5.1, 06-05-2012
+- better handling of enviroments and paths
+- redstorm bundle command to install topology gems
+- issue #26, fixed examples/native for 0.5.1 compatibility

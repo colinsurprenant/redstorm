@@ -1,44 +1,45 @@
+# this is the entry point for these two contexts:
+# - running red_storm.rake
+# - at remote cluster topology execution. Once topology_launcher.rb has submitted the topology
+#   the spouts and bolts classes will be instanciated and will require red_storm.rb
+
 # we depends on rubygems begings loaded at this point for setting up gem/bundle environments
 # explicitely requiring rubygems is required in remote cluster environment
 require 'rubygems'
 
+
 module RedStorm
-  LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
-  JAR_CONTEXT = !!(LAUNCH_PATH =~ /\.jar!$/)
+  TOPOLOGY_LAUNCHED = defined?(LAUNCH_PATH)
 
-  if JAR_CONTEXT
-    REDSTORM_HOME = LAUNCH_PATH
-    TARGET_PATH = LAUNCH_PATH
-    BUNDLE_GEMFILE = "#{TARGET_PATH}/bundler/Gemfile"
-    BUNDLE_PATH = "#{TARGET_PATH}/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
-    GEM_PATH = "#{TARGET_PATH}/gems/"
+  unless TOPOLOGY_LAUNCHED
+    LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
+    JAR_CONTEXT = !!(LAUNCH_PATH =~ /\.jar!$/)
 
-    ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
-    ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
-    ENV["GEM_PATH"] = RedStorm::GEM_PATH
-    ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
-  else
-    REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/..')
-    TARGET_PATH = Dir.pwd
-    BUNDLE_GEMFILE = "#{TARGET_PATH}/target/gems/bundler/Gemfile"
-    BUNDLE_PATH = "#{TARGET_PATH}/target/gems/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
-    GEM_PATH = "#{TARGET_PATH}/target/gems/gems"
-  end
-
-  def setup_gems
-    unless JAR_CONTEXT
-      ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
-      ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
-      ENV["GEM_PATH"] = RedStorm::GEM_PATH
-      ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
+    if JAR_CONTEXT
+      BASE_PATH = LAUNCH_PATH
+    else
+      BASE_PATH = Dir.pwd
     end
   end
-
-  module_function :setup_gems
 end
 
-$:.unshift RedStorm::TARGET_PATH
+puts("**** red_storm ** PRE PWD=#{Dir.pwd}")
+puts("**** red_storm ** PRE RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
+puts("**** red_storm ** PRE RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
+puts("**** red_storm ** PRE RedStorm::BASE_PATH=#{RedStorm::BASE_PATH}")
 
+
+unless RedStorm::JAR_CONTEXT
+  puts("red_storm UNSHIFTING #{RedStorm::BASE_PATH}/lib")
+  $:.unshift "#{RedStorm::BASE_PATH}/lib" 
+end
+
+unless RedStorm::TOPOLOGY_LAUNCHED
+  require 'red_storm/environment'
+  # setup gems env only in JAR context otherwise it has already been setup
+  # in topology_launcher.rb 
+  RedStorm.setup_gems if RedStorm::JAR_CONTEXT
+end
 
 require 'red_storm/version'
 require 'red_storm/configuration'
@@ -47,12 +48,12 @@ require 'red_storm/simple_bolt'
 require 'red_storm/simple_spout'
 require 'red_storm/simple_topology'
 
-puts("************************ PWD=#{Dir.pwd}")
-puts("************************ RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
-puts("************************ RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
-puts("************************ RedStorm::REDSTORM_HOME=#{RedStorm::REDSTORM_HOME}")
-puts("************************ RedStorm::TARGET_PATH=#{RedStorm::TARGET_PATH}")
-puts("************************ RedStorm::GEM_PATH=#{RedStorm::GEM_PATH}")
-puts("************************ ENV['BUNDLE_GEMFILE']=#{ENV['BUNDLE_GEMFILE']}")
-puts("************************ ENV['BUNDLE_PATH']=#{ENV['BUNDLE_PATH']}")
-puts("************************ ENV['GEM_PATH']=#{ENV['GEM_PATH']}")
+puts("**** red_storm ** POST PWD=#{Dir.pwd}")
+puts("**** red_storm ** POST edStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
+puts("**** red_storm ** POST RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
+puts("**** red_storm ** POST RedStorm::REDSTORM_HOME=#{RedStorm::REDSTORM_HOME}")
+puts("**** red_storm ** POST RedStorm::TARGET_PATH=#{RedStorm::TARGET_PATH}")
+puts("**** red_storm ** POST RedStorm::GEM_PATH=#{RedStorm::GEM_PATH}")
+puts("**** red_storm ** POST ENV['BUNDLE_GEMFILE']=#{ENV['BUNDLE_GEMFILE']}")
+puts("**** red_storm ** POST ENV['BUNDLE_PATH']=#{ENV['BUNDLE_PATH']}")
+puts("**** red_storm ** POST ENV['GEM_PATH']=#{ENV['GEM_PATH']}")

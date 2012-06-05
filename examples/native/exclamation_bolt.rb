@@ -10,6 +10,9 @@ module RedStorm
         @collector.ack(tuple)
       end
 
+      def get_component_configuration
+      end
+
       def declare_output_fields(declarer)
         declarer.declare(Fields.new("word"))
       end

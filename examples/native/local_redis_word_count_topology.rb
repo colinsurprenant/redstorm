@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'redis'
 require 'thread'
 require 'lib/red_storm'
@@ -21,6 +22,9 @@ module RedStorm
         else
           sleep(0.1)
         end
+      end
+
+      def get_component_configuration
       end
 
       def declare_output_fields(declarer)
@@ -51,7 +55,7 @@ module RedStorm
         builder.setSpout('RedisWordSpout', JRubySpout.new(base_class_path, "RedStorm::Examples::RedisWordSpout"), 1)
         builder.setBolt('WordCountBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::WordCountBolt"), 3).fieldsGrouping('RedisWordSpout', Fields.new("word"))
 
-        conf = Config.new
+        conf = Backtype::Config.new
         conf.setDebug(true)
         conf.setMaxTaskParallelism(3)
 

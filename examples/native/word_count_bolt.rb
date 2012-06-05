@@ -15,6 +15,9 @@ module RedStorm
         @collector.emit(Values.new(word, @counts[word]))
       end
 
+      def get_component_configuration
+      end
+
       def declare_output_fields(declarer)
         declarer.declare(Fields.new("word", "count"))
       end

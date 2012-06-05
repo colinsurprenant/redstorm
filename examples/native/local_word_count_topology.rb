@@ -14,7 +14,7 @@ module Examples
       builder.setBolt('SplitSentenceBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::SplitSentenceBolt"), 8).shuffleGrouping('RandomSentenceSpout')
       builder.setBolt('WordCountBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::WordCountBolt"), 12).fieldsGrouping('SplitSentenceBolt', Fields.new("word"))
 
-      conf = Config.new
+      conf = Backtype::Config.new
       conf.setDebug(true)
       conf.setMaxTaskParallelism(3)
 

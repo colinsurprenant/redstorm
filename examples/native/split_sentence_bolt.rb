@@ -9,6 +9,9 @@ module RedStorm
         tuple.getString(0).split(" ").each {|w| @collector.emit(Values.new(w)) }
       end
 
+      def get_component_configuration
+      end
+
       def declare_output_fields(declarer)
         declarer.declare(Fields.new("word"))
       end

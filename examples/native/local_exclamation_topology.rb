@@ -17,7 +17,7 @@ module RedStorm
         builder.setBolt('ExclamationBolt1', JRubyBolt.new(base_class_path, 'RedStorm::Examples::ExclamationBolt'), 3).shuffleGrouping('TestWordSpout')
         builder.setBolt('ExclamationBolt2', JRubyBolt.new(base_class_path, 'RedStorm::Examples::ExclamationBolt'), 3).shuffleGrouping('ExclamationBolt1')
                 
-        conf = Config.new
+        conf = Backtype::Config.new
         conf.setDebug(true)
         
         cluster = LocalCluster.new

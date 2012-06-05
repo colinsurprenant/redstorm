@@ -14,6 +14,9 @@ module RedStorm
         @collector.ack(tuple)
       end
 
+      def get_component_configuration
+      end
+
       def declare_output_fields(declarer)
         declarer.declare(Fields.new("word"))
       end
@@ -31,7 +34,7 @@ module RedStorm
         builder.setBolt('ExclamationBolt21', JRubyBolt.new(base_class_path, "RedStorm::Examples::ExclamationBolt2"), 3).shuffleGrouping('TestWordSpout')
         builder.setBolt('ExclamationBolt22', JRubyBolt.new(base_class_path, "RedStorm::Examples::ExclamationBolt2"), 2).shuffleGrouping('ExclamationBolt21')
                 
-        conf = Config.new
+        conf = Backtype::Config.new
         conf.setDebug(true)
         
         cluster = LocalCluster.new

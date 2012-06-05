@@ -1,13 +1,14 @@
 require 'ant'
+require 'red_storm'
 
-begin
-  # will work from gem, since lib dir is in gem require_paths
-  require 'red_storm'
-rescue LoadError
-  # will work within RedStorm dev project
-  $:.unshift './lib'
-  require 'red_storm'
-end
+# begin
+#   # will work from gem, since lib dir is in gem require_paths
+#   require 'red_storm'
+# rescue LoadError
+#   # will work within RedStorm dev project
+#   $:.unshift './lib'
+#   require 'red_storm'
+# end
  
 INSTALL_STORM_VERSION = "0.7.1"
 INSTALL_JRUBY_VERSION = "1.6.7"
@@ -66,12 +67,12 @@ task :install => [:deps, :build, :gems] do
 end
 
 task :unpack do
-  system("rmvn dependency:unpack \
-          -f #{RedStorm::REDSTORM_HOME}/pom.xml \
-          -DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} \
-          -DmarkersDirectory=#{TARGET_MARKERS_DIR} \
-          -Dstorm-storm.version=#{INSTALL_STORM_VERSION} \
-          -Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
+  system("rmvn dependency:unpack " + \
+         "-f #{RedStorm::REDSTORM_HOME}/pom.xml " + \
+         "-DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} " + \
+         "-DmarkersDirectory=#{TARGET_MARKERS_DIR} " + \
+         "-Dstorm-storm.version=#{INSTALL_STORM_VERSION} " + \
+         "-Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
 end
 
 task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
@@ -84,7 +85,7 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
       exclude :name => "bundler/.bundle/**"
     end
     # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
-    # in bolt works in jar context
+    # in bolts/spouts works in jar context
     fileset :dir => TARGET_LIB_DIR do
       exclude :name => "tasks/**"
     end
@@ -116,14 +117,14 @@ end
 task :deps => :setup do
   puts("\n--> Installing dependencies")
   # install maven dependencies in target
-  system("rmvn dependency:copy-dependencies \
-          -f #{RedStorm::REDSTORM_HOME}/pom.xml \
-          -DoutputDirectory=#{TARGET_DEPENDENCY_DIR} \
-          -DmarkersDirectory=#{TARGET_MARKERS_DIR} \
-          -Dstorm-storm.version=#{INSTALL_STORM_VERSION} \
-          -Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
+  system("rmvn dependency:copy-dependencies " + \
+         "-f #{RedStorm::REDSTORM_HOME}/pom.xml " + \
+         "-DoutputDirectory=#{TARGET_DEPENDENCY_DIR} " + \
+         "-DmarkersDirectory=#{TARGET_MARKERS_DIR} " + \
+         "-Dstorm-storm.version=#{INSTALL_STORM_VERSION} " + \
+         "-Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
+
   # copy RedStorm lib dir in target
-  puts("cp -r #{REDSTORM_LIB_DIR} #{TARGET_DIR}")
   system("cp -r #{REDSTORM_LIB_DIR} #{TARGET_DIR}")
 end
 
@@ -147,8 +148,14 @@ end
 task :bundle, [:bundler_options] => :gems do |t, args|
   bundler_options = args[:bundler_options].to_s.split(":").join(" ")
 
-  # basically copy specified Gemfile to target/gems/bundler and install into this dir
-  gemfile = bundler_options =~ /--gemfile\s+([^\s]+)/ ? $1 : DEFAULT_GEMFILE
+  gemfile = ""
+  if bundler_options.split(" ").size == 1
+    gemfile = bundler_options
+    bundler_options = ""
+  else
+    gemfile = (bundler_options =~ /--gemfile\s+([^\s]+)/) ? $1 : DEFAULT_GEMFILE
+  end
+
   if bundler_options =~ /--gemfile\s+[^\s]+/
     bundler_options.gsub!(/--gemfile\s+[^\s]+/, "--gemfile ./Gemfile ")
   else
@@ -162,8 +169,6 @@ task :bundle, [:bundler_options] => :gems do |t, args|
     cmd = "(cd #{TARGET_GEMS_DIR}/bundler; " + \
           "unset BUNDLE_GEMFILE; " + \
           "unset BUNDLE_PATH; " + \
-          # "unset BUNDLE_FROZEN; " + \
-          # "unset BUNDLE_DISABLE_SHARED_GEMS; " + \
           "unset RUBYOPT; " + \
           "export GEM_PATH=#{RedStorm::GEM_PATH}; " + \
           "export GEM_HOME=#{RedStorm::GEM_PATH}; " + \

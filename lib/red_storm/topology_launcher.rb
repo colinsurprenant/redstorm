@@ -1,14 +1,4 @@
 require 'java'
-# require 'rubygems'
-
-# begin
-#   # will work from gem, since lib dir is in gem require_paths
-#   require 'red_storm'
-# rescue LoadError
-#   # will work within RedStorm dev project
-#   $:.unshift './lib'
-#   require 'red_storm'
-# end
 
 # see https://github.com/colinsurprenant/redstorm/issues/7
 module Backtype
@@ -27,6 +17,9 @@ java_import 'redstorm.storm.jruby.JRubySpout'
 
 java_package 'redstorm'
 
+# setup some environment constants
+# this is required here and in red_storm.rb which are both 
+# entry points in redstorm. 
 module RedStorm
   LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
   JAR_CONTEXT = !!(LAUNCH_PATH =~ /\.jar!$/)
@@ -39,12 +32,6 @@ module RedStorm
     LIB_PATH = "#{BASE_PATH}/target/lib"
   end
 end
-
-    puts("****TOPOLOGY LAUNCHER PRE ** PWD=#{Dir.pwd}")
-    puts("****TOPOLOGY LAUNCHER PRE ** RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
-    puts("****TOPOLOGY LAUNCHER PRE ** RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
-    puts("****TOPOLOGY LAUNCHER PRE ** RedStorm::BASE_PATH=#{RedStorm::BASE_PATH}")
-    puts("****TOPOLOGY LAUNCHER PRE ** RedStorm::LIB_PATH=#{RedStorm::LIB_PATH}")
 
 # TopologyLauncher is the application entry point when launching a topology. Basically it will 
 # call require on the specified Ruby topology class file path and call its start method
@@ -70,19 +57,6 @@ class TopologyLauncher
 
     require 'red_storm/environment'
     RedStorm.setup_gems
-
-    puts("****TOPOLOGY LAUNCHER POST ** PWD=#{Dir.pwd}")
-    puts("****TOPOLOGY LAUNCHER POST ** RedStorm::JAR_CONTEXT=#{RedStorm::JAR_CONTEXT}")
-    puts("****TOPOLOGY LAUNCHER POST ** RedStorm::LAUNCH_PATH=#{RedStorm::LAUNCH_PATH}")
-    puts("****TOPOLOGY LAUNCHER POST ** RedStorm::REDSTORM_HOME=#{RedStorm::REDSTORM_HOME}")
-    puts("****TOPOLOGY LAUNCHER POST ** RedStorm::TARGET_PATH=#{RedStorm::TARGET_PATH}")
-    puts("****TOPOLOGY LAUNCHER POST ** RedStorm::GEM_PATH=#{RedStorm::GEM_PATH}")
-    puts("****TOPOLOGY LAUNCHER POST ** RedStorm::BUNDLER_PATH=#{RedStorm::BUNDLE_PATH}")
-    puts("****TOPOLOGY LAUNCHER POST ** RedStorm::BUNDLE_GEMFILE=#{RedStorm::BUNDLE_GEMFILE}")
-    puts("****TOPOLOGY LAUNCHER POST ** ENV['BUNDLE_GEMFILE']=#{ENV['BUNDLE_GEMFILE']}")
-    puts("****TOPOLOGY LAUNCHER POST ** ENV['BUNDLE_PATH']=#{ENV['BUNDLE_PATH']}")
-    puts("****TOPOLOGY LAUNCHER POST ** ENV['GEM_PATH']=#{ENV['GEM_PATH']}")
-
 
     require "#{class_path}" 
 

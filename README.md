@@ -180,11 +180,14 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 ### Workflow
 
 - fork project and create branch
+
 - install required gems
 
   ```sh
   $ jruby --1.9 -S bundle install
   ```
+
+---
 
 - install dependencies in `target/dependencies`
 
@@ -192,13 +195,19 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
   $ bin/redstorm --1.9 deps
   ```
 
+  **if you modify any of the RedStorm Ruby code** in `lib/red_storm`, you need to run this to refresh code in `target/`.
+
+---
+
 - generate and build Java source into `target/classes`
 
   ```sh
   $ bin/redstorm --1.9 build
   ```
 
-  if you modify any of the Java binding code, you need to run this to rebuild the bindings
+  **if you modify any of the Java binding code**, you need to run this to rebuild the bindings
+
+---
 
 - run topology in **local** Storm mode
 
@@ -208,11 +217,15 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 
   If you only make changes to your topology code, this is the only step you need to repeat to try your updated code.
 
+---
+
 - generate remote cluster topology jar into `target/cluster-topology.jar`, including the `mydir/` directory.
 
   ```sh
   $ bin/redstorm --1.9 jar mydir otherdir1 otherdir2 ...
   ```
+
+---
 
 - **if you add/change** Gemfile for your topology, install gems in `target/gems`. Alternate gemfile path can be specified using --gemfile=GEMFILE
 

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'java'
 require 'red_storm/simple_topology'
 
 describe RedStorm::SimpleTopology do

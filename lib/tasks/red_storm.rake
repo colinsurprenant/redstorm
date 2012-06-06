@@ -10,7 +10,7 @@ require 'red_storm'
 #   require 'red_storm'
 # end
  
-INSTALL_STORM_VERSION = "0.7.1"
+INSTALL_STORM_VERSION = "0.7.2"
 INSTALL_JRUBY_VERSION = "1.6.7"
 DEFAULT_GEMFILE = "Gemfile"
 

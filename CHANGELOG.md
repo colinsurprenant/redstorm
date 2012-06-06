@@ -35,3 +35,6 @@
 - better handling of enviroments and paths
 - redstorm bundle command to install topology gems
 - issue #26, fixed examples/native for 0.5.1 compatibility
+
+# 0.5.2, tbd
+- issue #29, Storm 0.7.2

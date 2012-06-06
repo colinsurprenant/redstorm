@@ -111,11 +111,11 @@ module RedStorm
 
       builder = TopologyBuilder.new
       self.class.spouts.each do |spout|
-        declarer = builder.setSpout(spout.id, spout.new_instance(base_class_path), spout.parallelism)
+	declarer = builder.setSpout(spout.id, spout.new_instance(base_class_path), java.lang.Integer.new(spout.parallelism))
         declarer.addConfigurations(spout.config)
       end
       self.class.bolts.each do |bolt|
-        declarer = builder.setBolt(bolt.id, bolt.new_instance(base_class_path), bolt.parallelism)
+	declarer = builder.setBolt(bolt.id, bolt.new_instance(base_class_path), java.lang.Integer.new(bolt.parallelism))
         declarer.addConfigurations(bolt.config)
         bolt.define_grouping(declarer)
       end

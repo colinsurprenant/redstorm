@@ -56,6 +56,8 @@ module RedStorm
             declarer.globalGrouping(source_id)
           when :shuffle
             declarer.shuffleGrouping(source_id)
+          when :local_or_shuffle
+            declarer.localOrShuffleGrouping(source_id)
           when :none
             declarer.noneGrouping(source_id)
           when :all

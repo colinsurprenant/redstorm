@@ -384,6 +384,18 @@ describe RedStorm::SimpleTopology do
         Topology1.new.start("base_path", :cluster)
       end
 
+      it "should support local_or_shuffle" do
+        class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1, :id => 1
+          bolt BoltClass1 do
+            source 1, :local_or_shuffle
+          end
+        end
+
+        @declarer.should_receive("localOrShuffleGrouping").with('1')
+        Topology1.new.start("base_path", :cluster)
+      end
+
       it "should support none" do
         class Topology1 < RedStorm::SimpleTopology
           spout SpoutClass1, :id => 1

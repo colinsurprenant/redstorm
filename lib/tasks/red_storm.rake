@@ -75,7 +75,7 @@ task :unpack do
     puts("Extracting #{jar}")
     zf = JavaZip::ZipFile.new(jar)
     zf.entries.each do |entry|
-      next if entry.directory?
+      next if entry.directory? || entry.name.include?('-source.')
       destination = "#{TARGET_DEPENDENCY_UNPACKED_DIR}/#{entry.name}"
       in_io = zf.get_input_stream(entry).to_io
       FileUtils.mkdir_p(File.dirname(destination))
@@ -122,18 +122,26 @@ task :examples do
   FileUtils.cp_r(Dir["#{SRC_EXAMPLES}/*"], DST_EXAMPLES)
 end
 
-task :deps => :setup do
-  puts("\n--> Installing dependencies")
-  # install maven dependencies in target
-  system("rmvn dependency:copy-dependencies " + \
-         "-f #{RedStorm::REDSTORM_HOME}/pom.xml " + \
-         "-DoutputDirectory=#{TARGET_DEPENDENCY_DIR} " + \
-         "-DmarkersDirectory=#{TARGET_MARKERS_DIR} " + \
-         "-Dstorm-storm.version=#{INSTALL_STORM_VERSION} " + \
-         "-Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
+task :copy_jruby do
+  jruby_jar = File.join(ENV['MY_RUBY_HOME'], 'lib', 'jruby.jar')
+  FileUtils.cp(jruby_jar, TARGET_DEPENDENCY_DIR)
+end
 
-  # copy RedStorm lib dir in target
+task :copy_red_storm do
   FileUtils.cp_r(REDSTORM_LIB_DIR, TARGET_DIR)
+end
+
+task :deps => [:setup, :copy_jruby, :copy_red_storm] do
+  puts("\n--> Installing dependencies")
+
+  configuration = {
+    :repositories => {:clojars => 'http://clojars.org/repo/'},
+    :dependencies => ["storm:storm:#{INSTALL_STORM_VERSION}"],
+    :destination => TARGET_DEPENDENCY_DIR
+  }
+
+  installer = PomPomPom::Runner.new(configuration)
+  installer.run
 end
 
 task :build => :setup do

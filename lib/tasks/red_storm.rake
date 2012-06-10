@@ -1,5 +1,6 @@
 require 'rubygems/commands/install_command'
 require 'ant'
+require 'jruby/jrubyc'
 require 'red_storm'
 
 # begin
@@ -213,5 +214,14 @@ end
 
 def build_jruby(source_path)
   puts("\n--> Compiling JRuby")
-  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-#{INSTALL_STORM_VERSION}.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
+  Dir.chdir(RedStorm::REDSTORM_HOME) do
+    argv = []
+    argv << '-t' << TARGET_SRC_DIR
+    argv << '--verbose'
+    argv << '--java'
+    argv << '-c' << %("#{TARGET_DEPENDENCY_DIR}/storm-#{INSTALL_STORM_VERSION}.jar")
+    argv << '-c' << %("#{TARGET_CLASSES_DIR}")
+    argv << source_path
+    status =  JRuby::Compiler::compile_argv(argv)
+  end
 end

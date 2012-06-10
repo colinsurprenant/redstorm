@@ -112,8 +112,8 @@ task :examples do
   end
 
   puts("\n--> Installing examples into #{DST_EXAMPLES}")
-  system("mkdir #{DST_EXAMPLES}")
-  system("cp -r #{SRC_EXAMPLES}/* #{DST_EXAMPLES}")
+  FileUtils.mkdir(DST_EXAMPLES)
+  FileUtils.cp_r(Dir["#{SRC_EXAMPLES}/*"], DST_EXAMPLES)
 end
 
 task :deps => :setup do
@@ -127,7 +127,7 @@ task :deps => :setup do
          "-Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
 
   # copy RedStorm lib dir in target
-  system("cp -r #{REDSTORM_LIB_DIR} #{TARGET_DIR}")
+  FileUtils.cp_r(REDSTORM_LIB_DIR, TARGET_DIR)
 end
 
 task :build => :setup do

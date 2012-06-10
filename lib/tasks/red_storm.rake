@@ -1,3 +1,4 @@
+require 'rubygems/commands/install_command'
 require 'ant'
 require 'red_storm'
 
@@ -181,8 +182,16 @@ end
 
 task :gems => :setup do
   puts("\n--> Installing base gems in #{TARGET_GEMS_DIR}/gems")
-  system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
-  system("gem install rake --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
+  begin
+    cmd = Gem::Commands::InstallCommand.new
+    cmd.options[:install_dir] = "#{TARGET_GEMS_DIR}/gems"
+    cmd.options[:generate_ri] = false
+    cmd.options[:generate_rdoc] = false
+    cmd.options[:verbose] = false
+    cmd.options[:args] = %w[bundler rake]
+    cmd.execute
+  rescue Gem::SystemExitException
+  end
 end
 
 def build_java_dir(source_folder)

@@ -33,6 +33,10 @@ REDSTORM_LIB_DIR = "#{RedStorm::REDSTORM_HOME}/lib"
 SRC_EXAMPLES = "#{RedStorm::REDSTORM_HOME}/examples"
 DST_EXAMPLES = "#{CWD}/examples"
 
+module JavaZip
+  import 'java.util.zip.ZipFile'
+end
+
 task :launch, :env, :class_file do |t, args|
   version_token = RedStorm::RUNTIME['RUBY_VERSION'] == "--1.9" ? "RUBY1_9" : "RUBY1_8"
   # gem_home = ENV["GEM_HOME"].to_s.empty? ? " -Djruby.gem.home=`gem env home`" : ""
@@ -69,12 +73,17 @@ task :install => [:deps, :build, :gems] do
 end
 
 task :unpack do
-  system("rmvn dependency:unpack " + \
-         "-f #{RedStorm::REDSTORM_HOME}/pom.xml " + \
-         "-DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} " + \
-         "-DmarkersDirectory=#{TARGET_MARKERS_DIR} " + \
-         "-Dstorm-storm.version=#{INSTALL_STORM_VERSION} " + \
-         "-Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
+  Dir["#{TARGET_DEPENDENCY_DIR}/*.jar"].each do |jar|
+    puts("Extracting #{jar}")
+    zf = JavaZip::ZipFile.new(jar)
+    zf.entries.each do |entry|
+      next if entry.directory?
+      destination = "#{TARGET_DEPENDENCY_UNPACKED_DIR}/#{entry.name}"
+      in_io = zf.get_input_stream(entry).to_io
+      FileUtils.mkdir_p(File.dirname(destination))
+      File.open(destination, 'w') { |out_io| out_io.write(in_io.read) }
+    end
+  end
 end
 
 task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|

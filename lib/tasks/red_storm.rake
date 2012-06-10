@@ -156,37 +156,10 @@ task :build => :setup do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
-task :bundle, [:bundler_options] => :gems do |t, args|
-  bundler_options = args[:bundler_options].to_s.split(":").join(" ")
-
-  gemfile = ""
-  if bundler_options.split(" ").size == 1
-    gemfile = bundler_options
-    bundler_options = ""
-  else
-    gemfile = (bundler_options =~ /--gemfile\s+([^\s]+)/) ? $1 : DEFAULT_GEMFILE
-  end
-
-  if bundler_options =~ /--gemfile\s+[^\s]+/
-    bundler_options.gsub!(/--gemfile\s+[^\s]+/, "--gemfile ./Gemfile ")
-  else
-    bundler_options = bundler_options + " --gemfile ./Gemfile"
-  end
-  bundler_options = bundler_options + " --path ./"
-
-  if File.exist?(gemfile)
-    puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler using #{gemfile}")
-    system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/Gemfile")
-    cmd = "(cd #{TARGET_GEMS_DIR}/bundler; " + \
-          "unset BUNDLE_GEMFILE; " + \
-          "unset BUNDLE_PATH; " + \
-          "unset RUBYOPT; " + \
-          "export GEM_PATH=#{RedStorm::GEM_PATH}; " + \
-          "export GEM_HOME=#{RedStorm::GEM_PATH}; " + \
-          "jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options})"
-    system(cmd)
-  elsif gemfile != DEFAULT_GEMFILE
-    puts("WARNING: #{gemfile} not found, cannot bundle gems")
+task :bundle, [:bundler_options] do |t, args|
+  FileUtils.mkdir_p(TARGET_GEMS_DIR)
+  Bundler.load.specs.each do |spec|
+    FileUtils.cp_r(spec.full_gem_path, "#{TARGET_GEMS_DIR}/#{spec.full_name}")
   end
 end
 

@@ -1,6 +1,6 @@
-require 'rubygems/commands/install_command'
 require 'ant'
 require 'jruby/jrubyc'
+require 'pompompom'
 require 'red_storm'
 
 # begin
@@ -13,7 +13,6 @@ require 'red_storm'
 # end
  
 INSTALL_STORM_VERSION = "0.7.1"
-INSTALL_JRUBY_VERSION = "1.6.7"
 DEFAULT_GEMFILE = "Gemfile"
 
 CWD = Dir.pwd
@@ -24,7 +23,6 @@ TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"
 TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
 TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
 TARGET_MARKERS_DIR = "#{TARGET_DIR}/dependency-markers"
-TARGET_GEMS_DIR = "#{TARGET_DIR}/gems"
 TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
 
 REDSTORM_JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
@@ -58,17 +56,17 @@ task :setup do
   puts("\n--> Setting up target directories")
   ant.mkdir :dir => TARGET_DIR 
   ant.mkdir :dir => TARGET_CLASSES_DIR 
+  ant.mkdir :dir => TARGET_DEPENDENCY_DIR
   ant.mkdir :dir => TARGET_SRC_DIR
-  ant.mkdir :dir => TARGET_GEMS_DIR
-  ant.mkdir :dir => "#{TARGET_GEMS_DIR}/gems"
-  ant.mkdir :dir => "#{TARGET_GEMS_DIR}/bundler"
+  ant.mkdir :dir => RedStorm::GEM_PATH
+  ant.mkdir :dir => "#{RedStorm::GEM_PATH}/gems"
   ant.path :id => 'classpath' do  
     fileset :dir => TARGET_DEPENDENCY_DIR  
     fileset :dir => TARGET_CLASSES_DIR  
   end  
 end
 
-task :install => [:deps, :build, :gems] do
+task :install => [:deps, :build] do
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
@@ -91,17 +89,16 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-    fileset :dir => TARGET_GEMS_DIR do
-      # remove bundler config dir to avoid setting BUNDLE_PATH
-      exclude :name => "bundler/.bundle/**"
-    end
+    fileset :dir => "#{RedStorm::GEM_PATH}/gem"
     # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
     # in bolts/spouts works in jar context
     fileset :dir => TARGET_LIB_DIR do
       exclude :name => "tasks/**"
     end
-    fileset :dir => CWD do
-      args[:include_dir].split(":").each{|dir| include :name => "#{dir}/**/*"}
+    if args[:include_dir]
+      fileset :dir => CWD do
+        args[:include_dir].split(":").each{|dir| include :name => "#{dir}/**/*"}
+      end
     end
     manifest do
       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
@@ -157,23 +154,9 @@ task :build => :setup do
 end
 
 task :bundle, [:bundler_options] do |t, args|
-  FileUtils.mkdir_p(TARGET_GEMS_DIR)
-  Bundler.load.specs.each do |spec|
-    FileUtils.cp_r(spec.full_gem_path, "#{TARGET_GEMS_DIR}/#{spec.full_name}")
-  end
-end
-
-task :gems => :setup do
-  puts("\n--> Installing base gems in #{TARGET_GEMS_DIR}/gems")
-  begin
-    cmd = Gem::Commands::InstallCommand.new
-    cmd.options[:install_dir] = "#{TARGET_GEMS_DIR}/gems"
-    cmd.options[:generate_ri] = false
-    cmd.options[:generate_rdoc] = false
-    cmd.options[:verbose] = false
-    cmd.options[:args] = %w[bundler rake]
-    cmd.execute
-  rescue Gem::SystemExitException
+  FileUtils.mkdir_p("#{RedStorm::GEM_PATH}/gems")
+  Bundler.load.requested_specs.each do |spec|
+    FileUtils.cp_r(spec.full_gem_path, "#{RedStorm::GEM_PATH}/gems/#{spec.full_name}")
   end
 end
 

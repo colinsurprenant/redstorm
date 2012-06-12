@@ -60,7 +60,7 @@ task :setup do
   ant.mkdir :dir => TARGET_DEPENDENCY_DIR
   ant.mkdir :dir => TARGET_SRC_DIR
   ant.mkdir :dir => RedStorm::GEM_PATH
-  ant.mkdir :dir => "#{RedStorm::GEM_PATH}/gems"
+  ant.mkdir :dir => File.dirname(RedStorm::BUNDLE_GEMFILE)
   ant.path :id => 'classpath' do  
     fileset :dir => TARGET_DEPENDENCY_DIR  
     fileset :dir => TARGET_CLASSES_DIR  
@@ -93,7 +93,7 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-    fileset :dir => "#{RedStorm::GEM_PATH}/gem"
+    fileset :dir => "#{RedStorm::GEM_PATH}"
     # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
     # in bolts/spouts works in jar context
     fileset :dir => TARGET_LIB_DIR do
@@ -163,10 +163,20 @@ task :build => :setup do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
-task :bundle, [:bundler_options] do |t, args|
-  FileUtils.mkdir_p("#{RedStorm::GEM_PATH}/gems")
+task :bundle, [:bundler_options] => :setup do |t, args|
+  load_path = []
   Bundler.load.requested_specs.each do |spec|
-    FileUtils.cp_r(spec.full_gem_path, "#{RedStorm::GEM_PATH}/gems/#{spec.full_name}")
+    spec.require_paths.each { |rp| load_path << "#{spec.full_name}/#{rp}" }
+    destination_path = "#{RedStorm::GEM_PATH}/#{spec.full_name}"
+    unless Dir.exists?(destination_path)
+      FileUtils.cp_r(spec.full_gem_path, destination_path)
+      FileUtils.rm_rf("#{destination_path}/.git")
+    end
+  end
+  File.open("#{TARGET_LIB_DIR}/red_storm/setup.rb", 'w') do |io|
+    load_path.each do |path|
+      io.puts(%|$LOAD_PATH << File.join(RedStorm::GEM_PATH, '#{path}')|)
+    end
   end
 end
 

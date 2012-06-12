@@ -13,6 +13,7 @@ require 'red_storm'
 # end
  
 INSTALL_STORM_VERSION = "0.7.1"
+INSTALL_JRUBY_VERSION = "1.6.7"
 DEFAULT_GEMFILE = "Gemfile"
 
 CWD = Dir.pwd
@@ -66,16 +67,19 @@ task :setup do
   end  
 end
 
-task :install => [:deps, :build] do
+task :install => [:deps, :build, :copy_red_storm] do
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
 task :unpack do
-  Dir["#{TARGET_DEPENDENCY_DIR}/*.jar"].each do |jar|
+  # TODO: only jruby-complete needs to be unpacked, need to determine which jars it depends on
+  unpack_artifacts = %w[ant ant-launcher asm asm-analysis asm-commons asm-tree asm-util bsf bytelist constantine jaffl jcodings jffi jline jnr-netdb jnr-posix jnr-x86asm joda-time joni jruby-complete snakeyaml]
+  unpack_glob = "#{TARGET_DEPENDENCY_DIR}/{#{unpack_artifacts.join(',')}}-*-jar.jar"
+  Dir[unpack_glob].each do |jar|
     puts("Extracting #{jar}")
     zf = JavaZip::ZipFile.new(jar)
     zf.entries.each do |entry|
-      next if entry.directory? || entry.name.include?('-source.')
+      next if entry.directory?
       destination = "#{TARGET_DEPENDENCY_UNPACKED_DIR}/#{entry.name}"
       in_io = zf.get_input_stream(entry).to_io
       FileUtils.mkdir_p(File.dirname(destination))
@@ -122,21 +126,19 @@ task :examples do
   FileUtils.cp_r(Dir["#{SRC_EXAMPLES}/*"], DST_EXAMPLES)
 end
 
-task :copy_jruby do
-  jruby_jar = File.join(ENV['MY_RUBY_HOME'], 'lib', 'jruby.jar')
-  FileUtils.cp(jruby_jar, TARGET_DEPENDENCY_DIR)
-end
-
 task :copy_red_storm do
   FileUtils.cp_r(REDSTORM_LIB_DIR, TARGET_DIR)
 end
 
-task :deps => [:setup, :copy_jruby, :copy_red_storm] do
+task :deps => :setup do
   puts("\n--> Installing dependencies")
 
   configuration = {
     :repositories => {:clojars => 'http://clojars.org/repo/'},
-    :dependencies => ["storm:storm:#{INSTALL_STORM_VERSION}"],
+    :dependencies => [
+      "storm:storm:#{INSTALL_STORM_VERSION}",
+      "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}"
+    ],
     :destination => TARGET_DEPENDENCY_DIR
   }
 

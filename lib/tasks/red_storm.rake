@@ -71,8 +71,7 @@ task :install => [:deps, :build, :copy_red_storm] do
 end
 
 task :unpack do
-  # TODO: only jruby-complete needs to be unpacked, need to determine which jars it depends on
-  unpack_artifacts = %w[ant ant-launcher asm asm-analysis asm-commons asm-tree asm-util bsf bytelist constantine jaffl jcodings jffi jline jnr-netdb jnr-posix jnr-x86asm joda-time joni jruby-complete snakeyaml]
+  unpack_artifacts = %w[jruby-complete]
   unpack_glob = "#{TARGET_DEPENDENCY_DIR}/{#{unpack_artifacts.join(',')}}-*-jar.jar"
   Dir[unpack_glob].each do |jar|
     puts("Extracting #{jar}")

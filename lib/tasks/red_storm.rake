@@ -162,6 +162,8 @@ task :build => :setup do
 end
 
 task :bundle, [:groups] => :setup do |t, args|
+  puts("\n--> Copying gems")
+
   args.with_defaults(:groups => 'default')
   groups = args[:groups].split(':').map(&:to_sym)
   load_path = []

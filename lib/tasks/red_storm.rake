@@ -60,7 +60,6 @@ task :setup do
   ant.mkdir :dir => TARGET_DEPENDENCY_DIR
   ant.mkdir :dir => TARGET_SRC_DIR
   ant.mkdir :dir => RedStorm::GEM_PATH
-  ant.mkdir :dir => File.dirname(RedStorm::BUNDLE_GEMFILE)
   ant.path :id => 'classpath' do  
     fileset :dir => TARGET_DEPENDENCY_DIR  
     fileset :dir => TARGET_CLASSES_DIR  
@@ -163,14 +162,19 @@ task :build => :setup do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
-task :bundle, [:bundler_options] => :setup do |t, args|
+task :bundle, [:groups] => :setup do |t, args|
+  args.with_defaults(:groups => 'default')
+  groups = args[:groups].split(':').map(&:to_sym)
   load_path = []
-  Bundler.load.requested_specs.each do |spec|
-    spec.require_paths.each { |rp| load_path << "#{spec.full_name}/#{rp}" }
-    destination_path = "#{RedStorm::GEM_PATH}/#{spec.full_name}"
-    unless Dir.exists?(destination_path)
-      FileUtils.cp_r(spec.full_gem_path, destination_path)
-      FileUtils.rm_rf("#{destination_path}/.git")
+  Bundler.definition.specs_for(groups).each do |spec|
+    unless spec.full_name =~ /^bundler-\d+/
+      spec.require_paths.each { |rp| load_path << "#{spec.full_name}/#{rp}" }
+      destination_path = "#{RedStorm::GEM_PATH}/#{spec.full_name}"
+      unless Dir.exists?(destination_path)
+        FileUtils.cp_r(spec.full_gem_path, destination_path)
+        # strip the .git directory from git dependencies, it can be huge
+        FileUtils.rm_rf("#{destination_path}/.git")
+      end
     end
   end
   File.open("#{TARGET_LIB_DIR}/red_storm/setup.rb", 'w') do |io|

@@ -235,7 +235,6 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 
   **do not forget** to rerurn `bin/redstorm --1.9 jar ...` to pick up these gems, before submitting your topology on a remote cluster.
 
-
 ### How to Contribute
 
 Fork the project, create a branch and submit a pull request.
@@ -249,6 +248,12 @@ Some ways you can contribute:
 - by writing code
 - by refactoring code
 - ...
+
+## Projects using RedStorm
+
+If you want to list your RedStorm project here, contact me.
+
+- [Tweigeist](https://github.com/colinsurprenant/tweitgeist) - realtime computation of the top trending hashtags on Twitter. [Live Demo](http://tweitgeist.needium.com).
 
 ## Author
 Colin Surprenant, [@colinsurprenant][twitter], [http://github.com/colinsurprenant][github], colin.surprenant@gmail.com, colin.surprenant@needium.com

@@ -1,4 +1,6 @@
 require 'ant'
+require 'jruby/jrubyc'
+require 'pompompom'
 require 'red_storm'
 
 # begin
@@ -22,7 +24,6 @@ TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"
 TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
 TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
 TARGET_MARKERS_DIR = "#{TARGET_DIR}/dependency-markers"
-TARGET_GEMS_DIR = "#{TARGET_DIR}/gems"
 TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
 
 REDSTORM_JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
@@ -30,6 +31,10 @@ REDSTORM_LIB_DIR = "#{RedStorm::REDSTORM_HOME}/lib"
 
 SRC_EXAMPLES = "#{RedStorm::REDSTORM_HOME}/examples"
 DST_EXAMPLES = "#{CWD}/examples"
+
+module JavaZip
+  import 'java.util.zip.ZipFile'
+end
 
 task :launch, :env, :class_file do |t, args|
   version_token = RedStorm::RUNTIME['RUBY_VERSION'] == "--1.9" ? "RUBY1_9" : "RUBY1_8"
@@ -52,27 +57,33 @@ task :setup do
   puts("\n--> Setting up target directories")
   ant.mkdir :dir => TARGET_DIR 
   ant.mkdir :dir => TARGET_CLASSES_DIR 
+  ant.mkdir :dir => TARGET_DEPENDENCY_DIR
   ant.mkdir :dir => TARGET_SRC_DIR
-  ant.mkdir :dir => TARGET_GEMS_DIR
-  ant.mkdir :dir => "#{TARGET_GEMS_DIR}/gems"
-  ant.mkdir :dir => "#{TARGET_GEMS_DIR}/bundler"
+  ant.mkdir :dir => RedStorm::GEM_PATH
   ant.path :id => 'classpath' do  
     fileset :dir => TARGET_DEPENDENCY_DIR  
     fileset :dir => TARGET_CLASSES_DIR  
   end  
 end
 
-task :install => [:deps, :build, :gems] do
+task :install => [:deps, :build, :copy_red_storm] do
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
 task :unpack do
-  system("rmvn dependency:unpack " + \
-         "-f #{RedStorm::REDSTORM_HOME}/pom.xml " + \
-         "-DoutputDirectory=#{TARGET_DEPENDENCY_UNPACKED_DIR} " + \
-         "-DmarkersDirectory=#{TARGET_MARKERS_DIR} " + \
-         "-Dstorm-storm.version=#{INSTALL_STORM_VERSION} " + \
-         "-Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
+  unpack_artifacts = %w[jruby-complete]
+  unpack_glob = "#{TARGET_DEPENDENCY_DIR}/{#{unpack_artifacts.join(',')}}-*-jar.jar"
+  Dir[unpack_glob].each do |jar|
+    puts("Extracting #{jar}")
+    zf = JavaZip::ZipFile.new(jar)
+    zf.entries.each do |entry|
+      next if entry.directory?
+      destination = "#{TARGET_DEPENDENCY_UNPACKED_DIR}/#{entry.name}"
+      in_io = zf.get_input_stream(entry).to_io
+      FileUtils.mkdir_p(File.dirname(destination))
+      File.open(destination, 'w') { |out_io| out_io.write(in_io.read) }
+    end
+  end
 end
 
 task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
@@ -80,17 +91,16 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
   ant.jar :destfile => TARGET_CLUSTER_JAR do
     fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-    fileset :dir => TARGET_GEMS_DIR do
-      # remove bundler config dir to avoid setting BUNDLE_PATH
-      exclude :name => "bundler/.bundle/**"
-    end
+    fileset :dir => "#{RedStorm::GEM_PATH}"
     # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
     # in bolts/spouts works in jar context
     fileset :dir => TARGET_LIB_DIR do
       exclude :name => "tasks/**"
     end
-    fileset :dir => CWD do
-      args[:include_dir].split(":").each{|dir| include :name => "#{dir}/**/*"}
+    if args[:include_dir]
+      fileset :dir => CWD do
+        args[:include_dir].split(":").each{|dir| include :name => "#{dir}/**/*"}
+      end
     end
     manifest do
       attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
@@ -110,22 +120,28 @@ task :examples do
   end
 
   puts("\n--> Installing examples into #{DST_EXAMPLES}")
-  system("mkdir #{DST_EXAMPLES}")
-  system("cp -r #{SRC_EXAMPLES}/* #{DST_EXAMPLES}")
+  FileUtils.mkdir(DST_EXAMPLES)
+  FileUtils.cp_r(Dir["#{SRC_EXAMPLES}/*"], DST_EXAMPLES)
+end
+
+task :copy_red_storm do
+  FileUtils.cp_r(REDSTORM_LIB_DIR, TARGET_DIR)
 end
 
 task :deps => :setup do
   puts("\n--> Installing dependencies")
-  # install maven dependencies in target
-  system("rmvn dependency:copy-dependencies " + \
-         "-f #{RedStorm::REDSTORM_HOME}/pom.xml " + \
-         "-DoutputDirectory=#{TARGET_DEPENDENCY_DIR} " + \
-         "-DmarkersDirectory=#{TARGET_MARKERS_DIR} " + \
-         "-Dstorm-storm.version=#{INSTALL_STORM_VERSION} " + \
-         "-Dorg.jruby-jruby-complete.version=#{INSTALL_JRUBY_VERSION}")
 
-  # copy RedStorm lib dir in target
-  system("cp -r #{REDSTORM_LIB_DIR} #{TARGET_DIR}")
+  configuration = {
+    :repositories => {:clojars => 'http://clojars.org/repo/'},
+    :dependencies => [
+      "storm:storm:#{INSTALL_STORM_VERSION}",
+      "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}|transitive=false"
+    ],
+    :destination => TARGET_DEPENDENCY_DIR
+  }
+
+  installer = PomPomPom::Runner.new(configuration)
+  installer.run
 end
 
 task :build => :setup do
@@ -145,44 +161,28 @@ task :build => :setup do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
-task :bundle, [:bundler_options] => :gems do |t, args|
-  bundler_options = args[:bundler_options].to_s.split(":").join(" ")
+task :bundle, [:groups] => :setup do |t, args|
+  puts("\n--> Copying gems")
 
-  gemfile = ""
-  if bundler_options.split(" ").size == 1
-    gemfile = bundler_options
-    bundler_options = ""
-  else
-    gemfile = (bundler_options =~ /--gemfile\s+([^\s]+)/) ? $1 : DEFAULT_GEMFILE
+  args.with_defaults(:groups => 'default')
+  groups = args[:groups].split(':').map(&:to_sym)
+  load_path = []
+  Bundler.definition.specs_for(groups).each do |spec|
+    unless spec.full_name =~ /^bundler-\d+/
+      spec.require_paths.each { |rp| load_path << "#{spec.full_name}/#{rp}" }
+      destination_path = "#{RedStorm::GEM_PATH}/#{spec.full_name}"
+      unless Dir.exists?(destination_path)
+        FileUtils.cp_r(spec.full_gem_path, destination_path)
+        # strip the .git directory from git dependencies, it can be huge
+        FileUtils.rm_rf("#{destination_path}/.git")
+      end
+    end
   end
-
-  if bundler_options =~ /--gemfile\s+[^\s]+/
-    bundler_options.gsub!(/--gemfile\s+[^\s]+/, "--gemfile ./Gemfile ")
-  else
-    bundler_options = bundler_options + " --gemfile ./Gemfile"
+  File.open("#{TARGET_LIB_DIR}/red_storm/setup.rb", 'w') do |io|
+    load_path.each do |path|
+      io.puts(%|$LOAD_PATH << File.join(RedStorm::GEM_PATH, '#{path}')|)
+    end
   end
-  bundler_options = bundler_options + " --path ./"
-
-  if File.exist?(gemfile)
-    puts("\n--> Bundling gems in #{TARGET_GEMS_DIR}/bundler using #{gemfile}")
-    system("cp #{gemfile} #{TARGET_GEMS_DIR}/bundler/Gemfile")
-    cmd = "(cd #{TARGET_GEMS_DIR}/bundler; " + \
-          "unset BUNDLE_GEMFILE; " + \
-          "unset BUNDLE_PATH; " + \
-          "unset RUBYOPT; " + \
-          "export GEM_PATH=#{RedStorm::GEM_PATH}; " + \
-          "export GEM_HOME=#{RedStorm::GEM_PATH}; " + \
-          "jruby #{RedStorm::RUNTIME['RUBY_VERSION']} -S bundle install #{bundler_options})"
-    system(cmd)
-  elsif gemfile != DEFAULT_GEMFILE
-    puts("WARNING: #{gemfile} not found, cannot bundle gems")
-  end
-end
-
-task :gems => :setup do
-  puts("\n--> Installing base gems in #{TARGET_GEMS_DIR}/gems")
-  system("gem install bundler --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
-  system("gem install rake --install-dir #{TARGET_GEMS_DIR}/gems --no-ri --no-rdoc --quiet --no-verbose")
 end
 
 def build_java_dir(source_folder)
@@ -204,5 +204,14 @@ end
 
 def build_jruby(source_path)
   puts("\n--> Compiling JRuby")
-  system("cd #{RedStorm::REDSTORM_HOME}; jrubyc -t #{TARGET_SRC_DIR} --verbose --java -c \"#{TARGET_DEPENDENCY_DIR}/storm-#{INSTALL_STORM_VERSION}.jar\" -c \"#{TARGET_CLASSES_DIR}\" #{source_path}")
+  Dir.chdir(RedStorm::REDSTORM_HOME) do
+    argv = []
+    argv << '-t' << TARGET_SRC_DIR
+    argv << '--verbose'
+    argv << '--java'
+    argv << '-c' << %("#{TARGET_DEPENDENCY_DIR}/storm-#{INSTALL_STORM_VERSION}.jar")
+    argv << '-c' << %("#{TARGET_CLASSES_DIR}")
+    argv << source_path
+    status =  JRuby::Compiler::compile_argv(argv)
+  end
 end

@@ -135,7 +135,7 @@ task :deps => :setup do
     :repositories => {:clojars => 'http://clojars.org/repo/'},
     :dependencies => [
       "storm:storm:#{INSTALL_STORM_VERSION}",
-      "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}"
+      "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}|transitive=false"
     ],
     :destination => TARGET_DEPENDENCY_DIR
   }

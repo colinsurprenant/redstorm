@@ -16,6 +16,14 @@ module RedStorm
     TARGET_PATH = "#{BASE_PATH}/target"
   end
 
+  def current_ruby_mode
+    RUBY_VERSION =~ /(\d+\.\d+)(\.\d+)*/
+    raise("unknown Ruby version #{$1}") unless $1 == "1.8" || $1 == "1.9"
+    $1
+  end
+
+  module_function :current_ruby_mode
+
   # puts("*** LAUNCH_PATH=#{LAUNCH_PATH}")
   # puts("*** JAR_CONTEXT=#{JAR_CONTEXT}")
   # puts("*** BASE_PATH=#{BASE_PATH}")

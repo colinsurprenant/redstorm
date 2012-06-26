@@ -27,8 +27,11 @@ module JavaZip
   import 'java.util.zip.ZipFile'
 end
 
-task :launch, :env, :class_file do |t, args|
-  version_token = RedStorm::RUNTIME['RUBY_VERSION'] == "--1.9" ? "RUBY1_9" : "RUBY1_8"
+task :launch, :env, :ruby_mode, :class_file do |t, args|
+  # use ruby mode parameter or default to current interpreter version
+  version_map = {"--1.8" => "RUBY1_8", "--1.9" => "RUBY1_9"}
+  version_token = version_map[args[:ruby_mode] || "--#{RedStorm.current_ruby_mode}"]
+  
   command = "java -Djruby.compat.version=#{version_token} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\" redstorm.TopologyLauncher #{args[:env]} #{args[:class_file]}"
   puts("launching #{command}")
   system(command)

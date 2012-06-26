@@ -17,22 +17,6 @@ java_import 'redstorm.storm.jruby.JRubySpout'
 
 java_package 'redstorm'
 
-# setup some environment constants
-# this is required here and in red_storm.rb which are both 
-# entry points in redstorm. 
-module RedStorm
-  LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
-  JAR_CONTEXT = !!(LAUNCH_PATH =~ /\.jar!$/)
-
-  if JAR_CONTEXT
-    BASE_PATH = LAUNCH_PATH
-    LIB_PATH = "#{BASE_PATH}/lib"
-  else
-    BASE_PATH = Dir.pwd
-    LIB_PATH = "#{BASE_PATH}/target/lib"
-  end
-end
-
 # TopologyLauncher is the application entry point when launching a topology. Basically it will 
 # call require on the specified Ruby topology class file path and call its start method
 class TopologyLauncher
@@ -52,11 +36,9 @@ class TopologyLauncher
     env = args[0].to_sym
     class_path = args[1]
 
-    $:.unshift "#{RedStorm::BASE_PATH}"
-    $:.unshift "#{RedStorm::LIB_PATH}"
-
-    require 'red_storm/environment'
-    RedStorm.setup_gems
+    launch_path = File.expand_path(File.dirname(__FILE__))
+    $:.unshift File.expand_path(launch_path + '/..')     # lib path for redstorm dir
+    $:.unshift File.expand_path(launch_path + '/../..')  # root path for topologies dir
 
     require "#{class_path}" 
 

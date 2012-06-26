@@ -1,28 +1,25 @@
 module RedStorm
-  # LAUNCH_PATH, BASE_PATH and JAR_CONTEXT must be set before requiring this module
-  # typically, they must be set in either red_storm.rb and topology_launcher.rd
-  # which are the 2 entry points
+
+  LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
+  JAR_CONTEXT = !!(LAUNCH_PATH =~ /\.jar!\/red_storm$/)
 
   if JAR_CONTEXT
-    REDSTORM_HOME = LAUNCH_PATH
-    TARGET_PATH = LAUNCH_PATH
-    BUNDLE_GEMFILE = "#{TARGET_PATH}/bundler/Gemfile"
-    BUNDLE_PATH = "#{TARGET_PATH}/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
+    BASE_PATH = File.expand_path(LAUNCH_PATH + '/..')
+    REDSTORM_HOME = BASE_PATH
+    TARGET_PATH = BASE_PATH
+
     GEM_PATH = "#{TARGET_PATH}/gems/"
+    ENV["GEM_PATH"] = GEM_PATH
   else
-    REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/..')
+    BASE_PATH = Dir.pwd
+    REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/../..')
     TARGET_PATH = "#{BASE_PATH}/target"
-    BUNDLE_GEMFILE = "#{TARGET_PATH}/gems/bundler/Gemfile"
-    BUNDLE_PATH = "#{TARGET_PATH}/gems/bundler/#{Gem.ruby_engine}/#{Gem::ConfigMap[:ruby_version]}/"
-    GEM_PATH = "#{TARGET_PATH}/gems/gems"
   end
 
-  def setup_gems
-    ENV['BUNDLE_GEMFILE'] = RedStorm::BUNDLE_GEMFILE
-    ENV['BUNDLE_PATH'] = RedStorm::BUNDLE_PATH
-    ENV["GEM_PATH"] = RedStorm::GEM_PATH
-    ENV['BUNDLE_DISABLE_SHARED_GEMS'] = "1"
-  end
-
-  module_function :setup_gems
+  # puts("*** LAUNCH_PATH=#{LAUNCH_PATH}")
+  # puts("*** JAR_CONTEXT=#{JAR_CONTEXT}")
+  # puts("*** BASE_PATH=#{BASE_PATH}")
+  # puts("*** REDSTORM_HOME=#{REDSTORM_HOME}")
+  # puts("*** TARGET_PATH=#{TARGET_PATH}")
+  # puts("*** GEM_PATH=#{GEM_PATH}") if defined?(GEM_PATH)
 end

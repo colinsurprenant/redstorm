@@ -3,8 +3,8 @@ require 'jruby/jrubyc'
 require 'pompompom'
 require 'red_storm'
  
-INSTALL_STORM_VERSION = "0.7.1"
-INSTALL_JRUBY_VERSION = "1.6.7"
+INSTALL_STORM_VERSION = "0.7.3"
+INSTALL_JRUBY_VERSION = "1.6.7.2"
 
 CWD = Dir.pwd
 TARGET_DIR = "#{CWD}/target"

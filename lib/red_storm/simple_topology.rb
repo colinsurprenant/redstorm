@@ -111,11 +111,11 @@ module RedStorm
 
       builder = TopologyBuilder.new
       self.class.spouts.each do |spout|
-        declarer = builder.setSpout(spout.id, spout.new_instance(base_class_path), spout.parallelism)
+        declarer = builder.setSpout(spout.id, spout.new_instance(base_class_path), java.lang.Integer.new(spout.parallelism))
         declarer.addConfigurations(spout.config)
       end
       self.class.bolts.each do |bolt|
-        declarer = builder.setBolt(bolt.id, bolt.new_instance(base_class_path), bolt.parallelism)
+        declarer = builder.setBolt(bolt.id, bolt.new_instance(base_class_path), java.lang.Integer.new(bolt.parallelism))
         declarer.addConfigurations(bolt.config)
         bolt.define_grouping(declarer)
       end
@@ -123,16 +123,8 @@ module RedStorm
       configurator = Configurator.new
       configurator.instance_exec(env, &self.class.configure_block)
  
-      case env
-      when :local
-        @cluster = LocalCluster.new
-        @cluster.submitTopology(self.class.topology_name, configurator.config, builder.createTopology)
-      when :cluster
-        StormSubmitter.submitTopology(self.class.topology_name, configurator.config, builder.createTopology);
-      else
-        raise("unsupported env=#{env.inspect}, expecting :local or :cluster")
-      end
-
+      submitter = (env == :local) ? @cluster = LocalCluster.new : StormSubmitter
+      submitter.submitTopology(self.class.topology_name, configurator.config, builder.createTopology)
       instance_exec(env, &self.class.submit_block)
     end
 

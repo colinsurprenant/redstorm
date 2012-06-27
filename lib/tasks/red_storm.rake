@@ -32,9 +32,21 @@ task :launch, :env, :ruby_mode, :class_file do |t, args|
   version_map = {"--1.8" => "RUBY1_8", "--1.9" => "RUBY1_9"}
   version_token = version_map[args[:ruby_mode] || "--#{RedStorm.current_ruby_mode}"]
   
-  command = "java -Djruby.compat.version=#{version_token} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\" redstorm.TopologyLauncher #{args[:env]} #{args[:class_file]}"
+  command = case args[:env]
+  when "local"
+    "java -Djruby.compat.version=#{version_token} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\" redstorm.TopologyLauncher local #{args[:class_file]}"
+  when "cluster"
+    unless File.exist?(TARGET_CLUSTER_JAR)
+      puts("cluster jar file #{TARGET_CLUSTER_JAR} not found. Generate it using $redstorm jar DIR1 [DIR2, ...]")
+      exit(1)
+    end
+    "storm jar #{TARGET_CLUSTER_JAR} -Djruby.compat.version=#{version_token} redstorm.TopologyLauncher cluster #{args[:class_file]}"
+  end
+
   puts("launching #{command}")
-  system(command)
+  unless system(command)
+    puts($!)
+  end
 end
 
 task :clean do
@@ -82,12 +94,11 @@ end
 task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
   puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
   ant.jar :destfile => TARGET_CLUSTER_JAR do
-    fileset :dir => TARGET_CLASSES_DIR
     fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
     fileset :dir => TARGET_DIR do
       include :name => "gems/**"
     end
-
+    fileset :dir => TARGET_CLASSES_DIR
     # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
     # in bolts/spouts works in jar context
     fileset :dir => TARGET_LIB_DIR do

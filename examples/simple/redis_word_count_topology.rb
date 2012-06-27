@@ -14,7 +14,7 @@ module RedStorm
     class RedisWordSpout < RedStorm::SimpleSpout
       output_fields :word
 
-      on_send {@q.pop if @q.size > 0}
+      on_send {@q.pop.to_s if @q.size > 0}
 
       on_init do
         @q = Queue.new
@@ -51,6 +51,7 @@ module RedStorm
         when :local
           max_task_parallelism 3
         when :cluster
+          max_task_parallelism 5
           num_workers 20
           max_spout_pending(1000);
         end

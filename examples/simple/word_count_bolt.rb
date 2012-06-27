@@ -9,7 +9,7 @@ module RedStorm
       # block declaration style using auto-emit (default)
       #
       on_receive do |tuple|
-        word = tuple.getString(0)
+        word = tuple.getValue(0).to_s
         @counts[word] += 1
 
         [word, @counts[word]]

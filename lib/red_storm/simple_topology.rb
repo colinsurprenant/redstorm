@@ -121,7 +121,10 @@ module RedStorm
         bolt.define_grouping(declarer)
       end
 
-      configurator = Configurator.new
+      # set the JRuby compatibility mode option for Storm workers, default to current JRuby mode
+      defaults = {"topology.worker.childopts" => "-Djruby.compat.version=#{RedStorm.jruby_mode_token}"}
+
+      configurator = Configurator.new(defaults)
       configurator.instance_exec(env, &self.class.configure_block)
  
       submitter = (env == :local) ? @cluster = LocalCluster.new : StormSubmitter

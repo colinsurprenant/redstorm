@@ -457,6 +457,7 @@ describe RedStorm::SimpleTopology do
       Backtype::Config.should_receive(:new).and_return(config)
       config.should_receive(:setDebug).with(true)
       config.should_receive(:setMaxTaskParallelism).with(3)
+      config.should_receive(:put).with("topology.worker.childopts", "-Djruby.compat.version=#{RedStorm.jruby_mode_token}")
 
       builder = mock(RedStorm::TopologyBuilder)
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)

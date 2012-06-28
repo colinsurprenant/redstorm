@@ -7,14 +7,14 @@ module RedStorm
     BASE_PATH = File.expand_path(LAUNCH_PATH + '/..')
     REDSTORM_HOME = BASE_PATH
     TARGET_PATH = BASE_PATH
-
-    GEM_PATH = "#{TARGET_PATH}/gems/"
-    ENV["GEM_PATH"] = GEM_PATH
   else
     BASE_PATH = Dir.pwd
     REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/../..')
     TARGET_PATH = "#{BASE_PATH}/target"
   end
+  GEM_PATH = "#{TARGET_PATH}/gems/"
+  ENV["GEM_PATH"] = GEM_PATH
+  ENV["GEM_HOME"] = GEM_PATH
 
   def current_ruby_mode
     RUBY_VERSION =~ /(\d+\.\d+)(\.\d+)*/

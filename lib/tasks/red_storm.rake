@@ -150,6 +150,9 @@ task :deps => :setup do
 
   installer = PomPomPom::Runner.new(configuration)
   installer.run
+
+  # tmp hack to clenup a dependency weirdness
+  FileUtils.rm("#{TARGET_DEPENDENCY_DIR}/slf4j-api-1.6.3-jar.jar")
 end
 
 task :build => [:setup, :copy_red_storm] do

@@ -71,7 +71,7 @@ task :setup do
   end  
 end
 
-task :install => [:deps, :build, :copy_red_storm] do
+task :install => [:deps, :build] do
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
@@ -153,7 +153,7 @@ task :deps => :setup do
   installer.run
 end
 
-task :build => :setup do
+task :build => [:setup, :copy_red_storm] do
   # compile the JRuby proxy classes to Java
   build_jruby("#{REDSTORM_LIB_DIR}/red_storm/proxy")
 

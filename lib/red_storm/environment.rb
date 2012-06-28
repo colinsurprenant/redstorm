@@ -22,7 +22,12 @@ module RedStorm
     $1
   end
 
-  module_function :current_ruby_mode
+  def jruby_mode_token(ruby_version = nil)
+    version_map = {"1.8" => "RUBY1_8", "--1.8" => "RUBY1_8", "1.9" => "RUBY1_9", "--1.9" => "RUBY1_9"}
+    version_map[ruby_version.to_s] || version_map[RedStorm.current_ruby_mode]
+  end
+
+  module_function :current_ruby_mode, :jruby_mode_token
 
   # puts("*** LAUNCH_PATH=#{LAUNCH_PATH}")
   # puts("*** JAR_CONTEXT=#{JAR_CONTEXT}")

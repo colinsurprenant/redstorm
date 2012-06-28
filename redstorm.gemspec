@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
  
   s.rubyforge_project = 'redstorm'
   
-  s.files         = Dir.glob("{lib/**/*}") + Dir.glob("{examples/**/*}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(Rakefile pom.xml README.md CHANGELOG.md LICENSE.md TODO.md)
+  s.files         = Dir.glob("{lib/**/*}") + Dir.glob("{examples/**/*}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(Rakefile README.md CHANGELOG.md LICENSE.md)
   s.require_paths = ['lib']
   s.bindir        = 'bin'
   s.executables   = ['redstorm']

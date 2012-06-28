@@ -12,9 +12,12 @@ module RedStorm
     REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/../..')
     TARGET_PATH = "#{BASE_PATH}/target"
   end
-  GEM_PATH = "#{TARGET_PATH}/gems/"
-  ENV["GEM_PATH"] = GEM_PATH
-  ENV["GEM_HOME"] = GEM_PATH
+  
+  unless defined?(SPECS_CONTEXT)
+    GEM_PATH = "#{TARGET_PATH}/gems/"
+    ENV["GEM_PATH"] = GEM_PATH
+    ENV["GEM_HOME"] = GEM_PATH
+  end
 
   def current_ruby_mode
     RUBY_VERSION =~ /(\d+\.\d+)(\.\d+)*/

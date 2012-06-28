@@ -23,11 +23,6 @@ class TopologyLauncher
 
   java_signature 'void main(String[])'
   def self.main(args)
-    # this is the entry point for these two contexts:
-    # - runnig a topology in local mode. the current Ruby env will stay the same at topology execution
-    # - submitting a topology in cluster mode. the current Ruby env will be valid only at topology submission. At topology execution
-    #   in the cluster, the new entry point will be the red_storm.rb, topology_launcher will not be called
-
     unless args.size > 1
       puts("Usage: redstorm local|cluster topology_class_file_name")
       exit(1)
@@ -36,9 +31,9 @@ class TopologyLauncher
     env = args[0].to_sym
     class_path = args[1]
 
-    launch_path = File.expand_path(File.dirname(__FILE__))
-    $:.unshift File.expand_path(launch_path + '/..')     # lib path for redstorm dir
-    $:.unshift File.expand_path(launch_path + '/../..')  # root path for topologies dir
+    launch_path = Dir.pwd
+    $:.unshift File.expand_path(launch_path)
+    $:.unshift File.expand_path(launch_path + '/lib')
 
     require "#{class_path}" 
 

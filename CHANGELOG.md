@@ -36,5 +36,12 @@
 - redstorm bundle command to install topology gems
 - issue #26, fixed examples/native for 0.5.1 compatibility
 
-# 0.6.0, xxx
+# 0.6.0, 06-27-2012
 - issue #29, updated to Storm 0.7.3
+- issue #30, add redstorm cluster command for remote topology submission
+- issue #31, added support for localOrShuffleGrouping
+- issue #33, avoid forking or shelling out on redstorm commands
+- JRuby 1.6.7.2
+- better handling of JRuby 1.8/1.9 mode
+- topology gems are now specified using a Bundler group in the project Gemfile
+- refactored environment/paths handling for local vs cluster context

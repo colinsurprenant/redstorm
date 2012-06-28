@@ -3,12 +3,13 @@ module RedStorm
   class Configurator
     attr_reader :config
 
-    def initialize
+    def initialize(defaults = {})
       @config = Backtype::Config.new
+      defaults.each{|attribute, value| @config.put(attribute.to_s, value)}
     end
 
     def set(attribute, value)
-      @config.put(attribute, value)
+      @config.put(attribute.to_s, value)
     end
 
     def method_missing(sym, *args)

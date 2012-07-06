@@ -34,6 +34,7 @@ class TopologyLauncher
     launch_path = Dir.pwd
     $:.unshift File.expand_path(launch_path)
     $:.unshift File.expand_path(launch_path + '/lib')
+    $:.unshift File.expand_path(launch_path + '/target/lib')
 
     require "#{class_path}" 
 

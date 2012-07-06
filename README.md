@@ -1,4 +1,4 @@
-# RedStorm v0.6.0 - JRuby on Storm
+# RedStorm v0.6.1 - JRuby on Storm
 
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 

@@ -45,3 +45,6 @@
 - better handling of JRuby 1.8/1.9 mode
 - topology gems are now specified using a Bundler group in the project Gemfile
 - refactored environment/paths handling for local vs cluster context
+
+# 0.6.1, tbd
+- issue #38, added support for spout reliable emit

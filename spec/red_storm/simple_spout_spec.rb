@@ -95,7 +95,7 @@ describe RedStorm::SimpleSpout do
     end
 
     describe "on_send statement" do
-      DEFAULT_SEND_OPTIONS = {:emit => true}
+      DEFAULT_SEND_OPTIONS = {:emit => true, :reliable => false}
 
       it "should emit by defaut" do
         RedStorm::SimpleSpout.send(:emit?).should be_true
@@ -403,7 +403,7 @@ describe RedStorm::SimpleSpout do
 
     describe "next_tuple" do
 
-      it "should auto emit on single value output" do
+      it "should auto unreliable emit on single value output" do
         class Spout1 < RedStorm::SimpleSpout
           on_send {"output"}
         end
@@ -432,7 +432,41 @@ describe RedStorm::SimpleSpout do
         spout.next_tuple
       end
 
-      it "should auto emit on multiple values output" do
+      it "should auto reliable emit on single value output" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_send :reliable => true do 
+            [1, "output"]
+          end
+        end
+        class Spout2 < RedStorm::SimpleSpout
+          on_send :my_method, :reliable => true
+          def my_method; [2, "output"]; end
+        end
+        class Spout3 < RedStorm::SimpleSpout
+          on_send :reliable => true
+          def on_send; [3, "output"] end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("values", 1).once
+        collector.should_receive(:emit).with("values", 2).once
+        collector.should_receive(:emit).with("values", 3).once
+
+        spout = Spout1.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout2.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout3.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
+
+      it "should auto unreliable emit on multiple values output" do
         class Spout1 < RedStorm::SimpleSpout
           on_send {["output1", "output2"]}
         end
@@ -447,6 +481,40 @@ describe RedStorm::SimpleSpout do
         collector = mock("Collector")
         RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values")
         collector.should_receive(:emit).with("values").exactly(3).times
+
+        spout = Spout1.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout2.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout3.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
+
+      it "should auto reliable emit on multiple values output" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_send :reliable => true do 
+            [1, "output1", "output2"]
+          end
+        end
+        class Spout2 < RedStorm::SimpleSpout
+          on_send :my_method, :reliable => true
+          def my_method; [2, "output1", "output2"]; end
+        end
+        class Spout3 < RedStorm::SimpleSpout
+          on_send :reliable => true
+          def on_send; [3, "output1", "output2"] end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("values", 1).once
+        collector.should_receive(:emit).with("values", 2).once
+        collector.should_receive(:emit).with("values", 3).once
 
         spout = Spout1.new
         spout.open(nil, nil, collector)
@@ -523,6 +591,35 @@ describe RedStorm::SimpleSpout do
         spout.next_tuple
 
         spout = Spout3.new
+        spout.should_receive(:sleep).never
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
+
+      it "should support manual emit" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_send :emit => false do 
+            reliable_emit 1, "reliable output"
+          end
+        end
+        class Spout2 < RedStorm::SimpleSpout
+          on_send :emit => false do 
+            unreliable_emit "unreliable output"
+          end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).once.with("reliable output").and_return("reliable values")
+        RedStorm::Values.should_receive(:new).once.with("unreliable output").and_return("unreliable values")
+        collector.should_receive(:emit).with("unreliable values").once
+        collector.should_receive(:emit).with("reliable values", 1).once
+
+        spout = Spout1.new
+        spout.should_receive(:sleep).never
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout2.new
         spout.should_receive(:sleep).never
         spout.open(nil, nil, collector)
         spout.next_tuple

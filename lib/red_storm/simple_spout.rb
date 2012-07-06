@@ -53,9 +53,14 @@ module RedStorm
 
     # DSL instance methods
 
-    def emit(*values)
+    def reliable_emit(message_id, *values)
+      @collector.emit(Values.new(*values), message_id) 
+    end
+
+    def unreliable_emit(*values)
       @collector.emit(Values.new(*values)) 
     end
+    alias_method :emit, :unreliable_emit
 
     def log
       self.class.log
@@ -68,7 +73,12 @@ module RedStorm
       if self.class.emit?
         if output
           values = [output].flatten
-          @collector.emit(Values.new(*values))
+          if self.class.reliable?
+            message_id = values.shift
+            reliable_emit(message_id, *values)
+          else
+            unreliable_emit(*values)
+          end
         else
           sleep(0.1)
         end
@@ -159,11 +169,15 @@ module RedStorm
     end
 
     def self.send_options
-      @send_options ||= {:emit => true}
+      @send_options ||= {:emit => true, :reliable => false}
     end
 
     def self.emit?
       !!self.send_options[:emit]
+    end
+
+    def self.reliable?
+      !!self.send_options[:reliable]
     end
   end
 end

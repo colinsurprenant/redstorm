@@ -16,7 +16,7 @@ Chances are new versions of RedStorm will introduce changes that will break comp
 
 ## Dependencies
 
-Tested on OSX 10.6.8 and Linux 10.04 & 11.10 using Storm 0.7.3 and JRuby 1.6.7.2
+Tested on OSX 10.6.8 and Linux 10.04 & 11.10 using Storm 0.7.4 and JRuby 1.6.7.2
 
 ## Notes about 1.8/1.9 JRuby compatibility
 
@@ -58,7 +58,7 @@ $ redstorm local|cluster [--1.8|--1.9] ...
 
   ``` ruby
   source :rubygems
-  gem "redstorm", "~> 0.6.0"
+  gem "redstorm", "~> 0.6.1"
   ```
 
 ## Usage overview
@@ -125,7 +125,7 @@ By defaut, a topology will be executed in the **same mode** as the interpreter r
 
 ### Run on production cluster
 
-1. download and unpack the [Storm 0.7.3 distribution](https://github.com/downloads/nathanmarz/storm/storm-0.7.3.zip) locally and **add** the Storm `bin/` directory to your path
+1. download and unpack the [Storm 0.7.4 distribution](https://github.com/downloads/nathanmarz/storm/storm-0.7.4.zip) locally and **add** the Storm `bin/` directory to your path
 
 2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
 

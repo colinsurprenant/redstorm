@@ -3,7 +3,7 @@ require 'jruby/jrubyc'
 require 'pompompom'
 require 'red_storm'
  
-INSTALL_STORM_VERSION = "0.7.3"
+INSTALL_STORM_VERSION = "0.7.4"
 INSTALL_JRUBY_VERSION = "1.6.7.2"
 
 CWD = Dir.pwd
@@ -141,7 +141,6 @@ task :deps => :setup do
     :repositories => {:clojars => 'http://clojars.org/repo/', :sonatype => "http://oss.sonatype.org/content/groups/public/"},
     :dependencies => [
       "storm:storm:#{INSTALL_STORM_VERSION}|type_filter=jar",
-      "org.slf4j:slf4j-api:1.5.8|type_filter=jar",
       "org.slf4j:slf4j-log4j12:1.5.8|type_filter=jar",
       "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}|transitive=false,type_filter=jar",
     ],
@@ -151,7 +150,7 @@ task :deps => :setup do
   installer = PomPomPom::Runner.new(configuration)
   installer.run
 
-  # tmp hack to clenup a dependency weirdness
+  # tmp hack to clenup a dependency weirdness (issue #36)
   FileUtils.rm("#{TARGET_DEPENDENCY_DIR}/slf4j-api-1.6.3-jar.jar")
 end
 

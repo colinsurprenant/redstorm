@@ -41,10 +41,14 @@
 - issue #30, add redstorm cluster command for remote topology submission
 - issue #31, added support for localOrShuffleGrouping
 - issue #33, avoid forking or shelling out on redstorm commands
+- issue #35, automatically set JRuby 1.8/1.9 mode in remote cluster context
 - JRuby 1.6.7.2
 - better handling of JRuby 1.8/1.9 mode
 - topology gems are now specified using a Bundler group in the project Gemfile
 - refactored environment/paths handling for local vs cluster context
 
-# 0.6.1, tbd
+# 0.6.1, 07-07-2012
 - issue #38, added support for spout reliable emit
+- gem path is always in target/gems for both local and cluster context
+- temp fix for slf4j dependencies conflict (issue #36)
+- Storm 0.7.4

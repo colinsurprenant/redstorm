@@ -53,6 +53,10 @@ module RedStorm
       @collector.ack(tuple)
     end
 
+    def fail(tuple)
+      @collector.fail(tuple)
+    end
+
     # Bolt proxy interface
 
     def execute(tuple)

@@ -56,7 +56,8 @@ module RedStorm
     # Bolt proxy interface
 
     def execute(tuple)
-      if (output = instance_exec(tuple, &self.class.on_receive_block)) && self.class.emit?
+      output = instance_exec(tuple, &self.class.on_receive_block)
+      if output && self.class.emit?
         values_list = !output.is_a?(Array) ? [[output]] : !output.first.is_a?(Array) ? [output] : output
         values_list.each{|values| self.class.anchor? ? anchored_emit(tuple, *values) : unanchored_emit(*values)}
         @collector.ack(tuple) if self.class.ack?

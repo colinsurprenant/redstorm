@@ -5,11 +5,11 @@ require 'rake'
 
 begin
   # will work from gem, since lib dir is in gem require_paths
-  require 'red_storm'
+  require 'red_storm/application'
 rescue LoadError
   # will work within RedStorm dev project
   $:.unshift './lib'
-  require 'red_storm'
+  require 'red_storm/application'
 end
 
-RedStorm::Application.new.run(ARGV.dup)
+RedStorm::Application.run(ARGV.dup)

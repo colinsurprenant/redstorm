@@ -2,26 +2,10 @@ require 'ant'
 require 'jruby/jrubyc'
 require 'pompompom'
 require 'red_storm'
- 
+require 'red_storm/application'
+
 INSTALL_STORM_VERSION = "0.7.4"
 INSTALL_JRUBY_VERSION = "1.6.7.2"
-
-CWD = Dir.pwd
-TARGET_DIR = "#{CWD}/target"
-TARGET_LIB_DIR = "#{TARGET_DIR}/lib"
-TARGET_SRC_DIR = "#{TARGET_DIR}/src"
-TARGET_GEM_DIR = "#{TARGET_DIR}/gems/gems"
-TARGET_SPECS_DIR = "#{TARGET_DIR}/gems/specifications"
-TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"  
-TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
-TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
-TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
-
-REDSTORM_JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
-REDSTORM_LIB_DIR = "#{RedStorm::REDSTORM_HOME}/lib"
-
-SRC_EXAMPLES = "#{RedStorm::REDSTORM_HOME}/examples"
-DST_EXAMPLES = "#{CWD}/examples"
 
 module JavaZip
   import 'java.util.zip.ZipFile'
@@ -33,13 +17,13 @@ task :launch, :env, :ruby_mode, :class_file do |t, args|
   
   command = case args[:env]
   when "local"
-    "java -Djruby.compat.version=#{version_token} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\" redstorm.TopologyLauncher local #{args[:class_file]}"
+    RedStorm::Application.local_storm_command(args[:class_file], args[:ruby_mode])
   when "cluster"
     unless File.exist?(TARGET_CLUSTER_JAR)
       puts("cluster jar file #{TARGET_CLUSTER_JAR} not found. Generate it using $redstorm jar DIR1 [DIR2, ...]")
       exit(1)
     end
-    "storm jar #{TARGET_CLUSTER_JAR} -Djruby.compat.version=#{version_token} redstorm.TopologyLauncher cluster #{args[:class_file]}"
+    RedStorm::Application.cluster_storm_command(args[:class_file], args[:ruby_mode])
   end
 
   puts("launching #{command}")

@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'bundler/setup'
 
 begin
   # will work from gem, since lib dir is in gem require_paths
@@ -7,7 +6,12 @@ begin
 rescue LoadError
   # will work within RedStorm dev project
   $:.unshift './lib'
-  require 'red_storm/application'
+  begin
+    require 'red_storm/application'
+  rescue LoadError
+    require 'bundler/setup'
+    require 'red_storm/application'
+  end
 end
 
 require 'redis'

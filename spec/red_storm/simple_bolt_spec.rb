@@ -90,6 +90,20 @@ describe RedStorm::SimpleBolt do
         RedStorm::SimpleBolt.send(:anchor?).should be_false
       end
 
+      it "should execute body with :emit => false" do
+        class Bolt1 < RedStorm::SimpleBolt
+          on_receive :emit => false do |tuple|
+            test(tuple)
+          end
+        end
+
+        Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit => false)
+        Bolt1.send(:emit?).should be_false
+        bolt = Bolt1.new
+        bolt.should_receive(:test).with("tuple").once
+        bolt.execute("tuple")
+      end
+
       describe "with block argument" do
 
         it "should parse without options" do

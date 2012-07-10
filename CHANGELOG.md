@@ -52,3 +52,8 @@
 - gem path is always in target/gems for both local and cluster context
 - temp fix for slf4j dependencies conflict (issue #36)
 - Storm 0.7.4
+
+# 0.6.2, 07-10-2012
+- issue #39, spout on_receive block will not be evaluated if :emit => false
+- issue #40, bolt fail method missing
+- integration tests support

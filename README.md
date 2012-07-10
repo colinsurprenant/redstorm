@@ -1,4 +1,4 @@
-# RedStorm v0.6.1 - JRuby on Storm
+# RedStorm v0.6.2 - JRuby on Storm
 
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 
@@ -58,7 +58,7 @@ $ redstorm local|cluster [--1.8|--1.9] ...
 
   ``` ruby
   source :rubygems
-  gem "redstorm", "~> 0.6.1"
+  gem "redstorm", "~> 0.6.2"
   ```
 
 ## Usage overview

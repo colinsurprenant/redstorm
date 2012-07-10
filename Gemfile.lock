@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    redstorm (0.6.1)
+    redstorm (0.6.2)
       pompompom (= 2.0.0.b2)
       rake
 

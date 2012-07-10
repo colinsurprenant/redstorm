@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'bundler/setup'
+
 begin
   # will work from gem, since lib dir is in gem require_paths
   require 'red_storm/application'

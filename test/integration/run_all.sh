@@ -1,3 +1,5 @@
+#!/bin/bash
+
 TOPOLOGIES=test/topology/*.rb
 COMMANDS=("redstorm" "bin/redstorm" "bundle exec redstorm")
 REDSTORM=""

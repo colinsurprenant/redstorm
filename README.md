@@ -1,4 +1,4 @@
-# RedStorm v0.6.2 - JRuby on Storm
+# RedStorm v0.6.3 - JRuby on Storm
 
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 
@@ -58,7 +58,7 @@ $ redstorm local|cluster [--1.8|--1.9] ...
 
   ``` ruby
   source :rubygems
-  gem "redstorm", "~> 0.6.2"
+  gem "redstorm", "~> 0.6.3"
   ```
 
 ## Usage overview
@@ -254,6 +254,25 @@ The [Storm wiki](https://github.com/nathanmarz/storm/wiki) has instructions on [
 ## Ruby DSL
 
 [Ruby DSL Documentation](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation)
+
+## Multilang ShellSpout & ShellBolt support
+
+Please refer to [Using non JVM languages with Storm](https://github.com/nathanmarz/storm/wiki/Using-non-JVM-languages-with-Storm) for the complete information on Multilang & shelling in Storm.
+
+In RedStorm *ShellSpout* and *ShellBolt* are supported using the following construct in the topology definition:
+
+``` ruby
+bolt JRubyShellBolt, ["python", "splitsentence.py"] do
+  output_fields "word"
+  source SimpleSpout, :shuffle
+end
+```
+
+- `JRubyShellBolt` must be used for a *ShellBolt* and the array argument `["python", "splitsentence.py"]` are the arguments to the class constructor and are the *commands* to the *ShellBolt*.
+
+- The directory containing the topology class **must** contain a `resources/` directory with all the shell files.
+
+See the [shell topology example](https://github.com/colinsurprenant/redstorm/tree/master/examples/shell)
 
 ## RedStorm Development
 

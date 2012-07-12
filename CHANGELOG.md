@@ -57,3 +57,8 @@
 - issue #39, spout on_receive block will not be evaluated if :emit => false
 - issue #40, bolt fail method missing
 - integration tests support
+
+# 0.6.3, tbd
+- issue #28, allow specification of output_fields in topology DSL
+- issue #41, add support for ShellBolt and ShellSpout
+- support constructor parameters for Java spout/bolt in topology DSL

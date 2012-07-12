@@ -2,6 +2,7 @@ require 'java'
 require 'red_storm/configuration'
 require 'red_storm/configurator'
 
+
 module RedStorm
 
   class TopologyDefinitionError < StandardError; end
@@ -13,14 +14,20 @@ module RedStorm
     DEFAULT_BOLT_PARALLELISM = 1
 
     class ComponentDefinition < Configurator
-      attr_reader :clazz, :parallelism
-      attr_accessor :id # ids are forced to string
+      attr_reader :clazz, :constructor_args, :parallelism
+      attr_accessor :output_fields, :id # ids are forced to string
 
-      def initialize(component_class, id, parallelism)
+      def initialize(component_class, constructor_args, id, parallelism)
         super()
         @clazz = component_class
+        @constructor_args = constructor_args
         @id = id.to_s
         @parallelism = parallelism
+        @output_fields = []
+      end
+
+      def output_fields(*args)
+        @output_fields = *args
       end
 
       def is_java?
@@ -29,13 +36,22 @@ module RedStorm
     end
 
     class SpoutDefinition < ComponentDefinition
+      
+      # WARNING non-dry see BoltDefinition#new_instance
       def new_instance(base_class_path)
-        is_java? ? @clazz.new : JRubySpout.new(base_class_path, @clazz.name)
+        if @clazz.name == "Java::RedstormStormJruby::JRubyShellSpout"
+          @clazz.new(constructor_args, @output_fields)
+        elsif is_java?
+          @clazz.new(*constructor_args)
+        else
+          JRubySpout.new(base_class_path, @clazz.name, @output_fields)
+        end
+        # is_java? ? @clazz.new : JRubySpout.new(base_class_path, @clazz.name)
       end
     end
           
     class BoltDefinition < ComponentDefinition
-      attr_accessor :sources
+      attr_accessor :sources, :command
 
       def initialize(*args)
         super
@@ -72,7 +88,15 @@ module RedStorm
       end
 
       def new_instance(base_class_path)
-        is_java? ? @clazz.new : JRubyBolt.new(base_class_path, @clazz.name)
+        # WARNING non-dry see BoltDefinition#new_instance
+        if @clazz.name == "Java::RedstormStormJruby::JRubyShellBolt"
+          @clazz.new(constructor_args, @output_fields)
+        elsif is_java?
+          @clazz.new(*constructor_args)
+        else
+          JRubyBolt.new(base_class_path, @clazz.name, @output_fields)
+        end
+        # is_java? ? @clazz.new : @clazz.is_a?(SimpleBolt) ? JRubyBolt.new(base_class_path, @clazz.name) : @clazz.new
       end
     end
 
@@ -80,16 +104,24 @@ module RedStorm
       @log ||= org.apache.log4j.Logger.getLogger(self.name)
     end
 
-    def self.spout(spout_class, options = {}, &spout_block)
+    # def self.spout(spout_class, contructor_args = [], options = {}, &spout_block)
+    def self.spout(spout_class, *args, &spout_block)
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      contructor_args = !args.empty? ? args.pop : []
       spout_options = {:id => self.underscore(spout_class), :parallelism => DEFAULT_SPOUT_PARALLELISM}.merge(options)
-      spout = SpoutDefinition.new(spout_class, spout_options[:id], spout_options[:parallelism])
+
+      spout = SpoutDefinition.new(spout_class, contructor_args, spout_options[:id], spout_options[:parallelism])
       spout.instance_exec(&spout_block) if block_given?
       self.components << spout
     end
 
-    def self.bolt(bolt_class, options = {}, &bolt_block)
+    # def self.bolt(bolt_class, contructor_args = [], options = {}, &bolt_block)
+    def self.bolt(bolt_class, *args, &bolt_block)
+      options = args.last.is_a?(Hash) ? args.pop : {}
+      contructor_args = !args.empty? ? args.pop : []
       bolt_options = {:id => self.underscore(bolt_class), :parallelism => DEFAULT_BOLT_PARALLELISM}.merge(options)
-      bolt = BoltDefinition.new(bolt_class, bolt_options[:id], bolt_options[:parallelism])
+
+      bolt = BoltDefinition.new(bolt_class, contructor_args, bolt_options[:id], bolt_options[:parallelism])
       raise(TopologyDefinitionError, "#{bolt.clazz.name}, #{bolt.id}, bolt definition body required") unless block_given?
       bolt.instance_exec(&bolt_block)
       self.components << bolt

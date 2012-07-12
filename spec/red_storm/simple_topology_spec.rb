@@ -37,8 +37,8 @@ describe RedStorm::SimpleTopology do
       class SpoutClass2; end
 
       it "should parse single spout without options" do
-        spout =  RedStorm::SimpleTopology::SpoutDefinition.new(SpoutClass1, "spout_class1", 1)
-        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).with(SpoutClass1, "spout_class1", 1).and_return(spout)
+        spout = RedStorm::SimpleTopology::SpoutDefinition.new(SpoutClass1, [], "spout_class1", 1)
+        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).with(SpoutClass1, [], "spout_class1", 1).and_return(spout)
         class Topology1 < RedStorm::SimpleTopology
           spout SpoutClass1
         end
@@ -46,10 +46,10 @@ describe RedStorm::SimpleTopology do
       end
 
       it "should parse multiple spouts with options" do
-        spout1 =  RedStorm::SimpleTopology::SpoutDefinition.new(SpoutClass1, "id1", 2)
-        spout2 =  RedStorm::SimpleTopology::SpoutDefinition.new(SpoutClass2, "id2", 3)
-        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).with(SpoutClass1, "id1", 2).and_return(spout1)
-        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).with(SpoutClass2, "id2", 3).and_return(spout2)
+        spout1 =  RedStorm::SimpleTopology::SpoutDefinition.new(SpoutClass1, [], "id1", 2)
+        spout2 =  RedStorm::SimpleTopology::SpoutDefinition.new(SpoutClass2, [], "id2", 3)
+        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).with(SpoutClass1, [], "id1", 2).and_return(spout1)
+        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).with(SpoutClass2, [], "id2", 3).and_return(spout2)
         class Topology1 < RedStorm::SimpleTopology
           spout SpoutClass1, :id => "id1", :parallelism => 2
           spout SpoutClass2, :id => "id2", :parallelism => 3
@@ -65,8 +65,8 @@ describe RedStorm::SimpleTopology do
       class BoltClass2; end
 
       it "should parse single bolt without options" do
-        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "bolt_class1", 1)
-        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "bolt_class1", 1).and_return(bolt_definition)
+        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, [], "bolt_class1", 1)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, [], "bolt_class1", 1).and_return(bolt_definition)
         bolt_definition.should_receive(:source).with(1, {:fields => ["f1"]})
         class Topology1 < RedStorm::SimpleTopology
           bolt BoltClass1 do
@@ -77,8 +77,8 @@ describe RedStorm::SimpleTopology do
       end
 
       it "should parse single bolt with options" do
-        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "id", 2)
-        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "id", 2).and_return(bolt_definition)
+        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, [], "id", 2)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, [], "id", 2).and_return(bolt_definition)
         bolt_definition.should_receive(:source).with(1, :shuffle)
         class Topology1 < RedStorm::SimpleTopology
           bolt BoltClass1, :id => "id", :parallelism => 2 do
@@ -89,10 +89,10 @@ describe RedStorm::SimpleTopology do
       end
 
       it "should parse multiple bolt with options" do
-        bolt_definition1 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "id1", 2)
-        bolt_definition2 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass2, "id2", 3)
-        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "id1", 2).and_return(bolt_definition1)
-        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass2, "id2", 3).and_return(bolt_definition2)
+        bolt_definition1 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, [], "id1", 2)
+        bolt_definition2 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass2, [], "id2", 3)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, [], "id1", 2).and_return(bolt_definition1)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass2, [], "id2", 3).and_return(bolt_definition2)
         bolt_definition1.should_receive(:source).with(1, :shuffle)
         bolt_definition2.should_receive(:source).with(2, {:fields => ["f1"]})
         class Topology1 < RedStorm::SimpleTopology
@@ -107,8 +107,8 @@ describe RedStorm::SimpleTopology do
       end
 
       it "should parse single symbolic fields" do
-        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "bolt_class1", 1)
-        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "bolt_class1", 1).and_return(bolt_definition)
+        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, [], "bolt_class1", 1)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, [], "bolt_class1", 1).and_return(bolt_definition)
         bolt_definition.should_receive(:source).with(1, {:fields => :g1})
         class Topology1 < RedStorm::SimpleTopology
           bolt BoltClass1 do
@@ -119,8 +119,8 @@ describe RedStorm::SimpleTopology do
       end
 
       it "should parse symbolic fields array" do
-        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "bolt_class1", 1)
-        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "bolt_class1", 1).and_return(bolt_definition)
+        bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, [], "bolt_class1", 1)
+        RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, [], "bolt_class1", 1).and_return(bolt_definition)
         bolt_definition.should_receive(:source).with(1, {:fields => [:g1, :g2]})
         class Topology1 < RedStorm::SimpleTopology
           bolt BoltClass1 do
@@ -243,8 +243,8 @@ describe RedStorm::SimpleTopology do
 
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       RedStorm::Configurator.should_receive(:new).and_return(configurator)
-      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1").and_return(jruby_spout1)
-      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass2").and_return(jruby_spout2)
+      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1", []).and_return(jruby_spout1)
+      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass2", []).and_return(jruby_spout2)
 
       builder.should_receive("setSpout").with('spout_class1', jruby_spout1, 1).and_return(declarer)
       builder.should_receive("setSpout").with('spout_class2', jruby_spout2, 1).and_return(declarer)
@@ -256,10 +256,10 @@ describe RedStorm::SimpleTopology do
     end
 
     it "should build bolts" do
-      bolt_definition1 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, "id1", 2)
-      bolt_definition2 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass2, "id2", 3)
-      RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, "id1", 2).and_return(bolt_definition1)
-      RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass2, "id2", 3).and_return(bolt_definition2)
+      bolt_definition1 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, [], "id1", 2)
+      bolt_definition2 = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass2, [], "id2", 3)
+      RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass1, [], "id1", 2).and_return(bolt_definition1)
+      RedStorm::SimpleTopology::BoltDefinition.should_receive(:new).with(BoltClass2, [], "id2", 3).and_return(bolt_definition2)
       bolt_definition1.should_receive(:source).with(1, :shuffle)
       bolt_definition2.should_receive(:source).with(2, {:fields => ["f1"]})
 
@@ -280,8 +280,8 @@ describe RedStorm::SimpleTopology do
 
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       RedStorm::Configurator.should_receive(:new).and_return(configurator)
-      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1").and_return(jruby_bolt1)
-      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass2").and_return(jruby_bolt2)
+      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1", []).and_return(jruby_bolt1)
+      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass2", []).and_return(jruby_bolt2)
 
       builder.should_receive("setBolt").with("id1", jruby_bolt1, 2).and_return(declarer)
       builder.should_receive("setBolt").with("id2", jruby_bolt2, 3).and_return(declarer) 
@@ -310,8 +310,8 @@ describe RedStorm::SimpleTopology do
         @declarer = mock("InputDeclarer")
         RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
         RedStorm::Configurator.should_receive(:new).and_return(configurator)
-        RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1").and_return(jruby_bolt)
-        RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1").and_return(jruby_spout)
+        RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1", []).and_return(jruby_bolt)
+        RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1", []).and_return(jruby_spout)
         builder.should_receive("setBolt").with('bolt_class1', jruby_bolt, 1).and_return(@declarer)
         builder.should_receive("setSpout").with('1', jruby_spout, 1).and_return(@declarer)
         @declarer.should_receive("addConfigurations").twice

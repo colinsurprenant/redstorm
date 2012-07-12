@@ -25,7 +25,8 @@ module RedStorm
     TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake" 
 
     def self.local_storm_command(class_file, ruby_mode = nil)
-      "java -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*\" redstorm.TopologyLauncher local #{class_file}"
+      src_dir = File.expand_path(File.dirname(class_file))
+      "java -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*:#{src_dir}/\" redstorm.TopologyLauncher local #{class_file}"
     end
 
     def self.cluster_storm_command(class_file, ruby_mode = nil)

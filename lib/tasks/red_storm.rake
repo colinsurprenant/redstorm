@@ -88,8 +88,18 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
       exclude :name => "tasks/**"
     end
     if args[:include_dir]
+      dirs = args[:include_dir].split(":")
+
+      # first add resources/ dir in the jar root - requirement for ShellBolt multilang resources
+      dirs.select{|dir| File.exist?("#{dir}/resources")}.each do |resources_parent|
+        fileset :dir => resources_parent do
+          include :name => "resources/**/*"
+        end
+      end
+
+      # include complete source dir tree (note we don't care about potential duplicated resources dir)
       fileset :dir => CWD do
-        args[:include_dir].split(":").each{|dir| include :name => "#{dir}/**/*"}
+        dirs.each{|dir| include :name => "#{dir}/**/*"}
       end
     end
     manifest do

@@ -13,31 +13,25 @@ rescue LoadError
     require 'red_storm/application'
   end
 end
-
 require 'redis'
 
 topology_class_path = ARGV[0]
 topology_class = topology_class_path.split("/").last
 
-@redis = Redis.new(:host => "localdevhost", :port => 6379)
+@redis = Redis.new(:host => "stormcluster", :port => 6379)
 @redis.del(topology_class)
 
-command = RedStorm::Application.cluster_storm_command(topology_class_path)
-unless system("#{command} > /dev/null")
-  puts("FAILED, #{$!}")
-  exit(1)
-end
+success, out = RedStorm::Application.subshell(RedStorm::Application.cluster_storm_command(topology_class_path))
+puts("storm FAILED\n\n#{out}") unless success
 
-result = @redis.blpop(topology_class, :timeout => 60)
+result = success ? @redis.blpop(topology_class, :timeout => 120) : nil
 
-command = "storm kill #{topology_class.split(".").first} > /dev/null"
-unless system(command)
-  puts("FAILED, #{$!}")
-  exit(1)
-end
+success, out = RedStorm::Application.subshell("storm kill #{topology_class.split(".").first} > /dev/null")
+puts("kill FAILED\n\n#{out}") unless success
 
 if result.nil? || result[1] != "SUCCESS"
-  puts("FAILED, bad result=#{result.inspect}")
+  puts("test FAILED, bad result=#{result.inspect}")
   exit(1)
 end
 puts("SUCCESS")
+

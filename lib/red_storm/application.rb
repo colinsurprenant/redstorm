@@ -68,6 +68,12 @@ module RedStorm
       end
       usage
     end
+
+    def self.subshell(command)
+      out = IO.popen([command, :err => [:child, :out]]) {|io| io.read}
+      [!!$?.success?, out]
+    end
+
   end
 
 end

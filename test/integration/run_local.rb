@@ -24,13 +24,15 @@ topology_class = topology_class_path.split("/").last
 @redis.del(topology_class)
 
 command = RedStorm::Application.local_storm_command(topology_class_path)
-pid = spawn("#{command} > /dev/null", :out=>"/dev/null")
+
+success, out = RedStorm::Application.subshell(RedStorm::Application.local_storm_command(topology_class_path))
+puts("storm FAILED\n\n#{out}") unless success
 
 result = @redis.blpop(topology_class, :timeout => 30)
 sleep(5) if result
 
 if result.nil? || result[1] != "SUCCESS"
-  puts("FAILED, bad result=#{result.inspect}")
+  puts("test FAILED, bad result=#{result.inspect}")
   exit(1)
 end
 puts("SUCCESS")

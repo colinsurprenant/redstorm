@@ -4,6 +4,8 @@ TOPOLOGIES=test/topology/*.rb
 COMMANDS=("redstorm" "bin/redstorm" "bundle exec redstorm")
 REDSTORM=""
 
+export PATH="$PATH:./storm/bin"
+
 # figure correct command
 for c in "${COMMANDS[@]}"; do
   $c version &> /dev/null
@@ -33,6 +35,7 @@ for t in $TOPOLOGIES; do
   echo -n "local $t " 
   ruby test/integration/run_local.rb $t
 done
+
 
 # run cluster mode tests
 for t in $TOPOLOGIES; do

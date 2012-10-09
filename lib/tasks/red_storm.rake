@@ -171,8 +171,8 @@ end
 
 task :bundle, [:groups] => :setup do |t, args|
   require 'bundler'
-  args.with_defaults(:groups => 'default')
-  groups = args[:groups].split(':').map(&:to_sym)
+  defaulted_args = {:groups => 'default'}.merge(args.to_hash.delete_if{|k, v| v.to_s.empty?})
+  groups = defaulted_args[:groups].split(':').map(&:to_sym)
   Bundler.definition.specs_for(groups).each do |spec|
     unless spec.full_name =~ /^bundler-\d+/
       destination_path = "#{TARGET_GEM_DIR}/#{spec.full_name}"

@@ -3,10 +3,28 @@ require 'red_storm/simple_topology'
 
 describe RedStorm::SimpleTopology do
 
+    # mock Storm imported classes
+    module Backtype; end
+    class RedStorm::TopologyBuilder; end
+    class RedStorm::LocalCluster; end
+    class RedStorm::StormSubmitter; end
+    class RedStorm::JRubySpout; end
+    class RedStorm::JRubyBolt; end
+    class Backtype::Config; end
+    class RedStorm::Fields; end
+
   before(:each) do
     Object.send(:remove_const, "Topology1") if Object.const_defined?("Topology1")
     Object.send(:remove_const, "Topology2") if Object.const_defined?("Topology2")
     Object.send(:remove_const, "Topology3") if Object.const_defined?("Topology3")
+    Object.send(:remove_const, "SpoutClass1") if Object.const_defined?("SpoutClass1")
+    Object.send(:remove_const, "SpoutClass2") if Object.const_defined?("SpoutClass2")
+    Object.send(:remove_const, "BoltClass1") if Object.const_defined?("BoltClass1")
+    Object.send(:remove_const, "BoltClass2") if Object.const_defined?("BoltClass2")
+    class SpoutClass1; end
+    class SpoutClass2; end
+    class BoltClass1; end
+    class BoltClass2; end
   end
 
   it "should set default topology name" do
@@ -32,13 +50,9 @@ describe RedStorm::SimpleTopology do
   describe "dsl" do
 
     describe "spout statement" do
-
-      class SpoutClass1; end
-      class SpoutClass2; end
-
       it "should parse single spout without options" do
         spout = RedStorm::SimpleTopology::SpoutDefinition.new(SpoutClass1, [], "spout_class1", 1)
-        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).with(SpoutClass1, [], "spout_class1", 1).and_return(spout)
+        RedStorm::SimpleTopology::SpoutDefinition.should_receive(:new).once.with(SpoutClass1, [], "spout_class1", 1).and_return(spout)
         class Topology1 < RedStorm::SimpleTopology
           spout SpoutClass1
         end
@@ -57,12 +71,22 @@ describe RedStorm::SimpleTopology do
         Topology1.spouts.should == [spout1, spout2]
       end
 
+      it "should parse output_fields" do
+        class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1 do
+            output_fields :f1, :f2
+          end
+          spout SpoutClass2 do
+            output_fields :f3
+          end
+        end
+        Topology1.spouts.first.output_fields.should == ["f1", "f2"]
+        Topology1.spouts.last.output_fields.should == [ "f3"]
+      end
+
     end
 
     describe "bolt statement" do
-
-      class BoltClass1; end
-      class BoltClass2; end
 
       it "should parse single bolt without options" do
         bolt_definition = RedStorm::SimpleTopology::BoltDefinition.new(BoltClass1, [], "bolt_class1", 1)
@@ -130,6 +154,19 @@ describe RedStorm::SimpleTopology do
         Topology1.bolts.should == [bolt_definition]
       end
 
+      it "should parse output_fields" do
+        class Topology1 < RedStorm::SimpleTopology
+          bolt BoltClass1 do
+            output_fields :f1, :f2
+          end
+          bolt BoltClass2 do
+            output_fields :f3
+          end
+        end
+        Topology1.bolts.first.output_fields.should == ["f1", "f2"]
+        Topology1.bolts.last.output_fields.should == [ "f3"]
+      end
+
     end
 
     describe "configure statement" do
@@ -186,16 +223,6 @@ describe RedStorm::SimpleTopology do
   end
 
   describe "topology proxy" do
-
-    # mock Storm imported classes
-    module Backtype; end
-    class RedStorm::TopologyBuilder; end
-    class RedStorm::LocalCluster; end
-    class RedStorm::StormSubmitter; end
-    class RedStorm::JRubySpout; end
-    class RedStorm::JRubyBolt; end
-    class Backtype::Config; end
-    class RedStorm::Fields; end
 
     it "should start in :local env" do
       class Topology1 < RedStorm::SimpleTopology; end
@@ -309,15 +336,16 @@ describe RedStorm::SimpleTopology do
         jruby_spout = mock(RedStorm::JRubySpout)
         @declarer = mock("InputDeclarer")
         RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
-        RedStorm::Configurator.should_receive(:new).and_return(configurator)
+        backtype_config = mock(Backtype::Config)
+        Backtype::Config.should_receive(:new).any_number_of_times.and_return(backtype_config)
+        backtype_config.should_receive(:put)
         RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1", []).and_return(jruby_bolt)
         RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1", []).and_return(jruby_spout)
         builder.should_receive("setBolt").with('bolt_class1', jruby_bolt, 1).and_return(@declarer)
         builder.should_receive("setSpout").with('1', jruby_spout, 1).and_return(@declarer)
         @declarer.should_receive("addConfigurations").twice
-        configurator.should_receive(:config).and_return("config")
         builder.should_receive(:createTopology).and_return("topology")
-        RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
+        RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", backtype_config, "topology")
       end
 
       it "should support single string fields" do

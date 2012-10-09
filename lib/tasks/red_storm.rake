@@ -90,10 +90,14 @@ task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
     if args[:include_dir]
       dirs = args[:include_dir].split(":")
 
-      # first add resources/ dir in the jar root - requirement for ShellBolt multilang resources
-      dirs.select{|dir| File.exist?("#{dir}/resources")}.each do |resources_parent|
-        fileset :dir => resources_parent do
-          include :name => "resources/**/*"
+      # first add any resources/ dir in the tree in the jar root - requirement for ShellBolt multilang resources
+      dirs.each do |dir|
+        resources_dirs = Dir.glob("#{dir}/**/resources")
+        resources_dirs.each do |resources_dir|
+          resources_parent = resources_dir.gsub("/resources", "")
+          fileset :dir => resources_parent do
+            include :name => "resources/**/*"
+          end
         end
       end
 

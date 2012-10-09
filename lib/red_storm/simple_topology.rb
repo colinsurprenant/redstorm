@@ -15,7 +15,7 @@ module RedStorm
 
     class ComponentDefinition < Configurator
       attr_reader :clazz, :constructor_args, :parallelism
-      attr_accessor :output_fields, :id # ids are forced to string
+      attr_accessor :id # ids are forced to string
 
       def initialize(component_class, constructor_args, id, parallelism)
         super()
@@ -27,7 +27,7 @@ module RedStorm
       end
 
       def output_fields(*args)
-        @output_fields = *args
+        args.empty? ? @output_fields : @output_fields = args.map(&:to_s)
       end
 
       def is_java?

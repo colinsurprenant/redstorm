@@ -326,10 +326,10 @@ Some ways you can contribute:
 
 If you want to list your RedStorm project here, contact me.
 
-- [Tweigeist](https://github.com/colinsurprenant/tweitgeist) - realtime computation of the top trending hashtags on Twitter. [Live Demo](http://tweitgeist.needium.com).
+- [Tweigeist](https://github.com/colinsurprenant/tweitgeist) - realtime computation of the top trending hashtags on Twitter. Live Demo in search of a new home.
 
 ## Author
-Colin Surprenant, [@colinsurprenant][twitter], [http://github.com/colinsurprenant][github], colin.surprenant@gmail.com, colin.surprenant@needium.com
+Colin Surprenant, [@colinsurprenant][twitter], [http://github.com/colinsurprenant][github], colin.surprenant@gmail.com
 
 ## Contributors
 Theo Hultberg, https://github.com/iconara

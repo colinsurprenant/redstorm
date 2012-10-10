@@ -4,8 +4,8 @@ require 'pompompom'
 require 'red_storm'
 require 'red_storm/application'
 
-INSTALL_STORM_VERSION = "0.7.4"
-INSTALL_JRUBY_VERSION = "1.6.7.2"
+INSTALL_STORM_VERSION = "0.8.1"
+INSTALL_JRUBY_VERSION = "1.6.8"
 
 module JavaZip
   import 'java.util.zip.ZipFile'

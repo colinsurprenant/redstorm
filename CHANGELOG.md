@@ -58,7 +58,8 @@
 - issue #40, bolt fail method missing
 - integration tests support
 
-# 0.6.3, tbd
+# 0.6.3, 10-09-2012
 - issue #28, allow specification of output_fields in topology DSL
 - issue #41, add support for ShellBolt and ShellSpout
+- issue #49, redstorm bundle not picking up default group in Gemfile
 - support constructor parameters for Java spout/bolt in topology DSL

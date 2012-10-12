@@ -1,3 +1,3 @@
 module RedStorm
-  VERSION = '0.6.3'
+  VERSION = '0.6.4-b1'
 end

@@ -23,5 +23,5 @@ Gem::Specification.new do |s|
   # seems problematic in the jar exection context.
   s.add_development_dependency 'rspec', '~> 2.8.0'
   s.add_runtime_dependency 'rake'
-  s.add_runtime_dependency 'pompompom', '2.0.0.b2'
+  # s.add_runtime_dependency 'pompompom', '2.0.0.b2'
 end

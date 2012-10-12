@@ -18,6 +18,12 @@ REDSTORM_LIB_DIR = "#{RedStorm::REDSTORM_HOME}/lib"
 SRC_EXAMPLES = "#{RedStorm::REDSTORM_HOME}/examples"
 DST_EXAMPLES = "#{CWD}/examples"
 
+SRC_IVY_DIR = "#{RedStorm::REDSTORM_HOME}/ivy"
+DST_IVY_DIR = "#{CWD}/ivy"
+CUSTOM_DEPENDENCIES = "#{CWD}/Dependencies"
+DEFAULT_IVY_SETTINGS = "#{SRC_IVY_DIR}/settings.xml"
+CUSTOM_IVY_SETTINGS = "#{DST_IVY_DIR}/settings.xml"
+
 
 module RedStorm
   
@@ -26,7 +32,7 @@ module RedStorm
 
     def self.local_storm_command(class_file, ruby_mode = nil)
       src_dir = File.expand_path(File.dirname(class_file))
-      "java -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/*:#{src_dir}/\" redstorm.TopologyLauncher local #{class_file}"
+      "java -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/storm/default/*:#{TARGET_DEPENDENCY_DIR}/topology/default/*:#{src_dir}/\" redstorm.TopologyLauncher local #{class_file}"
     end
 
     def self.cluster_storm_command(class_file, ruby_mode = nil)

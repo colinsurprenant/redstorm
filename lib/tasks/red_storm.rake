@@ -1,15 +1,37 @@
 require 'ant'
 require 'jruby/jrubyc'
-require 'pompompom'
+# require 'pompompom'
 require 'red_storm'
 require 'red_storm/application'
 
-INSTALL_STORM_VERSION = "0.8.1"
-INSTALL_JRUBY_VERSION = "1.6.8"
+STORM_VERSION = "0.8.1"
+JRUBY_VERSION = "1.6.8"
+IVY_VERSION = "2.2.0"
 
-module JavaZip
-  import 'java.util.zip.ZipFile'
-end
+# DEFAULT_DEPENDENCIES = {
+#   :repositories => {:clojars => 'http://clojars.org/repo/', :sonatype => "http://oss.sonatype.org/content/groups/public/"},
+#   :dependencies => [
+#     "storm:storm:#{INSTALL_STORM_VERSION}|type_filter=jar",
+#     "org.slf4j:slf4j-log4j12:1.5.8|type_filter=jar",
+#     "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}|transitive=false,type_filter=jar",
+#   ],
+#   :destination => TARGET_DEPENDENCY_DIR
+# }
+
+# module JavaZip
+#   import 'java.util.zip.ZipFile'
+# end
+
+DEFAULT_DEPENDENCIES = {
+  :storm_artifacts => [
+    "storm:storm:#{STORM_VERSION}, transitive=true",
+  ],
+  :topology_artifacts => [
+    "org.jruby:jruby-complete:#{JRUBY_VERSION}, transitive=false",
+  ],
+}
+
+
 
 task :launch, :env, :ruby_mode, :class_file do |t, args|
   # use ruby mode parameter or default to current interpreter version
@@ -58,61 +80,6 @@ task :install => [:deps, :build] do
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
-task :unpack do
-  unpack_artifacts = %w[jruby-complete]
-  unpack_glob = "#{TARGET_DEPENDENCY_DIR}/{#{unpack_artifacts.join(',')}}-*-jar.jar"
-  Dir[unpack_glob].each do |jar|
-    puts("Extracting #{jar}")
-    zf = JavaZip::ZipFile.new(jar)
-    zf.entries.each do |entry|
-      next if entry.directory?
-      destination = "#{TARGET_DEPENDENCY_UNPACKED_DIR}/#{entry.name}"
-      in_io = zf.get_input_stream(entry).to_io
-      FileUtils.mkdir_p(File.dirname(destination))
-      File.open(destination, 'w') { |out_io| out_io.write(in_io.read) }
-    end
-  end
-end
-
-task :jar, [:include_dir] => [:unpack, :clean_jar] do |t, args|
-  puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
-  ant.jar :destfile => TARGET_CLUSTER_JAR do
-    fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
-    fileset :dir => TARGET_DIR do
-      include :name => "gems/**"
-    end
-    fileset :dir => TARGET_CLASSES_DIR
-    # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
-    # in bolts/spouts works in jar context
-    fileset :dir => TARGET_LIB_DIR do
-      exclude :name => "tasks/**"
-    end
-    if args[:include_dir]
-      dirs = args[:include_dir].split(":")
-
-      # first add any resources/ dir in the tree in the jar root - requirement for ShellBolt multilang resources
-      dirs.each do |dir|
-        resources_dirs = Dir.glob("#{dir}/**/resources")
-        resources_dirs.each do |resources_dir|
-          resources_parent = resources_dir.gsub("/resources", "")
-          fileset :dir => resources_parent do
-            include :name => "resources/**/*"
-          end
-        end
-      end
-
-      # include complete source dir tree (note we don't care about potential duplicated resources dir)
-      fileset :dir => CWD do
-        dirs.each{|dir| include :name => "#{dir}/**/*"}
-      end
-    end
-    manifest do
-      attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
-    end
-  end
-  puts("\nRedStorm generated JAR file #{TARGET_CLUSTER_JAR}")
-end
-
 task :examples do
   if File.identical?(SRC_EXAMPLES, DST_EXAMPLES)
     STDERR.puts("error: cannot copy examples into itself")
@@ -130,26 +97,6 @@ end
 
 task :copy_red_storm do
   FileUtils.cp_r(REDSTORM_LIB_DIR, TARGET_DIR)
-end
-
-task :deps => :setup do
-  puts("\n--> Installing dependencies")
-
-  configuration = {
-    :repositories => {:clojars => 'http://clojars.org/repo/', :sonatype => "http://oss.sonatype.org/content/groups/public/"},
-    :dependencies => [
-      "storm:storm:#{INSTALL_STORM_VERSION}|type_filter=jar",
-      "org.slf4j:slf4j-log4j12:1.5.8|type_filter=jar",
-      "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}|transitive=false,type_filter=jar",
-    ],
-    :destination => TARGET_DEPENDENCY_DIR
-  }
-
-  installer = PomPomPom::Runner.new(configuration)
-  installer.run
-
-  # tmp hack to clenup a dependency weirdness (issue #36)
-  FileUtils.rm("#{TARGET_DEPENDENCY_DIR}/slf4j-api-1.6.3-jar.jar")
 end
 
 task :build => [:setup, :copy_red_storm] do
@@ -189,6 +136,118 @@ task :bundle, [:groups] => :setup do |t, args|
   end
 end
 
+namespace :ivy do
+  task :download do
+    mkdir_p DST_IVY_DIR
+    ant.get ({
+      :src => "http://repo1.maven.org/maven2/org/apache/ivy/ivy/#{IVY_VERSION}/ivy-#{IVY_VERSION}.jar",
+      :dest => "#{DST_IVY_DIR}/ivy-#{IVY_VERSION}.jar",
+      :usetimestamp => true,
+    })
+  end
+
+  task :install => :download do
+    ant.path :id => 'ivy.lib.path' do
+      fileset :dir => DST_IVY_DIR, :includes => '*.jar',
+    end
+
+    ant.taskdef ({
+      :resource => "org/apache/ivy/ant/antlib.xml",
+      :classpathref => "ivy.lib.path",
+      #:uri => "antlib:org.apache.ivy.ant",
+    })
+  end
+end
+
+task :deps => "ivy:install" do
+  puts("\n--> Installing dependencies")
+
+  dependencies = File.exists?(CUSTOM_DEPENDENCIES) ? eval(File.read(CUSTOM_DEPENDENCIES)) : DEFAULT_DEPENDENCIES
+  ant.configure :file => File.exists?(CUSTOM_IVY_SETTINGS) ? CUSTOM_IVY_SETTINGS : DEFAULT_IVY_SETTINGS
+
+  dependencies[:storm_artifacts].each do |dependency|
+    artifact, transitive = dependency.split(/\s*,\s*/)
+    ivy_retrieve(*artifact.split(':'), transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/storm", "default")
+  end
+
+  dependencies[:topology_artifacts].each do |dependency|
+    artifact, transitive = dependency.split(/\s*,\s*/)
+    ivy_retrieve(*artifact.split(':'), transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/topology", "default")
+  end
+end  
+
+# task :deps => :setup do
+#   puts("\n--> Installing dependencies")
+
+#   configuration = File.exists?(CUSTOM_DEPENDENCIES) ? eval(File.read(CUSTOM_DEPENDENCIES)) : DEFAULT_DEPENDENCIES
+#   installer = PomPomPom::Runner.new(configuration)
+#   installer.run
+
+#   # tmp hack to clenup a dependency weirdness (issue #36)
+#   FileUtils.rm("#{TARGET_DEPENDENCY_DIR}/slf4j-api-1.6.3-jar.jar", :force => true)
+# end
+
+# task :unpack do
+#   unpack_artifacts = %w[jruby-complete]
+#   unpack_glob = "#{TARGET_DEPENDENCY_DIR}/{#{unpack_artifacts.join(',')}}-*-jar.jar"
+#   Dir[unpack_glob].each do |jar|
+#     puts("Extracting #{jar}")
+#     zf = JavaZip::ZipFile.new(jar)
+#     zf.entries.each do |entry|
+#       next if entry.directory?
+#       destination = "#{TARGET_DEPENDENCY_UNPACKED_DIR}/#{entry.name}"
+#       in_io = zf.get_input_stream(entry).to_io
+#       FileUtils.mkdir_p(File.dirname(destination))
+#       File.open(destination, 'w') { |out_io| out_io.write(in_io.read) }
+#     end
+#   end
+# end
+
+task :jar, [:include_dir] => [:clean_jar] do |t, args|
+  puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
+
+  ant.jar :destfile => TARGET_CLUSTER_JAR do
+    # fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
+    Dir["target/dependency/topology/default/*.jar"].each do |jar|
+      puts("Extracting #{jar}")
+      zipfileset :src => jar, :includes => "**/*"
+      # zipfileset :src => jar, :includes => "**/*.java **/*.class"
+    end
+    fileset :dir => TARGET_DIR do
+      include :name => "gems/**"
+    end
+    fileset :dir => TARGET_CLASSES_DIR
+    # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
+    # in bolts/spouts works in jar context
+    fileset :dir => TARGET_LIB_DIR do
+      exclude :name => "tasks/**"
+    end
+    if args[:include_dir]
+      dirs = args[:include_dir].split(":")
+
+      # first add any resources/ dir in the tree in the jar root - requirement for ShellBolt multilang resources
+      dirs.each do |dir|
+        resources_dirs = Dir.glob("#{dir}/**/resources")
+        resources_dirs.each do |resources_dir|
+          resources_parent = resources_dir.gsub("/resources", "")
+          fileset :dir => resources_parent do
+            include :name => "resources/**/*"
+          end
+        end
+      end
+
+      # include complete source dir tree (note we don't care about potential duplicated resources dir)
+      fileset :dir => CWD do
+        dirs.each{|dir| include :name => "#{dir}/**/*"}
+      end
+    end
+    manifest do
+      attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
+    end
+  end
+  puts("\nRedStorm generated JAR file #{TARGET_CLUSTER_JAR}")
+end
+
 def build_java_dir(source_folder)
   puts("\n--> Compiling Java")
   ant.javac(
@@ -213,9 +272,36 @@ def build_jruby(source_path)
     argv << '-t' << TARGET_SRC_DIR
     argv << '--verbose'
     argv << '--java'
-    argv << '-c' << %("#{TARGET_DEPENDENCY_DIR}/storm-#{INSTALL_STORM_VERSION}.jar")
+    Dir["#{TARGET_DEPENDENCY_DIR}/storm/default/*.jar"].each do |jar|
+      argv << '-c' << %("#{jar}")
+    end
     argv << '-c' << %("#{TARGET_CLASSES_DIR}")
     argv << source_path
     status =  JRuby::Compiler::compile_argv(argv)
   end
+end
+
+def truefalse(s)
+  return true if s.to_s.downcase =~ /1|yes|true/
+  return false if s.to_s.downcase =~ /0|no|false/
+  nil
+end
+
+def ivy_retrieve(org, mod, rev, transitive, dir, conf)
+  ant.resolve ({
+    :organisation => org,
+    :module => mod,
+    :revision => rev,
+    :inline => true,
+    :transitive => truefalse(transitive),
+  })
+
+  ant.retrieve ({
+    :organisation => org,
+    :module => mod,
+    :revision => rev,
+    :pattern => "#{dir}/[conf]/[artifact]-[revision].[ext]",
+    :inline => true,
+    :conf => conf,
+  })
 end

@@ -1,0 +1,17 @@
+<ivysettings>
+  <settings defaultResolver="all-repos"/>
+  <resolvers>
+    <chain name="all-repos">
+      <url name="clojars" m2compatible="true">
+        <artifact pattern="http://clojars.org/repo/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+      </url>
+      <url name="sonatype" m2compatible="true">
+        <artifact pattern="http://oss.sonatype.org/content/groups/public/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+      </url>
+      <url name="maven2" m2compatible="true">
+        <artifact pattern="http://repo.maven.apache.org/maven2/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+      </url>
+      <ibiblio name="ibiblio" m2compatible="true" usepoms="false"/>
+    </chain>
+  </resolvers>
+</ivysettings>

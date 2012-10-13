@@ -1,26 +1,11 @@
 require 'ant'
 require 'jruby/jrubyc'
-# require 'pompompom'
 require 'red_storm'
 require 'red_storm/application'
 
 STORM_VERSION = "0.8.1"
 JRUBY_VERSION = "1.6.8"
 IVY_VERSION = "2.2.0"
-
-# DEFAULT_DEPENDENCIES = {
-#   :repositories => {:clojars => 'http://clojars.org/repo/', :sonatype => "http://oss.sonatype.org/content/groups/public/"},
-#   :dependencies => [
-#     "storm:storm:#{INSTALL_STORM_VERSION}|type_filter=jar",
-#     "org.slf4j:slf4j-log4j12:1.5.8|type_filter=jar",
-#     "org.jruby:jruby-complete:#{INSTALL_JRUBY_VERSION}|transitive=false,type_filter=jar",
-#   ],
-#   :destination => TARGET_DEPENDENCY_DIR
-# }
-
-# module JavaZip
-#   import 'java.util.zip.ZipFile'
-# end
 
 DEFAULT_DEPENDENCIES = {
   :storm_artifacts => [
@@ -30,8 +15,6 @@ DEFAULT_DEPENDENCIES = {
     "org.jruby:jruby-complete:#{JRUBY_VERSION}, transitive=false",
   ],
 }
-
-
 
 task :launch, :env, :ruby_mode, :class_file do |t, args|
   # use ruby mode parameter or default to current interpreter version
@@ -176,42 +159,14 @@ task :deps => "ivy:install" do
   end
 end  
 
-# task :deps => :setup do
-#   puts("\n--> Installing dependencies")
-
-#   configuration = File.exists?(CUSTOM_DEPENDENCIES) ? eval(File.read(CUSTOM_DEPENDENCIES)) : DEFAULT_DEPENDENCIES
-#   installer = PomPomPom::Runner.new(configuration)
-#   installer.run
-
-#   # tmp hack to clenup a dependency weirdness (issue #36)
-#   FileUtils.rm("#{TARGET_DEPENDENCY_DIR}/slf4j-api-1.6.3-jar.jar", :force => true)
-# end
-
-# task :unpack do
-#   unpack_artifacts = %w[jruby-complete]
-#   unpack_glob = "#{TARGET_DEPENDENCY_DIR}/{#{unpack_artifacts.join(',')}}-*-jar.jar"
-#   Dir[unpack_glob].each do |jar|
-#     puts("Extracting #{jar}")
-#     zf = JavaZip::ZipFile.new(jar)
-#     zf.entries.each do |entry|
-#       next if entry.directory?
-#       destination = "#{TARGET_DEPENDENCY_UNPACKED_DIR}/#{entry.name}"
-#       in_io = zf.get_input_stream(entry).to_io
-#       FileUtils.mkdir_p(File.dirname(destination))
-#       File.open(destination, 'w') { |out_io| out_io.write(in_io.read) }
-#     end
-#   end
-# end
-
 task :jar, [:include_dir] => [:clean_jar] do |t, args|
   puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
 
   ant.jar :destfile => TARGET_CLUSTER_JAR do
-    # fileset :dir => TARGET_DEPENDENCY_UNPACKED_DIR
+    # rejar all topology jars
     Dir["target/dependency/topology/default/*.jar"].each do |jar|
       puts("Extracting #{jar}")
       zipfileset :src => jar, :includes => "**/*"
-      # zipfileset :src => jar, :includes => "**/*.java **/*.class"
     end
     fileset :dir => TARGET_DIR do
       include :name => "gems/**"

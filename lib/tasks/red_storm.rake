@@ -1,4 +1,11 @@
-require 'ant'
+begin
+  require 'ant'
+rescue
+  puts("error: unable to load Ant, make sure Ant is installed and in your PATH")
+  puts("\nerror detail:\n#{$!}")
+  exit(1)
+end
+
 require 'jruby/jrubyc'
 require 'red_storm'
 require 'red_storm/application'
@@ -25,7 +32,7 @@ task :launch, :env, :ruby_mode, :class_file do |t, args|
     RedStorm::Application.local_storm_command(args[:class_file], args[:ruby_mode])
   when "cluster"
     unless File.exist?(TARGET_CLUSTER_JAR)
-      puts("cluster jar file #{TARGET_CLUSTER_JAR} not found. Generate it using $redstorm jar DIR1 [DIR2, ...]")
+      puts("error: cluster jar file #{TARGET_CLUSTER_JAR} not found. Generate it using $redstorm jar DIR1 [DIR2, ...]")
       exit(1)
     end
     RedStorm::Application.cluster_storm_command(args[:class_file], args[:ruby_mode])

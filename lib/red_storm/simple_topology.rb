@@ -101,7 +101,7 @@ module RedStorm
     end
 
     def self.log
-      @log ||= org.apache.log4j.Logger.getLogger(self.name)
+      @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
     end
 
     # def self.spout(spout_class, contructor_args = [], options = {}, &spout_block)

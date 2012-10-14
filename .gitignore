@@ -10,3 +10,5 @@ storm-*
 storm
 examples/simple/Gemfile.lock
 redstorm.wiki
+Dependencies
+ivy/ivy-2.2.0.jar

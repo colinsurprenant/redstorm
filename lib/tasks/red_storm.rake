@@ -256,6 +256,7 @@ def ivy_retrieve(org, mod, rev, transitive, dir, conf)
     :revision => rev,
     :inline => true,
     :transitive => truefalse(transitive),
+    :conf => conf,
   })
 
   ant.retrieve ({
@@ -264,6 +265,7 @@ def ivy_retrieve(org, mod, rev, transitive, dir, conf)
     :revision => rev,
     :pattern => "#{dir}/[conf]/[artifact]-[revision].[ext]",
     :inline => true,
+    :transitive => truefalse(transitive),
     :conf => conf,
   })
 end

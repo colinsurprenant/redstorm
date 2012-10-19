@@ -1,8 +1,8 @@
-# RedStorm v0.6.3 - JRuby on Storm
+# RedStorm v0.6.4 - JRuby on Storm
 
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 
-RedStorm provides a Ruby DSL using JRuby integration for the [Storm][storm] distributed realtime computation system.
+RedStorm provides a Ruby DSL using JRuby integration for the [Storm](https://github.com/nathanmarz/storm/) distributed realtime computation system.
 
 ## Documentation
 
@@ -16,7 +16,7 @@ Chances are new versions of RedStorm will introduce changes that will break comp
 
 ## Dependencies
 
-Tested on OSX 10.6.8 and Linux 10.04 & 11.10 using Storm 0.7.4 and JRuby 1.6.7.2
+Tested on **OSX 10.8.2** and **Linux 12.04** using **Storm 0.8.1** and **JRuby 1.6.8** and **OpenJDK 7**
 
 ## Notes about 1.8/1.9 JRuby compatibility
 
@@ -58,7 +58,7 @@ $ redstorm local|cluster [--1.8|--1.9] ...
 
   ``` ruby
   source :rubygems
-  gem "redstorm", "~> 0.6.3"
+  gem "redstorm", "~> 0.6.4"
   ```
 
 ## Usage overview
@@ -81,7 +81,7 @@ or if your default JRuby mode is 1.8 but you want to use 1.9 for your topology d
 $ jruby --1.9 -S redstorm install
 ```
 
-This will basically install all Java jar dependencies in `target/dependency`, generate & compile the Java bindings in `target/classes`.
+This will basically install default Java jar dependencies in `target/dependency`, generate & compile the Java bindings in `target/classes`.
 
 ### Create a topology
 
@@ -113,6 +113,28 @@ Basically, the `redstorm bundle` command copy the gems specified in the Gemfile 
 
 This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the jar file. This **could lead to problems** if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have **C or FFI** extensions.
 
+### Custom Jar dependencies in your topology
+
+By defaut, RedStorm installs Storm and JRuby jars dependencies. If you require custom dependencies, these can be specified by creating the `Dependencies` file in the root of your project. Note that this file overwrites the defaults dependencies so you must also include the Storm and JRuby dependencies. Here's an example of a `Dependencies` file which included the jars required to run the `KafkaTopology` in the examples.
+
+``` ruby
+{
+  :storm_artifacts => [
+    "storm:storm:0.8.1, transitive=true",
+  ],
+  :topology_artifacts => [
+    "org.jruby:jruby-complete:1.6.8, transitive=false",
+    "org.scala-lang:scala-library:2.8.0, transitive=false",
+    "storm:kafka:0.7.0-incubating, transitive=false",
+    "storm:storm-kafka:0.8.0-wip4, transitive=false",
+  ],
+}
+```
+
+Basically the dependendencies are speified as Maven artifacts. There are two sections, the `:storm_artifacts =>` contains the dependencies for running storm in local mode and the `:topology_artifacts =>` are the dependencies specific for your topology. The format is self explainatory and the attribute `transitive=[true|false]` controls the recursive dependencies resolution (using `true`).
+
+The jars repositories can be configured using the `ivy/setting.xml` file. For information on the Ivy settings format, see the [Ivy Settings Documentation](http://ant.apache.org/ivy/history/2.2.0/settings.html). I will try my best to eliminate all XML :) but for now I haven't figured how to get rid of this one.
+
 ### Run in local mode
 
 ``` sh
@@ -125,7 +147,7 @@ By defaut, a topology will be executed in the **same mode** as the interpreter r
 
 ### Run on production cluster
 
-1. download and unpack the [Storm 0.7.4 distribution](https://github.com/downloads/nathanmarz/storm/storm-0.7.4.zip) locally and **add** the Storm `bin/` directory to your path
+1. download and unpack the [Storm 0.8.1 distribution](https://github.com/downloads/nathanmarz/storm/storm-0.8.1.zip) locally and **add** the Storm `bin/` directory to your `$PATH`.
 
 2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
 
@@ -158,14 +180,14 @@ All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/
 #### Example topologies without gems 
 
 ``` sh
-$ redstorm local --1.9 examples/simple/exclamation_topology.rb
-$ redstorm local --1.9 examples/simple/exclamation_topology2.rb
-$ redstorm local --1.9 examples/simple/word_count_topology.rb
+$ redstorm local examples/simple/exclamation_topology.rb
+$ redstorm local examples/simple/exclamation_topology2.rb
+$ redstorm local examples/simple/word_count_topology.rb
 ```
 
 #### Example topologies with gems 
 
-For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis][redis] server running on `localhost:6379`
+For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
 
 1. create a `Gemfile`
 
@@ -173,21 +195,21 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
   source :rubygems
 
   group :word_count do
-      gem "redis"
+    gem "redis"
   end
   ```
 
 2. install the topology gems
 
   ``` sh
-  $ jruby --1.9 -S bundle install
+  $ bundle install
   $ redstorm bundle word_count
   ```
 
 3. run the topology in local mode
 
   ``` sh
-  $ redstorm local --1.9 examples/simple/redis_word_count_topology.rb
+  $ redstorm local examples/simple/redis_word_count_topology.rb
   ```
 
 Using `redis-cli` push words into the `test` list and watch Storm pick them up
@@ -208,15 +230,15 @@ All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/
 2. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
 
   ``` sh
-  $ redstorm cluster --1.9 examples/simple/exclamation_topology.rb
-  $ redstorm cluster --1.9 examples/simple/exclamation_topology2.rb
-  $ redstorm cluster --1.9 examples/simple/word_count_topology.rb
+  $ redstorm cluster examples/simple/exclamation_topology.rb
+  $ redstorm cluster examples/simple/exclamation_topology2.rb
+  $ redstorm cluster examples/simple/word_count_topology.rb
   ```
 
 
 #### Topologies with gems 
 
-For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis][redis] server running on `localhost:6379`
+For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
 
 1. create a `Gemfile`
 
@@ -231,7 +253,7 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
 2. install the topology gems
 
   ``` sh
-  $ jruby --1.9 -S bundle install
+  $ bundle install
   $ redstorm bundle word_count
   ```
 
@@ -244,7 +266,7 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
 4. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
 
   ``` sh
-  $ redstorm cluster --1.9 examples/simple/redis_word_count_topology.rb
+  $ redstorm cluster examples/simple/redis_word_count_topology.rb
   ```
 
 Using `redis-cli` push words into the `test` list and watch Storm pick them up
@@ -280,7 +302,7 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 
 ### Requirements
 
-- JRuby 1.6.7.x
+- JRuby 1.6.8
 
 ### Workflow
 
@@ -289,7 +311,7 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 - install RedStorm required gems
 
   ```sh
-  $ jruby --1.9 -S bundle install
+  $ bundle install
   ```
 
 - install dependencies in `target/dependencies`
@@ -301,7 +323,7 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 - generate and build Java source into `target/classes`
 
   ```sh
-  $ jruby --1.9 -S bin/redstorm build
+  $ bin/redstorm build
   ```
 
   **if you modify any of the RedStorm Ruby code or Java binding code**, you need to run this to refresh code and rebuild the bindings
@@ -326,21 +348,13 @@ Some ways you can contribute:
 
 If you want to list your RedStorm project here, contact me.
 
-- [Tweigeist](https://github.com/colinsurprenant/tweitgeist) - realtime computation of the top trending hashtags on Twitter. Live Demo in search of a new home.
+- [Tweigeist](https://github.com/colinsurprenant/tweitgeist) - realtime computation of the top trending hashtags on Twitter. See [Live Demo](http://tweitgeist.colinsurprenant.com/).
 
 ## Author
-Colin Surprenant, [@colinsurprenant][twitter], [http://github.com/colinsurprenant][github], colin.surprenant@gmail.com
+***Colin Surprenant***, [@colinsurprenant](http://twitter.com/colinsurprenant/), [http://github.com/colinsurprenant/](http://github.com/colinsurprenant/), colin.surprenant@gmail.com, [http://colinsurprenant.com/](http://colinsurprenant.com/)
 
 ## Contributors
 Theo Hultberg, https://github.com/iconara
 
 ## License
 Apache License, Version 2.0. See the LICENSE.md file.
-
-[twitter]: http://twitter.com/colinsurprenant
-[github]: http://github.com/colinsurprenant
-[rvm]: http://beginrescueend.com/
-[storm]: https://github.com/nathanmarz/storm
-[jruby]: http://jruby.org/
-[ruby-maven]: https://github.com/mkristian/ruby-maven
-[redis]: http://redis.io/

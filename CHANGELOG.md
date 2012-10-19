@@ -63,3 +63,12 @@
 - issue #41, add support for ShellBolt and ShellSpout
 - issue #49, redstorm bundle not picking up default group in Gemfile
 - support constructor parameters for Java spout/bolt in topology DSL
+
+# 0.6.4, 10-19-2012
+- Storm 0.8.1 and JRuby 1.6.8
+- improved and more flexible jar dependencies handling
+- issue #36, fix slf4j-api-1.6.3 and slf4j-log4j12-1.5.8 version conflict
+- issue #37, fix dependencies xml files naming
+- issue #47, Log4j Logger class conflict
+- issue #48, add support for external Jars
+- issue #50, update RedStorm to target Storm 0.8

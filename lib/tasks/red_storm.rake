@@ -10,16 +10,16 @@ require 'jruby/jrubyc'
 require 'red_storm'
 require 'red_storm/application'
 
-STORM_VERSION = "0.8.1"
-JRUBY_VERSION = "1.6.8"
-IVY_VERSION = "2.2.0"
+DEP_STORM_VERSION = "0.8.1"
+DEP_JRUBY_VERSION = "1.6.8"
+INSTALL_IVY_VERSION = "2.2.0"
 
 DEFAULT_DEPENDENCIES = {
   :storm_artifacts => [
-    "storm:storm:#{STORM_VERSION}, transitive=true",
+    "storm:storm:#{DEP_STORM_VERSION}, transitive=true",
   ],
   :topology_artifacts => [
-    "org.jruby:jruby-complete:#{JRUBY_VERSION}, transitive=false",
+    "org.jruby:jruby-complete:#{DEP_JRUBY_VERSION}, transitive=false",
   ],
 }
 
@@ -32,7 +32,7 @@ task :launch, :env, :ruby_mode, :class_file do |t, args|
     RedStorm::Application.local_storm_command(args[:class_file], args[:ruby_mode])
   when "cluster"
     unless File.exist?(TARGET_CLUSTER_JAR)
-      puts("error: cluster jar file #{TARGET_CLUSTER_JAR} not found. Generate it using $redstorm jar DIR1 [DIR2, ...]")
+      puts("error: cluster jar file #{TARGET_CLUSTER_JAR} not found. Generate it usingw $redstorm jar DIR1 [DIR2, ...]")
       exit(1)
     end
     RedStorm::Application.cluster_storm_command(args[:class_file], args[:ruby_mode])
@@ -129,19 +129,19 @@ end
 namespace :ivy do
   task :download do
     mkdir_p DST_IVY_DIR
-    ant.get ({
-      :src => "http://repo1.maven.org/maven2/org/apache/ivy/ivy/#{IVY_VERSION}/ivy-#{IVY_VERSION}.jar",
-      :dest => "#{DST_IVY_DIR}/ivy-#{IVY_VERSION}.jar",
+    ant.get({
+      :src => "http://repo1.maven.org/maven2/org/apache/ivy/ivy/#{INSTALL_IVY_VERSION}/ivy-#{INSTALL_IVY_VERSION}.jar",
+      :dest => "#{DST_IVY_DIR}/ivy-#{INSTALL_IVY_VERSION}.jar",
       :usetimestamp => true,
     })
   end
 
   task :install => :download do
     ant.path :id => 'ivy.lib.path' do
-      fileset :dir => DST_IVY_DIR, :includes => '*.jar',
+      fileset :dir => DST_IVY_DIR, :includes => '*.jar'
     end
 
-    ant.taskdef ({
+    ant.taskdef({
       :resource => "org/apache/ivy/ant/antlib.xml",
       :classpathref => "ivy.lib.path",
       #:uri => "antlib:org.apache.ivy.ant",
@@ -157,12 +157,12 @@ task :deps => "ivy:install" do
 
   dependencies[:storm_artifacts].each do |dependency|
     artifact, transitive = dependency.split(/\s*,\s*/)
-    ivy_retrieve(*artifact.split(':'), transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/storm", "default")
+    ivy_retrieve(*artifact.split(':').concat([transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/storm", "default"]))
   end
 
   dependencies[:topology_artifacts].each do |dependency|
     artifact, transitive = dependency.split(/\s*,\s*/)
-    ivy_retrieve(*artifact.split(':'), transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/topology", "default")
+    ivy_retrieve(*artifact.split(':').concat([transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/topology", "default"]))
   end
 end  
 
@@ -250,7 +250,7 @@ def truefalse(s)
 end
 
 def ivy_retrieve(org, mod, rev, transitive, dir, conf)
-  ant.resolve ({
+  ant.resolve({
     :organisation => org,
     :module => mod,
     :revision => rev,
@@ -259,7 +259,7 @@ def ivy_retrieve(org, mod, rev, transitive, dir, conf)
     :conf => conf,
   })
 
-  ant.retrieve ({
+  ant.retrieve({
     :organisation => org,
     :module => mod,
     :revision => rev,

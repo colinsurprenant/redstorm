@@ -134,7 +134,21 @@ By defaut, RedStorm installs Storm and JRuby jars dependencies. If you require c
 
 Basically the dependendencies are speified as Maven artifacts. There are two sections, the `:storm_artifacts =>` contains the dependencies for running storm in local mode and the `:topology_artifacts =>` are the dependencies specific for your topology. The format is self explainatory and the attribute `transitive=[true|false]` controls the recursive dependencies resolution (using `true`).
 
-The jars repositories can be configured using the `ivy/setting.xml` file. For information on the Ivy settings format, see the [Ivy Settings Documentation](http://ant.apache.org/ivy/history/2.2.0/settings.html). I will try my best to eliminate all XML :) but for now I haven't figured how to get rid of this one.
+The jars repositories can be configured by adding the `ivy/setting.xml` file in the root of your project. For information on the Ivy settings format, see the [Ivy Settings Documentation](http://ant.apache.org/ivy/history/2.2.0/settings.html). I will try my best to eliminate all XML :) but for now I haven't figured how to get rid of this one. For an example Ivy settings file, RedStorm is using the following settings by default:
+
+``` xml
+<ivysettings>
+  <settings defaultResolver="repositories"/>
+  <resolvers>
+    <chain name="repositories">
+      <ibiblio name="ibiblio" m2compatible="true"/>
+      <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
+      <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
+      <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/> 
+    </chain>
+  </resolvers>
+</ivysettings>
+```
 
 ### Run in local mode
 

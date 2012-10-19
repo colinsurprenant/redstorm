@@ -14,13 +14,11 @@ Gem::Specification.new do |s|
  
   s.rubyforge_project = 'redstorm'
   
-  s.files         = Dir.glob("{lib/**/*}") + Dir.glob("{examples/**/*}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(Rakefile README.md CHANGELOG.md LICENSE.md)
+  s.files         = Dir.glob("{lib/**/*}") + Dir.glob("{ivy/settings.xml}") + Dir.glob("{examples/**/*}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(Rakefile README.md CHANGELOG.md LICENSE.md)
   s.require_paths = ['lib']
   s.bindir        = 'bin'
   s.executables   = ['redstorm']
 
-  # keep gems in sync with Gemfile because the bundler "gemspec" statement
-  # seems problematic in the jar exection context.
   s.add_development_dependency 'rspec', '~> 2.11.0'
   s.add_runtime_dependency 'rake'
 end

@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
 
   # keep gems in sync with Gemfile because the bundler "gemspec" statement
   # seems problematic in the jar exection context.
-  s.add_development_dependency 'rspec', '~> 2.8.0'
+  s.add_development_dependency 'rspec', '~> 2.11.0'
   s.add_runtime_dependency 'rake'
-  # s.add_runtime_dependency 'pompompom', '2.0.0.b2'
 end

@@ -13,6 +13,7 @@ Chances are new versions of RedStorm will introduce changes that will break comp
 - [RedStorm Gem v0.4.x Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.4.x-Documentation)
 - [RedStorm Gem v0.5.0 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.0-Documentation)
 - [RedStorm Gem v0.5.1 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.1-Documentation)
+- [RedStorm Gem v0.6.3 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.3-Documentation)
 
 ## Dependencies
 

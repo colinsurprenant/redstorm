@@ -1,3 +1,5 @@
+require 'java'
+
 module RedStorm
 
   class SimpleBolt
@@ -6,7 +8,7 @@ module RedStorm
     # DSL class methods
 
     def self.log
-      @log ||= Logger.getLogger(self.name)
+      @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
     end
 
     def self.output_fields(*fields)

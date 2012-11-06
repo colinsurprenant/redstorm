@@ -300,12 +300,13 @@ describe RedStorm::SimpleBolt do
     # log specs are mostly the same ats in the spout specs. if these are modified, sync with spout
     describe "log statement" do
 
-      class Logger; end # mock log4j Logger class which does not exists in the specs context
+      module Java::OrgApacheLog4j end;
+      class Java::OrgApacheLog4j::Logger; end
 
       describe "in class" do
         it "should proxy to storm log4j logger" do
-          logger = mock(Logger)
-          Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
+          logger = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
           logger.should_receive(:info).with("test")
 
           class Bolt1 < RedStorm::SimpleBolt
@@ -314,10 +315,10 @@ describe RedStorm::SimpleBolt do
         end
 
         it "should use own class name as logger id" do
-          logger1 = mock(Logger)
-          logger2 = mock(Logger)
-          Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
-          Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
+          logger1 = mock(Java::OrgApacheLog4j::Logger)
+          logger2 = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
           logger1.should_receive(:info).with("test1")
           logger2.should_receive(:info).with("test2")
 
@@ -332,8 +333,8 @@ describe RedStorm::SimpleBolt do
 
       describe "in instance" do
         it "should proxy to storm log4j logger" do
-          logger = mock(Logger)
-          Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
+          logger = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
 
           class Bolt1 < RedStorm::SimpleBolt
             on_init {log.info("test")}
@@ -345,10 +346,10 @@ describe RedStorm::SimpleBolt do
         end
 
         it "should use own class name as logger id" do
-          logger1 = mock(Logger)
-          logger2 = mock(Logger)
-          Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
-          Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
+          logger1 = mock(Java::OrgApacheLog4j::Logger)
+          logger2 = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
 
           class Bolt1 < RedStorm::SimpleBolt
             on_init {log.info("test1")}

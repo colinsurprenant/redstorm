@@ -1,3 +1,5 @@
+require 'java'
+
 module RedStorm
 
   class SimpleSpout
@@ -10,7 +12,7 @@ module RedStorm
     end
 
     def self.log
-      @log ||= Logger.getLogger(self.name)
+      @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
     end
 
     def self.output_fields(*fields)

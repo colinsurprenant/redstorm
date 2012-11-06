@@ -1,3 +1,4 @@
+require 'java'
 require 'red_storm/configuration'
 
 module RedStorm
@@ -78,6 +79,10 @@ module RedStorm
       def self.camel_case(s)
         s.to_s.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }
       end
+    end
+
+    def self.log
+      @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
     end
 
     def self.spout(spout_class, options = {})

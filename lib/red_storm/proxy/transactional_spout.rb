@@ -4,7 +4,7 @@ java_import 'backtype.storm.task.TopologyContext'
 java_import 'backtype.storm.transactional.ITransactionalSpout'
 java_import 'backtype.storm.topology.OutputFieldsDeclarer'
 java_import 'java.util.Map'
-java_import 'org.apache.log4j.Logger'
+
 module Backtype
   java_import 'backtype.storm.Config'
 end

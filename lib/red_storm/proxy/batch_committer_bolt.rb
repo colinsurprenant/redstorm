@@ -7,7 +7,6 @@ java_import 'backtype.storm.transactional.ICommitter'
 java_import 'backtype.storm.topology.OutputFieldsDeclarer'
 java_import 'backtype.storm.tuple.Tuple'
 java_import 'java.util.Map'
-java_import 'org.apache.log4j.Logger'
 
 module Backtype
   java_import 'backtype.storm.Config'

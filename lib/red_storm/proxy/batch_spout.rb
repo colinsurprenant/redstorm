@@ -5,7 +5,7 @@ java_import 'storm.trident.operation.TridentCollector'
 java_import 'storm.trident.spout.IBatchSpout'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'java.util.Map'
-java_import 'org.apache.log4j.Logger'
+
 module Backtype
   java_import 'backtype.storm.Config'
 end

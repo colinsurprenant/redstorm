@@ -14,6 +14,7 @@ java_import 'backtype.storm.tuple.Values'
 
 java_import 'redstorm.storm.jruby.JRubyBolt'
 java_import 'redstorm.storm.jruby.JRubySpout'
+java_import 'redstorm.storm.jruby.JRubyBatchSpout'
 
 java_package 'redstorm'
 

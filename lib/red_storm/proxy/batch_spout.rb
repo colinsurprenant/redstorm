@@ -1,71 +1,63 @@
 require 'java'
 
-java_import 'storm.trident.operation.TridentCollector'
-java_import 'backtype.storm.task.TopologyContext'
-java_import 'storm.trident.spout.IBatchSpout'
-java_import 'backtype.storm.topology.OutputFieldsDeclarer'
-java_import 'backtype.storm.tuple.Tuple'
-java_import 'backtype.storm.tuple.Fields'
-java_import 'backtype.storm.tuple.Values'
+
 java_import 'java.util.Map'
+
+java_import 'backtype.storm.task.TopologyContext'
+
+java_import 'storm.trident.operation.TridentCollector'
+
+java_import 'backtype.storm.tuple.Fields'
+
+java_import 'storm.trident.spout.IBatchSpout'
+
+
 module Backtype
   java_import 'backtype.storm.Config'
 end
 
 java_package 'redstorm.proxy'
 
-# the BatchSpout class is a proxy to the real batch spout to avoid having to deal with all the
-# Java artifacts when creating a spout.
-#
-# The real batch spout class implementation must define these methods:
-# - open(conf, context, collector)
-# - emitBatch
-# - getOutputFields
-# - ack(batch_id)
-#
-# and optionnaly:
-# - close
-#
-
 class BatchSpout
   java_implements IBatchSpout
 
-  java_signature 'IBatchSpout (String base_class_path, String real_spout_class_name)'
-  def initialize(base_class_path, real_spout_class_name)
-    @real_spout = Object.module_eval(real_spout_class_name).new
+  java_signature 'IBatchSpout (String base_class_path, String real_class_name)'
+  def initialize(base_class_path, real_class_name)
+    @real = Object.module_eval(real_class_name).new
   rescue NameError
     require base_class_path
-    @real_spout = Object.module_eval(real_spout_class_name).new
+    @real = Object.module_eval(real_class_name).new
   end
 
   java_signature 'void open(Map, TopologyContext)'
-  def open(conf, context)
-    @real_spout.open(conf, context)
+  def open(_map, _topology_context)
+    @real.open(Map, TopologyContext)
   end
 
   java_signature 'void close()'
-  def close
-    @real_spout.close if @real_spout.respond_to?(:close)
-  end
-
-  java_signature 'void emitBatch(long, TridentCollector)'
-  def emitBatch(batch_id, collector)
-    @real_spout.emit_batch(batch_id, collector)
+  def close()
+    @real.close()
   end
 
   java_signature 'void ack(long)'
-  def ack(batch_id)
-    @real_spout.ack(batch_id)
+  def ack(_long)
+    @real.ack(long)
   end
 
-  java_signature 'Fields getOutputFields()'
-  def getOutputFields
-    @real_spout.get_output_fields()
+  java_signature 'void emit_batch(long, TridentCollector)'
+  def emit_batch(_long, _trident_collector)
+    @real.emit_batch(long, TridentCollector)
   end
 
-  java_signature 'Map<String, Object> getComponentConfiguration()'
-  def getComponentConfiguration
-    @real_spout.get_component_configuration
+  java_signature 'Map get_component_configuration()'
+  def get_component_configuration()
+    @real.get_component_configuration()
   end
+
+  java_signature 'Fields get_output_fields()'
+  def get_output_fields()
+    @real.get_output_fields()
+  end
+
 
 end

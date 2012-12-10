@@ -6,8 +6,10 @@ module Backtype
 end
 
 java_import 'backtype.storm.LocalCluster'
+java_import 'backtype.storm.LocalDRPC'
 java_import 'backtype.storm.StormSubmitter'
 java_import 'backtype.storm.topology.TopologyBuilder'
+java_import 'backtype.storm.drpc.LinearDRPCTopologyBuilder'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Tuple'
 java_import 'backtype.storm.tuple.Values'
@@ -18,7 +20,7 @@ java_import 'redstorm.storm.jruby.JRubyBatchSpout'
 
 java_package 'redstorm'
 
-# TopologyLauncher is the application entry point when launching a topology. Basically it will 
+# TopologyLauncher is the application entry point when launching a topology. Basically it will
 # call require on the specified Ruby topology class file path and call its start method
 class TopologyLauncher
 
@@ -37,14 +39,14 @@ class TopologyLauncher
     $:.unshift File.expand_path(launch_path + '/lib')
     $:.unshift File.expand_path(launch_path + '/target/lib')
 
-    require "#{class_path}" 
+    require "#{class_path}"
 
     topology_name = RedStorm::Configuration.topology_class.respond_to?(:topology_name) ? "/#{RedStorm::Configuration.topology_class.topology_name}" : ''
     puts("RedStorm v#{RedStorm::VERSION} starting topology #{RedStorm::Configuration.topology_class.name}#{topology_name} in #{env.to_s} environment")
     RedStorm::Configuration.topology_class.new.start(class_path, env)
   end
 
-  private 
+  private
 
   def self.camel_case(s)
     s.to_s.gsub(/\/(.?)/) { "::#{$1.upcase}" }.gsub(/(?:^|_)(.)/) { $1.upcase }

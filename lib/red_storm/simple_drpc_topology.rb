@@ -46,7 +46,7 @@ module RedStorm
     end
 
     def start(base_class_path, env)
-      builder = LinearDRPCTopologyBuilder.new(self.class.topology_name)
+      builder = Java::BacktypeStormDrpc::LinearDRPCTopologyBuilder.new(self.class.topology_name)
 
       self.class.bolts.each do |bolt|
         declarer = builder.addBolt(bolt.new_instance(base_class_path), bolt.parallelism.to_java)

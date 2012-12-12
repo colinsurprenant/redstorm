@@ -17,7 +17,7 @@ Chances are new versions of RedStorm will introduce changes that will break comp
 
 ## Dependencies
 
-Tested on **OSX 10.8.2** and **Linux 12.04** using **Storm 0.8.1** and **JRuby 1.6.8** and **OpenJDK 7**
+Tested on **OSX 10.8.2** and **Ubuntu Linux 12.04** using **Storm 0.8.1** and **JRuby 1.6.8** and **OpenJDK 7**
 
 ## Notes about 1.8/1.9 JRuby compatibility
 

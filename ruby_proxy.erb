@@ -23,7 +23,7 @@ class <%= ruby_class_name %>
 <% methods.each do |method_name, params| %>
   java_signature '<%= params[:return_type] %> <%= method_name %>(<%= params[:args].values.join(', ') %>)'
   def <%= method_name %>(<%= params[:args].keys.join(', ') %>)
-    @real.<%= method_name %>(<%= params[:args].values.join(', ') %>)
+    @real.<%= method_name %>(<%= params[:args].keys.join(', ') %>)
   end
 <% end %>
 

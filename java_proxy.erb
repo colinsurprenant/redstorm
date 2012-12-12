@@ -24,19 +24,20 @@ public class <%= java_class_name %> implements <%= interface_name %> {
     if (_fields.length > 0) {
       <%= params[:args].values[0] %>.declare(new Fields(_fields));
     } else {
-      newProxy(_baseClassPath, _realClassName).<%= function_name %>(<%= params[:function_args_and_types].values.join(', ') %>);
+      newProxy(_baseClassPath, _realClassName).<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
     }
     <% elsif params[:before_serialization] %>
-    newProxy(_baseClassPath, _realClassName).<%= function_name %>(<%= params[:function_args_and_types].values.join(', ') %>);
+    newProxy(_baseClassPath, _realClassName).<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
+    <% elsif params[:memoize] %>
+    if(_proxy == null) {
+      _proxy = newProxy(_baseClassPath, _realClassName);
+    }
+    _proxy.<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
     <% else %>
-    _proxy.<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>)
+    _proxy.<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
     <% end %>
   }
 <% end %>
-  @Override
-  public Map<String, Object> getComponentConfiguration() {
-    newProxy(_baseClassPath, _realClassName).getComponentConfiguration();
-  }
 
   private static <%= interface_name %> newProxy(final String baseClassPath, final String realClassName) {
     try {

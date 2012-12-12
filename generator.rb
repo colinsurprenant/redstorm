@@ -31,17 +31,21 @@ to_generate.each do |klass|
 
   # Boil down functions to {:function_name => {:return_type => type, :args => {:arg_var_name => :arg_var_type, ...} } }
   functions = _functions.reduce({}) do |memo, f|
+    before_serialization = %w{ }.include?(f.name.to_s)
+    memoize = %w{ prepare execute }.include?(f.name.to_s)
     memo[:"#{f.name}"] = {
       :return_type => f.return_type ? f.return_type.name.split('.')[-1] : "void",
-      :args => f.argument_types.map {|at| {:"_#{at.name.split('.')[-1].camelize(:lower)}" => at.name.split('.')[-1]} }.reduce({}){|m,o| m.merge(o)}
+      :args => f.argument_types.map {|at| {:"_#{at.name.split('.')[-1].camelize(:lower)}" => at.name.split('.')[-1]} }.reduce({}){|m,o| m.merge(o)},
+      :before_serialization => before_serialization,
+      :memoize => memoize
     }
     memo
   end
 
   interface_name = klass.split(".")[-1]
 
-  # IBlah to Blah if IBlah
-  ruby_class_name = interface_name.starts_with?('I') ? interface_name[1..-1] : interface_name
+  # IBlah to ProxyBlah if IBlah
+  ruby_class_name = "Proxy#{interface_name.starts_with?('I') ? interface_name[1..-1] : interface_name}"
 
   java_class_name = "JRuby#{ruby_class_name}"
 

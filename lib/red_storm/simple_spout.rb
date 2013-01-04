@@ -1,3 +1,6 @@
+require 'java'
+require 'red_storm/configurator'
+
 module RedStorm
 
   class SimpleSpout
@@ -5,8 +8,12 @@ module RedStorm
 
     # DSL class methods
 
-    def self.set(options = {})
-      self.spout_options.merge!(options)
+    def self.configure(&configure_block)
+      @configure_block = block_given? ? configure_block : lambda {}
+    end
+
+    def self.log
+      @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
     end
 
     def self.output_fields(*fields)
@@ -29,6 +36,14 @@ module RedStorm
       @on_close_block = block_given? ? on_close_block : lambda {self.send(method_name || :on_close)}
     end
 
+    def self.on_activate(method_name = nil, &on_activate_block)
+      @on_activate_block = block_given? ? on_activate_block : lambda {self.send(method_name || :on_activate)}
+    end
+
+    def self.on_deactivate(method_name = nil, &on_deactivate_block)
+      @on_deactivate_block = block_given? ? on_deactivate_block : lambda {self.send(method_name || :on_deactivate)}
+    end
+
     def self.on_ack(method_name = nil, &on_ack_block)
       @on_ack_block = block_given? ? on_ack_block : lambda {|msg_id| self.send(method_name || :on_ack, msg_id)}
     end
@@ -39,8 +54,17 @@ module RedStorm
 
     # DSL instance methods
 
-    def emit(*values)
+    def reliable_emit(message_id, *values)
+      @collector.emit(Values.new(*values), message_id) 
+    end
+
+    def unreliable_emit(*values)
       @collector.emit(Values.new(*values)) 
+    end
+    alias_method :emit, :unreliable_emit
+
+    def log
+      self.class.log
     end
 
     # Spout proxy interface
@@ -50,7 +74,12 @@ module RedStorm
       if self.class.emit?
         if output
           values = [output].flatten
-          @collector.emit(Values.new(*values))
+          if self.class.reliable?
+            message_id = values.shift
+            reliable_emit(message_id, *values)
+          else
+            unreliable_emit(*values)
+          end
         else
           sleep(0.1)
         end
@@ -68,12 +97,16 @@ module RedStorm
       instance_exec(&self.class.on_close_block)
     end
 
-    def declare_output_fields(declarer)
-      declarer.declare(Fields.new(self.class.fields))
+    def activate
+      instance_exec(&self.class.on_activate_block)
     end
 
-    def is_distributed
-      self.class.is_distributed?
+    def deactivate
+      instance_exec(&self.class.on_deactivate_block)
+    end
+
+    def declare_output_fields(declarer)
+      declarer.declare(Fields.new(self.class.fields))
     end
 
     def ack(msg_id)
@@ -84,17 +117,28 @@ module RedStorm
       instance_exec(msg_id, &self.class.on_fail_block)
     end
 
-    # default optional dsl methods/callbacks
-
-    def on_init; end
-    def on_close; end
-    def on_ack(msg_id); end
-    def on_fail(msg_id); end
+    def get_component_configuration
+      configurator = Configurator.new
+      configurator.instance_exec(&self.class.configure_block)
+      configurator.config
+    end
 
     private
 
+    # default optional noop dsl methods/callbacks
+    def on_init; end
+    def on_close; end
+    def on_activate; end
+    def on_deactivate; end
+    def on_ack(msg_id); end
+    def on_fail(msg_id); end
+
     def self.fields
       @fields ||= []
+    end
+
+    def self.configure_block
+      @configure_block ||= lambda {}
     end
 
     def self.on_send_block
@@ -109,6 +153,14 @@ module RedStorm
       @on_close_block ||= lambda {self.send(:on_close)}
     end
 
+    def self.on_activate_block
+      @on_activate_block ||= lambda {self.send(:on_activate)}
+    end
+
+    def self.on_deactivate_block
+      @on_deactivate_block ||= lambda {self.send(:on_deactivate)}
+    end
+
     def self.on_ack_block
       @on_ack_block ||= lambda {|msg_id| self.send(:on_ack, msg_id)}
     end
@@ -118,19 +170,15 @@ module RedStorm
     end
 
     def self.send_options
-      @send_options ||= {:emit => true}
-    end
-
-    def self.spout_options
-      @spout_options ||= {:is_distributed => false}
-    end
-
-    def self.is_distributed?
-      !!self.spout_options[:is_distributed]
+      @send_options ||= {:emit => true, :reliable => false}
     end
 
     def self.emit?
       !!self.send_options[:emit]
+    end
+
+    def self.reliable?
+      !!self.send_options[:reliable]
     end
   end
 end

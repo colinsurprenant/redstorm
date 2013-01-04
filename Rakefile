@@ -1,14 +1,11 @@
-load 'lib/tasks/red_storm.rake'
+require 'rspec/core/rake_task'
+
+
+RSpec::Core::RakeTask.new(:spec) do
+  system("ruby -v")
+  module RedStorm; SPECS_CONTEXT = true; end
+end
 
 task :default => :spec
 
-begin
-  require 'rspec/core/rake_task'
-  desc "run specs"
-  task :spec do
-    system("ruby -v")
-    RSpec::Core::RakeTask.new
-  end
-rescue NameError, LoadError => e
-  puts e
-end
+load 'lib/tasks/red_storm.rake'

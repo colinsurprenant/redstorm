@@ -5,6 +5,7 @@ import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Fields;
 import java.util.Map;
 
 /**
@@ -20,16 +21,19 @@ import java.util.Map;
 public class JRubyBolt implements IRichBolt {
   IRichBolt _proxyBolt;
   String _realBoltClassName;
-  String _baseClassPath; 
+  String _baseClassPath;
+  String[] _fields;
+
   /**
    * create a new JRubyBolt
    * 
    * @param baseClassPath the topology/project base JRuby class file path 
    * @param realBoltClassName the fully qualified JRuby bolt implementation class name
    */
-  public JRubyBolt(String baseClassPath, String realBoltClassName) {
+  public JRubyBolt(String baseClassPath, String realBoltClassName, String[] fields) {
     _baseClassPath = baseClassPath;
     _realBoltClassName = realBoltClassName;
+    _fields = fields;
   }
 
   @Override
@@ -54,9 +58,23 @@ public class JRubyBolt implements IRichBolt {
     // declareOutputFields is executed in the topology creation time, before serialisation.
     // do not set the _proxyBolt instance variable here to avoid JRuby serialization
     // issues. Just create tmp bolt instance to call declareOutputFields.
-    IRichBolt bolt = newProxyBolt(_baseClassPath, _realBoltClassName);
-    bolt.declareOutputFields(declarer);
+    if (_fields.length > 0) {
+      declarer.declare(new Fields(_fields));
+    } else {
+      IRichBolt bolt = newProxyBolt(_baseClassPath, _realBoltClassName);
+      bolt.declareOutputFields(declarer);
+    }
   }
+
+  @Override
+  public Map<String, Object> getComponentConfiguration() {
+    // getComponentConfiguration is executed in the topology creation time, before serialisation.
+    // do not set the _proxyBolt instance variable here to avoid JRuby serialization
+    // issues. Just create tmp bolt instance to call declareOutputFields.
+    IRichBolt bolt = newProxyBolt(_baseClassPath, _realBoltClassName);
+    return bolt.getComponentConfiguration();
+  }
+ 
 
   private static IRichBolt newProxyBolt(String baseClassPath, String realBoltClassName) {
     try {

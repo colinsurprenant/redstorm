@@ -8,6 +8,9 @@ java_import 'backtype.storm.tuple.Tuple'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Values'
 java_import 'java.util.Map'
+module Backtype
+  java_import 'backtype.storm.Config'
+end
 
 java_package 'redstorm.proxy'
 
@@ -17,7 +20,6 @@ java_package 'redstorm.proxy'
 # The real spout class implementation must define these methods:
 # - open(conf, context, collector)
 # - next_tuple
-# - is_distributed
 # - declare_output_fields
 #
 # and optionnaly:
@@ -25,6 +27,7 @@ java_package 'redstorm.proxy'
 # - fail(msg_id)
 # - close
 #
+
 class Spout
   java_implements IRichSpout
 
@@ -36,11 +39,6 @@ class Spout
     @real_spout = Object.module_eval(real_spout_class_name).new
   end
 
-  java_signature 'boolean isDistributed()'
-  def isDistributed
-    @real_spout.respond_to?(:is_distributed) ? @real_spout.is_distributed : false
-  end
-
   java_signature 'void open(Map, TopologyContext, SpoutOutputCollector)'
   def open(conf, context, collector)
     @real_spout.open(conf, context, collector)
@@ -49,6 +47,16 @@ class Spout
   java_signature 'void close()'
   def close
     @real_spout.close if @real_spout.respond_to?(:close)
+  end
+
+  java_signature 'void activate()'
+  def activate
+    @real_spout.activate if @real_spout.respond_to?(:activate)
+  end
+
+  java_signature 'void deactivate()'
+  def deactivate
+    @real_spout.deactivate if @real_spout.respond_to?(:deactivate)
   end
 
   java_signature 'void nextTuple()'
@@ -70,4 +78,10 @@ class Spout
   def declareOutputFields(declarer)
     @real_spout.declare_output_fields(declarer)
   end
+
+  java_signature 'Map<String, Object> getComponentConfiguration()'
+  def getComponentConfiguration
+    @real_spout.get_component_configuration
+  end
+
 end

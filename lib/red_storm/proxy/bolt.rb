@@ -8,6 +8,9 @@ java_import 'backtype.storm.tuple.Tuple'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Values'
 java_import 'java.util.Map'
+module Backtype
+  java_import 'backtype.storm.Config'
+end
 
 java_package 'redstorm.proxy'
 
@@ -51,5 +54,10 @@ class Bolt
   java_signature 'void declareOutputFields(OutputFieldsDeclarer)'
   def declareOutputFields(declarer)
     @real_bolt.declare_output_fields(declarer)
+  end
+
+  java_signature 'Map<String, Object> getComponentConfiguration()'
+  def getComponentConfiguration
+    @real_bolt.get_component_configuration
   end
 end

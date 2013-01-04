@@ -1,16 +1,10 @@
 require 'java'
-require 'rubygems'
 
-begin
-  # will work from gem, since lib dir is in gem require_paths
-  require 'red_storm'
-rescue LoadError
-  # will work within RedStorm dev project
-  $:.unshift './lib'
-  require 'red_storm'
+# see https://github.com/colinsurprenant/redstorm/issues/7
+module Backtype
+  java_import 'backtype.storm.Config'
 end
 
-java_import 'backtype.storm.Config'
 java_import 'backtype.storm.LocalCluster'
 java_import 'backtype.storm.StormSubmitter'
 java_import 'backtype.storm.topology.TopologyBuilder'
@@ -24,23 +18,29 @@ java_import 'redstorm.storm.jruby.JRubySpout'
 java_package 'redstorm'
 
 # TopologyLauncher is the application entry point when launching a topology. Basically it will 
-# call require on the specified Ruby topology/project class file path and call its start method
+# call require on the specified Ruby topology class file path and call its start method
 class TopologyLauncher
 
   java_signature 'void main(String[])'
   def self.main(args)
-    unless args.size > 1 
+    unless args.size > 1
       puts("Usage: redstorm local|cluster topology_class_file_name")
       exit(1)
     end
+
     env = args[0].to_sym
     class_path = args[1]
-    clazz = camel_case(class_path.split('/').last.split('.').first)
 
-    puts("RedStorm v#{RedStorm::VERSION} starting topology #{clazz} in #{env.to_s} environment")
+    launch_path = Dir.pwd
+    $:.unshift File.expand_path(launch_path)
+    $:.unshift File.expand_path(launch_path + '/lib')
+    $:.unshift File.expand_path(launch_path + '/target/lib')
 
-    require class_path
-    Object.module_eval(clazz).new.start(class_path, env)
+    require "#{class_path}" 
+
+    topology_name = RedStorm::Configuration.topology_class.respond_to?(:topology_name) ? "/#{RedStorm::Configuration.topology_class.topology_name}" : ''
+    puts("RedStorm v#{RedStorm::VERSION} starting topology #{RedStorm::Configuration.topology_class.name}#{topology_name} in #{env.to_s} environment")
+    RedStorm::Configuration.topology_class.new.start(class_path, env)
   end
 
   private 

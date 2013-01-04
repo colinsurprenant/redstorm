@@ -15,39 +15,48 @@ describe RedStorm::SimpleSpout do
       spout.should respond_to :next_tuple
       spout.should respond_to :open
       spout.should respond_to :close
+      spout.should respond_to :activate
+      spout.should respond_to :deactivate
+      spout.should respond_to :close
+      spout.should respond_to :get_component_configuration
       spout.should respond_to :declare_output_fields
-      spout.should respond_to :is_distributed
       spout.should respond_to :ack
       spout.should respond_to :fail
     end
 
-    it "should implement dsl statement" do
-      RedStorm::SimpleSpout.should respond_to :set
+    it "should implement dsl class statement" do
+      RedStorm::SimpleSpout.should respond_to :configure
       RedStorm::SimpleSpout.should respond_to :output_fields
       RedStorm::SimpleSpout.should respond_to :on_init
       RedStorm::SimpleSpout.should respond_to :on_close
+      RedStorm::SimpleSpout.should respond_to :on_activate
+      RedStorm::SimpleSpout.should respond_to :on_deactivate
       RedStorm::SimpleSpout.should respond_to :on_send
       RedStorm::SimpleSpout.should respond_to :on_ack
       RedStorm::SimpleSpout.should respond_to :on_fail      
+      RedStorm::SimpleSpout.should respond_to :log      
     end
+
+    it "should implement dsl instance statements" do
+      spout = RedStorm::SimpleSpout.new
+      spout.should respond_to :emit
+      spout.should respond_to :log
+    end
+
   end
 
   describe "dsl" do
 
     describe "set statement" do
-      DEFAULT_SPOUT_OPTIONS = {:is_distributed => false}
+      DEFAULT_SPOUT_OPTIONS = {}
 
-      it "should have default options" do
-        RedStorm::SimpleSpout.send(:is_distributed?).should be_false
-      end
-
-      it "should parse options" do
-        class IsDistributedClass < RedStorm::SimpleSpout
-          set :is_distributed => true
-        end
-        IsDistributedClass.send(:spout_options).should == DEFAULT_SPOUT_OPTIONS.merge(:is_distributed => true)
-        IsDistributedClass.send(:is_distributed?).should be_true
-      end
+      # it "should parse options" do
+      #   class IsDistributedClass < RedStorm::SimpleSpout
+      #     set :is_distributed => true
+      #   end
+      #   IsDistributedClass.send(:spout_options).should == DEFAULT_SPOUT_OPTIONS.merge(:is_distributed => true)
+      #   IsDistributedClass.send(:is_distributed?).should be_true
+      # end
     end
 
     describe "output_field statement" do
@@ -86,7 +95,7 @@ describe RedStorm::SimpleSpout do
     end
 
     describe "on_send statement" do
-      DEFAULT_SEND_OPTIONS = {:emit => true}
+      DEFAULT_SEND_OPTIONS = {:emit => true, :reliable => false}
 
       it "should emit by defaut" do
         RedStorm::SimpleSpout.send(:emit?).should be_true
@@ -316,6 +325,77 @@ describe RedStorm::SimpleSpout do
       end
     end
 
+    # log specs are mostly the same ats in the bolt specs. if these are modified, sync with bolt
+    describe "log statement" do
+
+      module Java::OrgApacheLog4j end;
+      class Java::OrgApacheLog4j::Logger; end
+
+      describe "in class" do
+        it "should proxy to storm log4j logger" do
+          logger = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Spout1").and_return(logger)
+          logger.should_receive(:info).with("test")
+
+          class Spout1 < RedStorm::SimpleSpout
+            log.info("test")
+          end
+        end
+
+        it "should use own class name as logger id" do
+          logger1 = mock(Java::OrgApacheLog4j::Logger)
+          logger2 = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Spout1").and_return(logger1)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Spout2").and_return(logger2)
+          logger1.should_receive(:info).with("test1")
+          logger2.should_receive(:info).with("test2")
+
+          class Spout1 < RedStorm::SimpleSpout
+            log.info("test1")
+          end
+          class Spout2 < RedStorm::SimpleSpout
+            log.info("test2")
+          end
+        end
+      end
+
+      describe "in instance" do
+        it "should proxy to storm log4j logger" do
+          logger = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Spout1").and_return(logger)
+
+          class Spout1 < RedStorm::SimpleSpout
+            on_init {log.info("test")}
+          end
+
+          logger.should_receive(:info).with("test")
+          spout = Spout1.new
+          spout.open(nil, nil, nil)
+        end
+
+        it "should use own class name as logger id" do
+          logger1 = mock(Java::OrgApacheLog4j::Logger)
+          logger2 = mock(Java::OrgApacheLog4j::Logger)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Spout1").and_return(logger1)
+          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Spout2").and_return(logger2)
+
+          class Spout1 < RedStorm::SimpleSpout
+            on_init {log.info("test1")}
+          end
+          class Spout2 < RedStorm::SimpleSpout
+            on_init {log.info("test2")}
+          end
+
+          logger1.should_receive(:info).with("test1")
+          spout1 = Spout1.new
+          spout1.open(nil, nil, nil)
+
+          logger2.should_receive(:info).with("test2")
+          spout2 = Spout2.new
+          spout2.open(nil, nil, nil)
+        end
+      end
+    end
   end
 
   describe "spout" do
@@ -324,7 +404,7 @@ describe RedStorm::SimpleSpout do
 
     describe "next_tuple" do
 
-      it "should auto emit on single value output" do
+      it "should auto unreliable emit on single value output" do
         class Spout1 < RedStorm::SimpleSpout
           on_send {"output"}
         end
@@ -353,7 +433,41 @@ describe RedStorm::SimpleSpout do
         spout.next_tuple
       end
 
-      it "should auto emit on multiple values output" do
+      it "should auto reliable emit on single value output" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_send :reliable => true do 
+            [1, "output"]
+          end
+        end
+        class Spout2 < RedStorm::SimpleSpout
+          on_send :my_method, :reliable => true
+          def my_method; [2, "output"]; end
+        end
+        class Spout3 < RedStorm::SimpleSpout
+          on_send :reliable => true
+          def on_send; [3, "output"] end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("values", 1).once
+        collector.should_receive(:emit).with("values", 2).once
+        collector.should_receive(:emit).with("values", 3).once
+
+        spout = Spout1.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout2.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout3.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
+
+      it "should auto unreliable emit on multiple values output" do
         class Spout1 < RedStorm::SimpleSpout
           on_send {["output1", "output2"]}
         end
@@ -368,6 +482,40 @@ describe RedStorm::SimpleSpout do
         collector = mock("Collector")
         RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values")
         collector.should_receive(:emit).with("values").exactly(3).times
+
+        spout = Spout1.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout2.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout3.new
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
+
+      it "should auto reliable emit on multiple values output" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_send :reliable => true do 
+            [1, "output1", "output2"]
+          end
+        end
+        class Spout2 < RedStorm::SimpleSpout
+          on_send :my_method, :reliable => true
+          def my_method; [2, "output1", "output2"]; end
+        end
+        class Spout3 < RedStorm::SimpleSpout
+          on_send :reliable => true
+          def on_send; [3, "output1", "output2"] end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values")
+        collector.should_receive(:emit).with("values", 1).once
+        collector.should_receive(:emit).with("values", 2).once
+        collector.should_receive(:emit).with("values", 3).once
 
         spout = Spout1.new
         spout.open(nil, nil, collector)
@@ -444,6 +592,35 @@ describe RedStorm::SimpleSpout do
         spout.next_tuple
 
         spout = Spout3.new
+        spout.should_receive(:sleep).never
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+      end
+
+      it "should support manual emit" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_send :emit => false do 
+            reliable_emit 1, "reliable output"
+          end
+        end
+        class Spout2 < RedStorm::SimpleSpout
+          on_send :emit => false do 
+            unreliable_emit "unreliable output"
+          end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).once.with("reliable output").and_return("reliable values")
+        RedStorm::Values.should_receive(:new).once.with("unreliable output").and_return("unreliable values")
+        collector.should_receive(:emit).with("unreliable values").once
+        collector.should_receive(:emit).with("reliable values", 1).once
+
+        spout = Spout1.new
+        spout.should_receive(:sleep).never
+        spout.open(nil, nil, collector)
+        spout.next_tuple
+
+        spout = Spout2.new
         spout.should_receive(:sleep).never
         spout.open(nil, nil, collector)
         spout.next_tuple
@@ -536,16 +713,16 @@ describe RedStorm::SimpleSpout do
       end
     end
 
-    describe "is_distributed" do
-      it "should report is_distributed" do
-        RedStorm::SimpleSpout.is_distributed?.should be_false
-        class Spout1 < RedStorm::SimpleSpout
-          set :is_distributed => true
-        end
-        spout = Spout1.new
-        spout.is_distributed.should be_true
-      end
-    end
+    # describe "is_distributed" do
+    #   it "should report is_distributed" do
+    #     RedStorm::SimpleSpout.is_distributed?.should be_false
+    #     class Spout1 < RedStorm::SimpleSpout
+    #       set :is_distributed => true
+    #     end
+    #     spout = Spout1.new
+    #     spout.is_distributed.should be_true
+    #   end
+    # end
 
     describe "ack" do
       it "should call ack block" do

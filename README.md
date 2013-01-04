@@ -1,67 +1,184 @@
-# RedStorm v0.2.0 - JRuby on Storm
+# RedStorm v0.6.4 - JRuby on Storm
 
-RedStorm provides the JRuby integration for the [Storm][storm] distributed realtime computation system.
+[![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 
-## Changes from 0.1.x
+RedStorm provides a Ruby DSL using JRuby integration for the [Storm](https://github.com/nathanmarz/storm/) distributed realtime computation system.
 
-- This release introduces the *simple* DSL. Topology, Spout and Bolt classes can inherit from the SimpleTopoloy, SimpleSpout and SimpleBolt classes which provides a very clean and consise DSL. See [examples/simple](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple).
-- Use the same SimpleTopology class for local development cluster or remote production cluster.
-- The `redstorm` command has a new syntax.
+## Documentation
+
+Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept in the wiki when necessary. 
+
+### Released gems
+
+- [RedStorm Gem v0.4.x Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.4.x-Documentation)
+- [RedStorm Gem v0.5.0 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.0-Documentation)
+- [RedStorm Gem v0.5.1 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.1-Documentation)
+- [RedStorm Gem v0.6.3 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.3-Documentation)
 
 ## Dependencies
 
-This has been tested on OSX 10.6.8 and Linux 10.04 using Storm 0.5.4 and JRuby 1.6.5
+Tested on **OSX 10.8.2** and **Ubuntu Linux 12.04** using **Storm 0.8.1** and **JRuby 1.6.8** and **OpenJDK 7**
+
+## Notes about 1.8/1.9 JRuby compatibility
+
+Up until the upcoming JRuby 1.7, JRuby runs in 1.8 Ruby compatibility mode by default. Unless you have a specific need to run topologies in 1.8 mode, you should use 1.9 mode, which will become the default in JRuby. 
+
+There are two ways to have JRuby 1.6.x run in 1.9 mode by default:
+- by setting the JRUBY_OPTS env variable
+
+  ``` sh
+  $ export JRUBY_OPTS=--1.9
+  ```
+- by installing JRuby using RVM with 1.9 mode by default
+
+  ``` sh
+  $ rvm install jruby --1.9
+  ```
+
+Otherwise, to manually choose the JRuby compatibility mode, this JRuby syntax can be used 
+
+``` sh
+$ jruby --1.9 -S redstorm ...
+```
+
+By defaut, a topology will be executed in the **same mode** as the interpreter running the `$ redstorm` command. You can force RedStorm to choose a specific JRuby compatibility mode using the [--1.8|--1.9] parameter for the topology execution in local or remote cluster.
+
+``` sh
+$ redstorm local|cluster [--1.8|--1.9] ...
+```
 
 ## Installation
-``` sh
-$ gem install redstorm
-```
+
+- RubyGems
+
+  ``` sh
+  $ gem install redstorm
+  ```
+
+- Bundler
+
+  ``` ruby
+  source :rubygems
+  gem "redstorm", "~> 0.6.4"
+  ```
 
 ## Usage overview
 
-- create a new empty project directory.
+- create a project directory.
 - install the [RedStorm gem](http://rubygems.org/gems/redstorm).
-- create a subdirectory which will contain your sources.
-- perform the initial setup as described below to install the dependencies in the `target/` subdir of your project directory.
-- run your topology in local mode and/or on a production cluster as described below.
+- create a subdirectory for your topology code.
+- perform the initial setup as described below to build and install dependencies.
+- run your topology in local mode and/or on a remote cluster as described below.
 
 ### Initial setup
-
-Install RedStom dependencies; from your project root directory execute:
 
 ``` sh
 $ redstorm install
 ```
 
-The `install` command will install all Java jars dependencies using [ruby-maven][ruby-maven] in `target/dependency` and generate & compile the Java bindings in `target/classes`
+or if your default JRuby mode is 1.8 but you want to use 1.9 for your topology development, use
 
-***DON'T PANIC*** it's Maven. The first time you run `$ redstorm install` Maven will take a few minutes resolving dependencies and in the end will download and install the dependency jar files.
+``` sh
+$ jruby --1.9 -S redstorm install
+```
+
+This will basically install default Java jar dependencies in `target/dependency`, generate & compile the Java bindings in `target/classes`.
+
+### Create a topology
+
+Create a subdirectory for your topology code and create your topology class **using this naming convention**: *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
+
+### Gems in your topology
+
+RedStorm requires [Bundler](http://gembundler.com/) **if gems are needed** in your topology. Basically supply a `Gemfile` in the root of your project directory with the gems required in your topology. If you are using Bundler for other gems **you should** group the topology gems in a Bunder group of your choice.
+
+1. have Bundler install the gems locally
+
+  ``` sh
+  $ bundle install
+  ```
+
+  or if your default JRuby mode is 1.8 but you want to use 1.9 for your topology development, use
+
+  ``` sh
+  $ jruby --1.9 -S bundle install
+  ```
+
+2. copy the topology gems into the `target/gems` directory
+
+  ``` sh
+  $ redstorm bundle [BUNDLER_GROUP]
+  ```
+
+Basically, the `redstorm bundle` command copy the gems specified in the Gemfile (in a specific group if specified) into the `target/gems` directory. In order for the topology to run in a Storm cluster, the fully *installed* gems must be packaged and self-contained into a single jar file. **Note** you should **NOT** `require 'bundler/setup'` in the topology. 
+
+This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the jar file. This **could lead to problems** if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have **C or FFI** extensions.
+
+### Custom Jar dependencies in your topology
+
+By defaut, RedStorm installs Storm and JRuby jars dependencies. If you require custom dependencies, these can be specified by creating the `Dependencies` file in the root of your project. Note that this file overwrites the defaults dependencies so you must also include the Storm and JRuby dependencies. Here's an example of a `Dependencies` file which included the jars required to run the `KafkaTopology` in the examples.
+
+``` ruby
+{
+  :storm_artifacts => [
+    "storm:storm:0.8.1, transitive=true",
+  ],
+  :topology_artifacts => [
+    "org.jruby:jruby-complete:1.6.8, transitive=false",
+    "org.scala-lang:scala-library:2.8.0, transitive=false",
+    "storm:kafka:0.7.0-incubating, transitive=false",
+    "storm:storm-kafka:0.8.0-wip4, transitive=false",
+  ],
+}
+```
+
+Basically the dependendencies are speified as Maven artifacts. There are two sections, the `:storm_artifacts =>` contains the dependencies for running storm in local mode and the `:topology_artifacts =>` are the dependencies specific for your topology. The format is self explainatory and the attribute `transitive=[true|false]` controls the recursive dependencies resolution (using `true`).
+
+The jars repositories can be configured by adding the `ivy/setting.xml` file in the root of your project. For information on the Ivy settings format, see the [Ivy Settings Documentation](http://ant.apache.org/ivy/history/2.2.0/settings.html). I will try my best to eliminate all XML :) but for now I haven't figured how to get rid of this one. For an example Ivy settings file, RedStorm is using the following settings by default:
+
+``` xml
+<ivysettings>
+  <settings defaultResolver="repositories"/>
+  <resolvers>
+    <chain name="repositories">
+      <ibiblio name="ibiblio" m2compatible="true"/>
+      <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
+      <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
+      <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/> 
+    </chain>
+  </resolvers>
+</ivysettings>
+```
 
 ### Run in local mode
 
-Create a topology class. The *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
-
 ``` sh
-$ redstorm local <path/to/topology_class_file_name.rb>
+$ redstorm local [--1.8|--1.9]  <path/to/topology_class_file_name.rb>
 ```
+
+By defaut, a topology will be executed in the **same mode** as the interpreter running the `$ redstorm` command. You can force RedStorm to choose a specific JRuby compatibility mode using the [--1.8|--1.9] parameter for the topology execution in local or remote cluster.
 
 **See examples below** to run examples in local mode or on a production cluster.
 
 ### Run on production cluster
 
-- generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies from the `target/` directory:
+1. download and unpack the [Storm 0.8.1 distribution](https://github.com/downloads/nathanmarz/storm/storm-0.8.1.zip) locally and **add** the Storm `bin/` directory to your `$PATH`.
 
-``` sh
-$ redstorm jar <sources_directory>
-```
+2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
 
-- submit the cluster topology jar file to the cluster. Assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
+  ``` sh
+  $ redstorm jar <sources_directory1> <sources_directory2> ...
+  ```
 
-``` sh
-storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher cluster <path/to/topology_class_file_name.rb>
-```
+3. submit the cluster topology jar file to the cluster
 
-Basically you must follow the [Storm instructions](https://github.com/nathanmarz/storm/wiki) to [setup a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster) and [submit your topology to the cluster](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
+  ``` sh
+  $ redstorm cluster [--1.8|--1.9]  <path/to/topology_class_file_name.rb>
+  ```
+
+  By defaut, a topology will be executed in the **same mode** as the interpreter running the `$ redstorm` command. You can force RedStorm to choose a specific JRuby compatibility mode using the [--1.8|--1.9] parameter for the topology execution in local or remote cluster.
+
+The [Storm wiki](https://github.com/nathanmarz/storm/wiki) has instructions on [setting up a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster). You can also [manually submit your topology](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
 
 ## Examples
 
@@ -71,9 +188,11 @@ Install the [example files](https://github.com/colinsurprenant/redstorm/tree/mas
 $ redstorm examples
 ```
 
-All examples using the **simple DSL** are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
+All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
 
 ### Local mode
+
+#### Example topologies without gems 
 
 ``` sh
 $ redstorm local examples/simple/exclamation_topology.rb
@@ -81,367 +200,176 @@ $ redstorm local examples/simple/exclamation_topology2.rb
 $ redstorm local examples/simple/word_count_topology.rb
 ```
 
-This next example requires the use of the [Redis Gem](https://github.com/ezmobius/redis-rb) and a [Redis][redis] server runnig on `localhost:6379`
+#### Example topologies with gems 
 
-``` sh
-$ redstorm local examples/simple/redis_word_count_topology.rb
-```
+For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
 
-Using `redis-cli`, push words into the `test` list and watch Storm pick them up
+1. create a `Gemfile`
 
-### Production cluster
+  ``` ruby
+  source :rubygems
 
-All examples using the **simple DSL** can also run on a productions cluster. The only **native** example compatible with a production cluster is the [ClusterWordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/native/cluster_word_count_topology.rb)
-
-- genererate the `target/cluster-topology.jar` and include the `examples/` directory.
-
-``` sh
-$ redstorm jar examples
-```
-
-- submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
-
-``` sh
-$ storm jar ./target/cluster-topology.jar redstorm.TopologyLauncher cluster examples/simple/word_count_topology.rb
-```
-
-Basically you must follow the [Storm instructions](https://github.com/nathanmarz/storm/wiki) to [setup a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster) and [submit your topology to the cluster](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
-
-## DSL usage
-
-Your project can be created in a single file containing all spouts, bolts and topology classes or each classes can be in its own file, your choice. There are [many examples](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple) for the *simple* DSL.
-
-The DSL uses a **callback metaphor** to attach code to the topology/spout/bolt execution contexts using `on_*` DSL constructs (ex.: on_submit, on_send, ...). When using `on_*` you can attach you code in 3 different ways:
-
-- using a code block
-
-```ruby
-on_receive (:ack => true, :anchor => true) {|tuple| do_something_with(tuple)}
-
-on_receive :ack => true, :anchor => true do |tuple| 
-  do_something_with(tuple)
-end
-```
-
-- defining the corresponding method
-
-```ruby
-on_receive :ack => true, :anchor => true 
-def on_receive(tuple)
-  do_something_with(tuple)
-end
-```
-
-- defining an arbitrary method
-
-```ruby
-on_receive :my_method, :ack => true, :anchor => true 
-def my_method(tuple)
-  do_something_with(tuple)
-end
-```
-
-The [example SplitSentenceBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/split_sentence_bolt.rb) shows the 3 different coding style.
-
-### Topology DSL
-
-Normally Storm topology components are assigned and referenced using numeric ids. In the SimpleTopology DSL **ids are optional**. By default the DSL will use the component class name as an implicit symbolic id and bolt source ids can use these implicit ids. The DSL will automatically resolve and assign numeric ids upon topology submission. If two components are of the same class, creating a conflict, then the id can be explicitly defined using either a numeric value, a symbol or a string. Numeric values will be used as-is at topology submission while symbols and strings will be resolved and assigned a numeric id.
-
-```ruby
-require 'red_storm'
-
-class MyTopology < RedStorm::SimpleTopology
-  
-  spout spout_class, options 
-  
-  bolt bolt_class, options do
-    source source_id, grouping
-    ...
+  group :word_count do
+    gem "redis"
   end
-  
-  configure topology_name do |env|
-    config_attribute value
-    ...
+  ```
+
+2. install the topology gems
+
+  ``` sh
+  $ bundle install
+  $ redstorm bundle word_count
+  ```
+
+3. run the topology in local mode
+
+  ``` sh
+  $ redstorm local examples/simple/redis_word_count_topology.rb
+  ```
+
+Using `redis-cli` push words into the `test` list and watch Storm pick them up
+
+### Remote cluster
+
+All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) can run in both local or on a remote cluster. The only **native** example compatible with a remote cluster is `examples/native/cluster_word_count_topology.rb`.
+
+
+#### Topologies without gems 
+
+1. genererate the `target/cluster-topology.jar` and include the `examples/` directory.
+
+  ``` sh
+  $ redstorm jar examples
+  ```
+
+2. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
+
+  ``` sh
+  $ redstorm cluster examples/simple/exclamation_topology.rb
+  $ redstorm cluster examples/simple/exclamation_topology2.rb
+  $ redstorm cluster examples/simple/word_count_topology.rb
+  ```
+
+
+#### Topologies with gems 
+
+For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
+
+1. create a `Gemfile`
+
+  ``` ruby
+  source :rubygems
+
+  group :word_count do
+      gem "redis"
   end
+  ```
 
-  on_submit do |env|
-    ...
-  end
+2. install the topology gems
+
+  ``` sh
+  $ bundle install
+  $ redstorm bundle word_count
+  ```
+
+3. genererate the `target/cluster-topology.jar` and include the `examples/` directory.
+
+  ``` sh
+  $ redstorm jar examples
+  ```
+
+4. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
+
+  ``` sh
+  $ redstorm cluster examples/simple/redis_word_count_topology.rb
+  ```
+
+Using `redis-cli` push words into the `test` list and watch Storm pick them up
+
+The [Storm wiki](https://github.com/nathanmarz/storm/wiki) has instructions on [setting up a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster). You can also [manually submit your topology](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
+
+## Ruby DSL
+
+[Ruby DSL Documentation](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation)
+
+## Multilang ShellSpout & ShellBolt support
+
+Please refer to [Using non JVM languages with Storm](https://github.com/nathanmarz/storm/wiki/Using-non-JVM-languages-with-Storm) for the complete information on Multilang & shelling in Storm.
+
+In RedStorm *ShellSpout* and *ShellBolt* are supported using the following construct in the topology definition:
+
+``` ruby
+bolt JRubyShellBolt, ["python", "splitsentence.py"] do
+  output_fields "word"
+  source SimpleSpout, :shuffle
 end
 ```
 
-#### spout statement
-
-```ruby
-spout spout_class, options
-```
-
-- `spout_class` — spout Ruby class
-- `options`
-  - `:id` — spout explicit id (**default** is spout class name)
-  - `:parallelism` — spout parallelism (**default** is 1)
-
-#### bolt statement
-
-```ruby
-bolt bolt_class, options do
-  source source_id, grouping
-  ...
-end
-```
-
-- `bolt_class` — bolt Ruby class
-- `options`
-  - `:id` — bolt explicit id (**default** is bolt class name)
-  - `:parallelism` — bolt parallelism (**default** is 1)
-- `source_id` — source id reference. can be the source class name if unique or the explicit id if defined
-- `grouping`
-  - `:fields => ["field", ...]` — fieldsGrouping using fields on the source_id
-  - `:shuffle` —  shuffleGrouping on the source_id
-  - `:global` — globalGrouping on the source_id
-  - `:none` — noneGrouping on the source_id
-  - `:all` — allGrouping on the source_id
-  - `:direct` — directGrouping on the source_id
-
-#### configure statement
-
-```ruby
-configure topology_name do |env|
-  configuration_field value
-  ...
-end
-```
+- `JRubyShellBolt` must be used for a *ShellBolt* and the array argument `["python", "splitsentence.py"]` are the arguments to the class constructor and are the *commands* to the *ShellBolt*.
 
-The `configure` statement is **optional**.
+- The directory containing the topology class **must** contain a `resources/` directory with all the shell files.
 
-- `topology_name` — alternate topology name (**default** is topology class name)
-- `env` — is set to `:local` or `:cluster` for you to set enviroment specific configurations
-- `config_attribute` — the Storm Config attribute name. See Storm for complete list. The attribute name correspond to the Java setter method, without the "set" prefix and the suffix converted from CamelCase to underscore. Ex.: `setMaxTaskParallelism` is `:max_task_parallelism`.
-  - `:debug`
-  - `:max_task_parallelism` 
-  - `:num_workers`
-  - `:max_spout_pending`
-  -  ...
+See the [shell topology example](https://github.com/colinsurprenant/redstorm/tree/master/examples/shell)
 
-#### on_submit statement
+## RedStorm Development
 
-```ruby
-on_submit do |env|
-  ...
-end
-```
+It is possible to fork the RedStorm project and run local and remote/cluster topologies directly from the project sources without installing the gem. This is a useful setup when contributing to the project.
 
-The `on_submit` statement is **optional**. Use it to execute code after the topology submission.
+### Requirements
 
-- `env` — is set to `:local` or `:cluster`
+- JRuby 1.6.8
 
-For example, you can use `on_submit` to shutdown the LocalCluster after some time. The LocalCluster instance is available usign the `cluster` method. 
+### Workflow
 
-```ruby
-on_submit do |env|
-  if env == :local
-    sleep(5)
-    cluster.shutdown
-  end
-end
-```
+- fork project and create branch
 
-#### Examples
+- install RedStorm required gems
 
-- [ExclamationTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/exclamation_topology.rb)
-- [ExclamationTopology2](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/exclamation_topology2.rb)
-- [WordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/word_count_topology.rb)
-- [RedisWordCountTopology](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/redis_word_count_topology.rb)
+  ```sh
+  $ bundle install
+  ```
 
-### Spout DSL
+- install dependencies in `target/dependencies`
 
-```ruby
-require 'red_storm'
+  ```sh
+  $ bin/redstorm deps
+  ```
 
-class MySpout < RedStorm::SimpleSpout
-  set spout_attribute => value
-  ...
+- generate and build Java source into `target/classes`
 
-  output_fields :field, ...
+  ```sh
+  $ bin/redstorm build
+  ```
 
-  on_send options do
-    ...
-  end
+  **if you modify any of the RedStorm Ruby code or Java binding code**, you need to run this to refresh code and rebuild the bindings
 
-  on_init do
-    ...
-  end
+- follow the normal usage patterns to run the topology in local or remote cluster.
 
-  on_close do
-    ...
-  end
+### How to Contribute
 
-  on_ack do |msg_id|
-    ...
-  end
+Fork the project, create a branch and submit a pull request.
 
-  on_fail do |msg_id|
-    ...
-  end
-end
-```
+Some ways you can contribute:
 
-#### set statement
+- by reporting bugs using the issue tracker
+- by suggesting new features using the issue tracker
+- by writing or editing documentation
+- by writing specs
+- by writing code
+- by refactoring code
+- ...
 
-```ruby
-set spout_attribute => value
-```
+## Projects using RedStorm
 
-The `set` statement is **optional**. Use it to set spout specific attributes.
+If you want to list your RedStorm project here, contact me.
 
-- `spout_attributes`
-  - `:is_distributed` — set to `true` for a distributed spout (**default** is `false`)
-
-#### output_fields statement
-
-```ruby
-output_fields :field, ...
-```
-
-Define the output fields for this spout.
-
-- `:field` — the field name, can be symbol or string.
-
-#### on_send statement
-
-```ruby
-on_send options do
-  ...
-end
-```
-
-`on_send` relates to the Java spout `nextTuple` method and is called periodically by storm to allow the spout to output a tuple. When using auto-emit (default), the block return value will be auto emited. A single value return will be emited as a single-field tuple. An array of values `[a, b]` will be emited as a multiple-fields tuple. Normally a spout [should only output a single tuple per on_send invocation](https://groups.google.com/forum/#!topic/storm-user/SGwih7vPiDE/discussion).
-
-- `:options`
-  - `:emit` — set to `false` to disable auto-emit (**default** is `true`)
-
-#### on_init statement
-
-```ruby
-on_init do
-  ...
-end
-```
-
-`on_init` relates to the Java spout `open` method. When `on_init` is called, the `config`, `context` and `collector` are set to return the Java spout config `Map`, `TopologyContext` and `SpoutOutputCollector`.
-
-#### on_close statement
-
-```ruby
-on_close do
-  ...
-end
-```
-
-`on_close` relates to the Java spout `close` method. 
-
-#### on_ack statement
-
-```ruby
-on_ack do |msg_id|
-  ...
-end
-```
-
-`on_ack` relates to the Java spout `ack` method. 
-
-#### on_fail statement
-
-```ruby
-on_fail do |msg_id|
-  ...
-end
-```
-
-`on_fail` relates to the Java spout `fail` method. 
-
-#### Examples
-
-- [RandomSentenceSpout](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/random_sentence_spout.rb)
-- [RedisWordSpout](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/redis_word_count_topology.rb)
-
-### Bolt DSL
-
-```ruby
-require 'red_storm'
-
-class MyBolt < RedStorm::SimpleBolt
-  output_fields :field, ...
-
-  on_receive options do
-    ...
-  end
-
-  on_init do
-    ...
-  end
-
-  on_close do
-    ...
-  end
-end
-```
-
-#### on_receive statement
-
-```ruby
-on_receive options do
-  ...
-end
-```
-
-`on_receive` relates to the Java bolt `execute` method and is called upon tuple reception by Storm. When using auto-emit, the block return value will be auto emited. A single value return will be emited as a single-field tuple. An array of values `[a, b]` will be emited as a multiple-fields tuple. An array of arrays `[[a, b], [c, d]]` will be emited as multiple-fields multiple tuples. When not using auto-emit, the `unanchored_emit(value, ...)` and `anchored_emit(tuple, value, ...)` method can be used to emit a single tuple. When using auto-anchor (disabled by default) the sent tuples will be anchored to the received tuple. When using auto-ack (disabled by default) the received tuple will be ack'ed after emitting the return value. When not using auto-ack, the `ack(tuple)` method can be used to ack the tuple. 
-
-Note that setting auto-ack and auto-anchor is possible **only** when auto-emit is enabled.
-
-- `:options`
-  - `:emit` — set to `false` to disable auto-emit (**default** is `true`)
-  - `:ack`  — set to `true` to enable auto-ack (**default** is `false`)
-  - `:anchor`  — set to `true` to enable auto-anchor (**default** is `false`)
-
-#### on_init statement
-
-```ruby
-on_init do
-  ...
-end
-```
-
-`on_init` relates to the Java bolt `prepare` method. When `on_init` is called, the `config`, `context` and `collector` are set to return the Java spout config `Map`, `TopologyContext` and `SpoutOutputCollector`.
-
-#### on_close statement
-
-```ruby
-on_close do
-  ...
-end
-```
-
-`on_close` relates to the Java bolt `cleanup` method. 
-
-#### Examples
-
-- [ExclamationBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/exclamation_bolt.rb)
-- [SplitSentenceBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/split_sentence_bolt.rb)
-- [WordCountBolt](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/word_count_bolt.rb)
+- [Tweigeist](https://github.com/colinsurprenant/tweitgeist) - realtime computation of the top trending hashtags on Twitter. See [Live Demo](http://tweitgeist.colinsurprenant.com/).
 
 ## Author
-Colin Surprenant, [@colinsurprenant][twitter], [colin.surprenant@needium.com][needium], [colin.surprenant@gmail.com][gmail], [http://github.com/colinsurprenant][github]
+***Colin Surprenant***, [@colinsurprenant](http://twitter.com/colinsurprenant/), [http://github.com/colinsurprenant/](http://github.com/colinsurprenant/), colin.surprenant@gmail.com, [http://colinsurprenant.com/](http://colinsurprenant.com/)
+
+## Contributors
+Theo Hultberg, https://github.com/iconara
 
 ## License
 Apache License, Version 2.0. See the LICENSE.md file.
-
-[needium]: colin.surprenant@needium.com
-[gmail]: colin.surprenant@gmail.com
-[twitter]: http://twitter.com/colinsurprenant
-[github]: http://github.com/colinsurprenant
-[rvm]: http://beginrescueend.com/
-[storm]: https://github.com/nathanmarz/storm
-[jruby]: http://jruby.org/
-[ruby-maven]: https://github.com/mkristian/ruby-maven
-[redis]: http://redis.io/

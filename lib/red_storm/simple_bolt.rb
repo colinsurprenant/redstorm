@@ -1,3 +1,6 @@
+require 'java'
+require 'red_storm/configurator'
+
 module RedStorm
 
   class SimpleBolt
@@ -5,8 +8,16 @@ module RedStorm
 
     # DSL class methods
 
+    def self.log
+      @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
+    end
+
     def self.output_fields(*fields)
       @fields = fields.map(&:to_s)
+    end
+
+    def self.configure(&configure_block)
+      @configure_block = block_given? ? configure_block : lambda {}
     end
 
     def self.on_receive(*args, &on_receive_block)
@@ -27,6 +38,10 @@ module RedStorm
 
     # DSL instance methods
 
+    def log
+      self.class.log
+    end
+
     def unanchored_emit(*values)
       @collector.emit(Values.new(*values)) 
     end
@@ -39,10 +54,15 @@ module RedStorm
       @collector.ack(tuple)
     end
 
+    def fail(tuple)
+      @collector.fail(tuple)
+    end
+
     # Bolt proxy interface
 
     def execute(tuple)
-      if (output = instance_exec(tuple, &self.class.on_receive_block)) && self.class.emit?
+      output = instance_exec(tuple, &self.class.on_receive_block)
+      if output && self.class.emit?
         values_list = !output.is_a?(Array) ? [[output]] : !output.first.is_a?(Array) ? [output] : output
         values_list.each{|values| self.class.anchor? ? anchored_emit(tuple, *values) : unanchored_emit(*values)}
         @collector.ack(tuple) if self.class.ack?
@@ -64,15 +84,24 @@ module RedStorm
       declarer.declare(Fields.new(self.class.fields))
     end
 
-    # default optional dsl methods/callbacks
-
-    def on_init; end
-    def on_close; end
+    def get_component_configuration
+      configurator = Configurator.new
+      configurator.instance_exec(&self.class.configure_block)
+      configurator.config
+    end
 
     private
 
+    # default noop optional dsl callbacks
+    def on_init; end
+    def on_close; end
+
     def self.fields
       @fields ||= []
+    end
+
+    def self.configure_block
+      @configure_block ||= lambda {}
     end
 
     def self.on_receive_block

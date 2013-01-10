@@ -10,9 +10,9 @@ module Examples
 
     def start(base_class_path, env)
       builder = TopologyBuilder.new
-      builder.setSpout('RandomSentenceSpout', JRubySpout.new(base_class_path, "RedStorm::Examples::RandomSentenceSpout"), 5)
-      builder.setBolt('SplitSentenceBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::SplitSentenceBolt"), 8).shuffleGrouping('RandomSentenceSpout')
-      builder.setBolt('WordCountBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::WordCountBolt"), 12).fieldsGrouping('SplitSentenceBolt', Fields.new("word"))
+      builder.setSpout('RandomSentenceSpout', JRubySpout.new(base_class_path, "RedStorm::Examples::RandomSentenceSpout", []), 5)
+      builder.setBolt('SplitSentenceBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::SplitSentenceBolt", []), 8).shuffleGrouping('RandomSentenceSpout')
+      builder.setBolt('WordCountBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::WordCountBolt", []), 12).fieldsGrouping('SplitSentenceBolt', Fields.new("word"))
 
       conf = Backtype::Config.new
       conf.setDebug(true)

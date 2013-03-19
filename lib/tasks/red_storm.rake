@@ -54,15 +54,15 @@ end
 
 task :setup do
   puts("\n--> Setting up target directories")
-  ant.mkdir :dir => TARGET_DIR 
-  ant.mkdir :dir => TARGET_CLASSES_DIR 
-  ant.mkdir :dir => TARGET_DEPENDENCY_DIR
-  ant.mkdir :dir => TARGET_SRC_DIR
-  ant.mkdir :dir => TARGET_GEM_DIR
-  ant.mkdir :dir => TARGET_SPECS_DIR
-  ant.path :id => 'classpath' do  
-    fileset :dir => TARGET_DEPENDENCY_DIR  
-    fileset :dir => TARGET_CLASSES_DIR  
+  ant.mkdir 'dir' => TARGET_DIR 
+  ant.mkdir 'dir' => TARGET_CLASSES_DIR 
+  ant.mkdir 'dir' => TARGET_DEPENDENCY_DIR
+  ant.mkdir 'dir' => TARGET_SRC_DIR
+  ant.mkdir 'dir' => TARGET_GEM_DIR
+  ant.mkdir 'dir' => TARGET_SPECS_DIR
+  ant.path 'id' => 'classpath' do  
+    fileset 'dir' => TARGET_DEPENDENCY_DIR  
+    fileset 'dir' => TARGET_CLASSES_DIR  
   end  
 end
 
@@ -213,15 +213,15 @@ end
 def build_java_dir(source_folder)
   puts("\n--> Compiling Java")
   ant.javac(
-    :srcdir => source_folder,
-    :destdir => TARGET_CLASSES_DIR,
-    :classpathref => 'classpath', 
-    :source => "1.6",
-    :target => "1.6",
-    :debug => "yes",
-    :includeantruntime => "no",
-    :verbose => false,
-    :listfiles => true
+    'srcdir' => source_folder,
+    'destdir' => TARGET_CLASSES_DIR,
+    'classpathref' => 'classpath', 
+    'source' => "1.6",
+    'target' => "1.6",
+    'debug' => "yes",
+    'includeantruntime' => "no",
+    'verbose' => false,
+    'listfiles' => true
   ) do
     # compilerarg :value => "-Xlint:unchecked"
   end 

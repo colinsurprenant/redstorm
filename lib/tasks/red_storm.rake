@@ -45,7 +45,7 @@ task :launch, :env, :ruby_mode, :class_file do |t, args|
 end
 
 task :clean do
-  ant.delete :dir => TARGET_DIR
+  ant.delete 'dir' => TARGET_DIR
 end
 
 task :clean_jar do
@@ -130,21 +130,21 @@ namespace :ivy do
   task :download do
     mkdir_p DST_IVY_DIR
     ant.get({
-      :src => "http://repo1.maven.org/maven2/org/apache/ivy/ivy/#{INSTALL_IVY_VERSION}/ivy-#{INSTALL_IVY_VERSION}.jar",
-      :dest => "#{DST_IVY_DIR}/ivy-#{INSTALL_IVY_VERSION}.jar",
-      :usetimestamp => true,
+      'src' => "http://repo1.maven.org/maven2/org/apache/ivy/ivy/#{INSTALL_IVY_VERSION}/ivy-#{INSTALL_IVY_VERSION}.jar",
+      'dest' => "#{DST_IVY_DIR}/ivy-#{INSTALL_IVY_VERSION}.jar",
+      'usetimestamp' => true,
     })
   end
 
   task :install => :download do
-    ant.path :id => 'ivy.lib.path' do
-      fileset :dir => DST_IVY_DIR, :includes => '*.jar'
+    ant.path 'id' => 'ivy.lib.path' do
+      fileset 'dir' => DST_IVY_DIR, 'includes' => '*.jar'
     end
 
     ant.taskdef({
-      :resource => "org/apache/ivy/ant/antlib.xml",
-      :classpathref => "ivy.lib.path",
-      #:uri => "antlib:org.apache.ivy.ant",
+      'resource' => "org/apache/ivy/ant/antlib.xml",
+      'classpathref' => "ivy.lib.path",
+      #'uri' => "antlib:org.apache.ivy.ant",
     })
   end
 end
@@ -153,7 +153,7 @@ task :deps => "ivy:install" do
   puts("\n--> Installing dependencies")
 
   dependencies = File.exists?(CUSTOM_DEPENDENCIES) ? eval(File.read(CUSTOM_DEPENDENCIES)) : DEFAULT_DEPENDENCIES
-  ant.configure :file => File.exists?(CUSTOM_IVY_SETTINGS) ? CUSTOM_IVY_SETTINGS : DEFAULT_IVY_SETTINGS
+  ant.configure 'file' => File.exists?(CUSTOM_IVY_SETTINGS) ? CUSTOM_IVY_SETTINGS : DEFAULT_IVY_SETTINGS
 
   dependencies[:storm_artifacts].each do |dependency|
     artifact, transitive = dependency.split(/\s*,\s*/)
@@ -251,21 +251,21 @@ end
 
 def ivy_retrieve(org, mod, rev, transitive, dir, conf)
   ant.resolve({
-    :organisation => org,
-    :module => mod,
-    :revision => rev,
-    :inline => true,
-    :transitive => truefalse(transitive),
-    :conf => conf,
+    'organisation' => org,
+    'module' => mod,
+    'revision' => rev,
+    'inline' => true,
+    'transitive' => truefalse(transitive),
+    'conf' => conf,
   })
 
   ant.retrieve({
-    :organisation => org,
-    :module => mod,
-    :revision => rev,
-    :pattern => "#{dir}/[conf]/[artifact]-[revision].[ext]",
-    :inline => true,
-    :transitive => truefalse(transitive),
-    :conf => conf,
+    'organisation' => org,
+    'module' => mod,
+    'revision' => rev,
+    'pattern' => "#{dir}/[conf]/[artifact]-[revision].[ext]",
+    'inline' => true,
+    'transitive' => truefalse(transitive),
+    'conf' => conf,
   })
 end

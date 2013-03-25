@@ -49,7 +49,7 @@ task :clean do
 end
 
 task :clean_jar do
-  ant.delete :file => TARGET_CLUSTER_JAR
+  ant.delete 'file' => TARGET_CLUSTER_JAR
 end
 
 task :setup do
@@ -169,20 +169,20 @@ end
 task :jar, [:include_dir] => [:clean_jar] do |t, args|
   puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
 
-  ant.jar :destfile => TARGET_CLUSTER_JAR do
+  ant.jar 'destfile' => TARGET_CLUSTER_JAR do
     # rejar all topology jars
     Dir["target/dependency/topology/default/*.jar"].each do |jar|
       puts("Extracting #{jar}")
-      zipfileset :src => jar, :includes => "**/*"
+      zipfileset 'src' => jar, 'includes' => "**/*"
     end
-    fileset :dir => TARGET_DIR do
-      include :name => "gems/**"
+    fileset 'dir' => TARGET_DIR do
+      include 'name' => "gems/**"
     end
-    fileset :dir => TARGET_CLASSES_DIR
+    fileset 'dir' => TARGET_CLASSES_DIR
     # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
     # in bolts/spouts works in jar context
-    fileset :dir => TARGET_LIB_DIR do
-      exclude :name => "tasks/**"
+    fileset 'dir' => TARGET_LIB_DIR do
+      exclude 'name' => "tasks/**"
     end
     if args[:include_dir]
       dirs = args[:include_dir].split(":")
@@ -192,19 +192,19 @@ task :jar, [:include_dir] => [:clean_jar] do |t, args|
         resources_dirs = Dir.glob("#{dir}/**/resources")
         resources_dirs.each do |resources_dir|
           resources_parent = resources_dir.gsub("/resources", "")
-          fileset :dir => resources_parent do
-            include :name => "resources/**/*"
+          fileset 'dir' => resources_parent do
+            include 'name' => "resources/**/*"
           end
         end
       end
 
       # include complete source dir tree (note we don't care about potential duplicated resources dir)
-      fileset :dir => CWD do
-        dirs.each{|dir| include :name => "#{dir}/**/*"}
+      fileset 'dir' => CWD do
+        dirs.each{|dir| include 'name' => "#{dir}/**/*"}
       end
     end
     manifest do
-      attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
+      attribute 'name' => "Main-Class", 'value' => "redstorm.TopologyLauncher"
     end
   end
   puts("\nRedStorm generated JAR file #{TARGET_CLUSTER_JAR}")

@@ -1,7 +1,8 @@
 begin
   require 'ant'
 rescue
-  puts("error: unable to load Ant, make sure Ant is installed and in your PATH")
+  puts("error: unable to load Ant, make sure Ant is installed, in your PATH")
+  puts("       and $ANT_HOME is defined properly.")
   puts("\nerror detail:\n#{$!}")
   exit(1)
 end

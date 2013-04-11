@@ -1,0 +1,30 @@
+require 'java'
+
+<% java_deps.each do |dep| %>
+java_import '<%= dep %>'
+<% end %>
+
+module Backtype
+  java_import 'backtype.storm.Config'
+end
+
+java_package 'redstorm.proxy'
+
+class <%= ruby_class_name %>
+  java_implements <%= interface_name %>
+
+  java_signature '<%= interface_name %> (String base_class_path, String real_class_name)'
+  def initialize(base_class_path, real_class_name)
+    @real = Object.module_eval(real_class_name).new
+  rescue NameError
+    require base_class_path
+    @real = Object.module_eval(real_class_name).new
+  end
+<% methods.each do |method_name, params| %>
+  java_signature '<%= params[:return_type] %> <%= method_name %>(<%= params[:args].values.join(', ') %>)'
+  def <%= method_name %>(<%= params[:args].keys.join(', ') %>)
+    @real.<%= method_name %>(<%= params[:args].keys.join(', ') %>)
+  end
+<% end %>
+
+end

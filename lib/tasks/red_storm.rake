@@ -117,8 +117,10 @@ task :bundle, [:groups] => :setup do |t, args|
         puts("installing gem #{spec.full_name} into #{destination_path}")
         # copy the actual gem dir
         FileUtils.cp_r(spec.full_gem_path, destination_path)
-        # copy the gemspec into the specifications/ dir
-        FileUtils.cp_r(spec.loaded_from, TARGET_SPECS_DIR)
+        # copy the evaluated gemspec into the specifications/ dir (we
+        # may not have enough info to reconstruct once we delete the
+        # .git directory)
+        File.open(File.join(TARGET_SPECS_DIR, File.basename(spec.loaded_from)), 'w'){|f| f.write(spec.to_ruby)}
         # strip the .git directory from git dependencies, it can be huge
         FileUtils.rm_rf("#{destination_path}/.git")
       end

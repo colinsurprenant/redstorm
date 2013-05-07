@@ -29,14 +29,14 @@ module RedStorm
 
       def start(base_class_path, env)
         builder = TopologyBuilder.new
-        
-        builder.setSpout('TestWordSpout', TestWordSpout.new, 10)     
-        builder.setBolt('ExclamationBolt21', JRubyBolt.new(base_class_path, "RedStorm::Examples::ExclamationBolt2"), 3).shuffleGrouping('TestWordSpout')
-        builder.setBolt('ExclamationBolt22', JRubyBolt.new(base_class_path, "RedStorm::Examples::ExclamationBolt2"), 2).shuffleGrouping('ExclamationBolt21')
-                
+
+        builder.setSpout('TestWordSpout', TestWordSpout.new, 10)
+        builder.setBolt('ExclamationBolt21', JRubyBolt.new(base_class_path, "RedStorm::Examples::ExclamationBolt2", []), 3).shuffleGrouping('TestWordSpout')
+        builder.setBolt('ExclamationBolt22', JRubyBolt.new(base_class_path, "RedStorm::Examples::ExclamationBolt2", []), 2).shuffleGrouping('ExclamationBolt21')
+
         conf = Backtype::Config.new
         conf.setDebug(true)
-        
+
         cluster = LocalCluster.new
         cluster.submitTopology("exclamation", conf, builder.createTopology)
         sleep(5)

@@ -6,7 +6,7 @@ require 'examples/native/word_count_bolt'
 
 module RedStorm
   module Examples
-    # RedisWordSpout reads the Redis queue "test" on localhost:6379 
+    # RedisWordSpout reads the Redis queue "test" on localhost:6379
     # and emits each word items pop'ed from the queue.
     class RedisWordSpout
       def open(conf, context, collector)
@@ -14,7 +14,7 @@ module RedStorm
         @q = Queue.new
         @redis_reader = detach_redis_reader
       end
-      
+
       def next_tuple
         # per doc nextTuple should not block, and sleep a bit when there's no data to process.
         if @q.size > 0
@@ -52,8 +52,8 @@ module RedStorm
 
       def start(base_class_path, env)
         builder = TopologyBuilder.new
-        builder.setSpout('RedisWordSpout', JRubySpout.new(base_class_path, "RedStorm::Examples::RedisWordSpout"), 1)
-        builder.setBolt('WordCountBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::WordCountBolt"), 3).fieldsGrouping('RedisWordSpout', Fields.new("word"))
+        builder.setSpout('RedisWordSpout', JRubySpout.new(base_class_path, "RedStorm::Examples::RedisWordSpout", []), 1)
+        builder.setBolt('WordCountBolt', JRubyBolt.new(base_class_path, "RedStorm::Examples::WordCountBolt", []), 3).fieldsGrouping('RedisWordSpout', Fields.new("word"))
 
         conf = Backtype::Config.new
         conf.setDebug(true)

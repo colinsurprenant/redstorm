@@ -112,18 +112,23 @@ task :bundle, [:groups] => :setup do |t, args|
   defaulted_args = {:groups => 'default'}.merge(args.to_hash.delete_if{|k, v| v.to_s.empty?})
   groups = defaulted_args[:groups].split(':').map(&:to_sym)
   Bundler.definition.specs_for(groups).each do |spec|
-    unless spec.full_name =~ /^bundler-\d+/
-      destination_path = "#{TARGET_GEM_DIR}/#{spec.full_name}"
-      unless File.directory?(destination_path)
-        puts("installing gem #{spec.full_name} into #{destination_path}")
-        # copy the actual gem dir
-        FileUtils.cp_r(spec.full_gem_path, destination_path)
-        # copy the gemspec into the specifications/ dir
-        FileUtils.cp_r(spec.loaded_from, TARGET_SPECS_DIR)
-        # strip the .git directory from git dependencies, it can be huge
-        FileUtils.rm_rf("#{destination_path}/.git")
-      end
-    end
+    next if spec.name == 'bundler'
+
+    # try to avoid infinite recursion
+    next if TARGET_GEM_DIR.start_with?(spec.full_gem_path)
+
+    destination_path = "#{TARGET_GEM_DIR}/#{spec.full_name}"
+    next if File.directory?(destination_path)
+
+    puts("installing gem #{spec.full_name} into #{destination_path}")
+    # copy the actual gem dir
+    FileUtils.cp_r(spec.full_gem_path, destination_path)
+    # copy the evaluated gemspec into the specifications/ dir (we
+    # may not have enough info to reconstruct once we delete the
+    # .git directory)
+    File.open(File.join(TARGET_SPECS_DIR, File.basename(spec.loaded_from)), 'w'){|f| f.write(spec.to_ruby)}
+    # strip the .git directory from git dependencies, it can be huge
+    FileUtils.rm_rf("#{destination_path}/.git")
   end
 end
 

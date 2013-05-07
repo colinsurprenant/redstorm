@@ -46,24 +46,24 @@ task :launch, :env, :ruby_mode, :class_file do |t, args|
 end
 
 task :clean do
-  ant.delete :dir => TARGET_DIR
+  ant.delete 'dir' => TARGET_DIR
 end
 
 task :clean_jar do
-  ant.delete :file => TARGET_CLUSTER_JAR
+  ant.delete 'file' => TARGET_CLUSTER_JAR
 end
 
 task :setup do
   puts("\n--> Setting up target directories")
-  ant.mkdir :dir => TARGET_DIR 
-  ant.mkdir :dir => TARGET_CLASSES_DIR 
-  ant.mkdir :dir => TARGET_DEPENDENCY_DIR
-  ant.mkdir :dir => TARGET_SRC_DIR
-  ant.mkdir :dir => TARGET_GEM_DIR
-  ant.mkdir :dir => TARGET_SPECS_DIR
-  ant.path :id => 'classpath' do  
-    fileset :dir => TARGET_DEPENDENCY_DIR  
-    fileset :dir => TARGET_CLASSES_DIR  
+  ant.mkdir 'dir' => TARGET_DIR 
+  ant.mkdir 'dir' => TARGET_CLASSES_DIR 
+  ant.mkdir 'dir' => TARGET_DEPENDENCY_DIR
+  ant.mkdir 'dir' => TARGET_SRC_DIR
+  ant.mkdir 'dir' => TARGET_GEM_DIR
+  ant.mkdir 'dir' => TARGET_SPECS_DIR
+  ant.path 'id' => 'classpath' do  
+    fileset 'dir' => TARGET_DEPENDENCY_DIR  
+    fileset 'dir' => TARGET_CLASSES_DIR  
   end  
 end
 
@@ -136,21 +136,21 @@ namespace :ivy do
   task :download do
     mkdir_p DST_IVY_DIR
     ant.get({
-      :src => "http://repo1.maven.org/maven2/org/apache/ivy/ivy/#{INSTALL_IVY_VERSION}/ivy-#{INSTALL_IVY_VERSION}.jar",
-      :dest => "#{DST_IVY_DIR}/ivy-#{INSTALL_IVY_VERSION}.jar",
-      :usetimestamp => true,
+      'src' => "http://repo1.maven.org/maven2/org/apache/ivy/ivy/#{INSTALL_IVY_VERSION}/ivy-#{INSTALL_IVY_VERSION}.jar",
+      'dest' => "#{DST_IVY_DIR}/ivy-#{INSTALL_IVY_VERSION}.jar",
+      'usetimestamp' => true,
     })
   end
 
   task :install => :download do
-    ant.path :id => 'ivy.lib.path' do
-      fileset :dir => DST_IVY_DIR, :includes => '*.jar'
+    ant.path 'id' => 'ivy.lib.path' do
+      fileset 'dir' => DST_IVY_DIR, 'includes' => '*.jar'
     end
 
     ant.taskdef({
-      :resource => "org/apache/ivy/ant/antlib.xml",
-      :classpathref => "ivy.lib.path",
-      #:uri => "antlib:org.apache.ivy.ant",
+      'resource' => "org/apache/ivy/ant/antlib.xml",
+      'classpathref' => "ivy.lib.path",
+      #'uri' => "antlib:org.apache.ivy.ant",
     })
   end
 end
@@ -159,7 +159,7 @@ task :deps => "ivy:install" do
   puts("\n--> Installing dependencies")
 
   dependencies = File.exists?(CUSTOM_DEPENDENCIES) ? eval(File.read(CUSTOM_DEPENDENCIES)) : DEFAULT_DEPENDENCIES
-  ant.configure :file => File.exists?(CUSTOM_IVY_SETTINGS) ? CUSTOM_IVY_SETTINGS : DEFAULT_IVY_SETTINGS
+  ant.configure 'file' => File.exists?(CUSTOM_IVY_SETTINGS) ? CUSTOM_IVY_SETTINGS : DEFAULT_IVY_SETTINGS
 
   dependencies[:storm_artifacts].each do |dependency|
     artifact, transitive = dependency.split(/\s*,\s*/)
@@ -175,20 +175,20 @@ end
 task :jar, [:include_dir] => [:clean_jar] do |t, args|
   puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
 
-  ant.jar :destfile => TARGET_CLUSTER_JAR do
+  ant.jar 'destfile' => TARGET_CLUSTER_JAR do
     # rejar all topology jars
     Dir["target/dependency/topology/default/*.jar"].each do |jar|
       puts("Extracting #{jar}")
-      zipfileset :src => jar, :includes => "**/*"
+      zipfileset 'src' => jar, 'includes' => "**/*"
     end
-    fileset :dir => TARGET_DIR do
-      include :name => "gems/**"
+    fileset 'dir' => TARGET_DIR do
+      include 'name' => "gems/**"
     end
-    fileset :dir => TARGET_CLASSES_DIR
+    fileset 'dir' => TARGET_CLASSES_DIR
     # red_storm.rb and red_storm/* must be in root of jar so that "require 'red_storm'"
     # in bolts/spouts works in jar context
-    fileset :dir => TARGET_LIB_DIR do
-      exclude :name => "tasks/**"
+    fileset 'dir' => TARGET_LIB_DIR do
+      exclude 'name' => "tasks/**"
     end
     if args[:include_dir]
       dirs = args[:include_dir].split(":")
@@ -198,19 +198,19 @@ task :jar, [:include_dir] => [:clean_jar] do |t, args|
         resources_dirs = Dir.glob("#{dir}/**/resources")
         resources_dirs.each do |resources_dir|
           resources_parent = resources_dir.gsub("/resources", "")
-          fileset :dir => resources_parent do
-            include :name => "resources/**/*"
+          fileset 'dir' => resources_parent do
+            include 'name' => "resources/**/*"
           end
         end
       end
 
       # include complete source dir tree (note we don't care about potential duplicated resources dir)
-      fileset :dir => CWD do
-        dirs.each{|dir| include :name => "#{dir}/**/*"}
+      fileset 'dir' => CWD do
+        dirs.each{|dir| include 'name' => "#{dir}/**/*"}
       end
     end
     manifest do
-      attribute :name => "Main-Class", :value => "redstorm.TopologyLauncher"
+      attribute 'name' => "Main-Class", 'value' => "redstorm.TopologyLauncher"
     end
   end
   puts("\nRedStorm generated JAR file #{TARGET_CLUSTER_JAR}")
@@ -219,15 +219,15 @@ end
 def build_java_dir(source_folder)
   puts("\n--> Compiling Java")
   ant.javac(
-    :srcdir => source_folder,
-    :destdir => TARGET_CLASSES_DIR,
-    :classpathref => 'classpath', 
-    :source => "1.6",
-    :target => "1.6",
-    :debug => "yes",
-    :includeantruntime => "no",
-    :verbose => false,
-    :listfiles => true
+    'srcdir' => source_folder,
+    'destdir' => TARGET_CLASSES_DIR,
+    'classpathref' => 'classpath', 
+    'source' => "1.6",
+    'target' => "1.6",
+    'debug' => "yes",
+    'includeantruntime' => "no",
+    'verbose' => false,
+    'listfiles' => true
   ) do
     # compilerarg :value => "-Xlint:unchecked"
   end 
@@ -257,21 +257,21 @@ end
 
 def ivy_retrieve(org, mod, rev, transitive, dir, conf)
   ant.resolve({
-    :organisation => org,
-    :module => mod,
-    :revision => rev,
-    :inline => true,
-    :transitive => truefalse(transitive),
-    :conf => conf,
+    'organisation' => org,
+    'module' => mod,
+    'revision' => rev,
+    'inline' => true,
+    'transitive' => truefalse(transitive),
+    'conf' => conf,
   })
 
   ant.retrieve({
-    :organisation => org,
-    :module => mod,
-    :revision => rev,
-    :pattern => "#{dir}/[conf]/[artifact]-[revision].[ext]",
-    :inline => true,
-    :transitive => truefalse(transitive),
-    :conf => conf,
+    'organisation' => org,
+    'module' => mod,
+    'revision' => rev,
+    'pattern' => "#{dir}/[conf]/[artifact]-[revision].[ext]",
+    'inline' => true,
+    'transitive' => truefalse(transitive),
+    'conf' => conf,
   })
 end

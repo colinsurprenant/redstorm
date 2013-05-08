@@ -47,6 +47,25 @@ By defaut, a topology will be executed in the **same mode** as the interpreter r
 $ redstorm local|cluster [--1.8|--1.9] ...
 ```
 
+If you are **not using the DSL** and only using the proxy classes (like in `examples/native`) you will need to manually set the JRuby version in the Storm `Backtype::Config` object like this:
+
+``` ruby
+class SomeTopology
+  RedStorm::Configuration.topology_class = self
+
+  def start(base_class_path, env)
+    builder = TopologyBuilder.new
+    builder.setSpout ...
+    builder.setBolt ...
+
+    conf = Backtype::Config.new
+    conf.put("topology.worker.childopts", "-Djruby.compat.version=RUBY1_9")
+
+    StormSubmitter.submitTopology("some_topology", conf, builder.createTopology);
+  end
+end
+```
+
 ## Installation
 
 - RubyGems
@@ -58,7 +77,7 @@ $ redstorm local|cluster [--1.8|--1.9] ...
 - Bundler
 
   ``` ruby
-  source :rubygems
+  source "https://rubygems.org"
   gem "redstorm", "~> 0.6.4"
   ```
 
@@ -90,7 +109,7 @@ Create a subdirectory for your topology code and create your topology class **us
 
 ### Gems in your topology
 
-RedStorm requires [Bundler](http://gembundler.com/) **if gems are needed** in your topology. Basically supply a `Gemfile` in the root of your project directory with the gems required in your topology. If you are using Bundler for other gems **you should** group the topology gems in a Bunder group of your choice.
+RedStorm requires [Bundler](http://gembundler.com/) **if gems are needed** in your topology. Basically supply a `Gemfile` in the root of your project directory with the gems required in your topology. If you are using Bundler also for other gems than those required in the topology **you should** group the topology gems in a Bunder group of your choice.
 
 1. have Bundler install the gems locally
 
@@ -110,9 +129,15 @@ RedStorm requires [Bundler](http://gembundler.com/) **if gems are needed** in yo
   $ redstorm bundle [BUNDLER_GROUP]
   ```
 
-Basically, the `redstorm bundle` command copy the gems specified in the Gemfile (in a specific group if specified) into the `target/gems` directory. In order for the topology to run in a Storm cluster, the fully *installed* gems must be packaged and self-contained into a single jar file. **Note** you should **NOT** `require 'bundler/setup'` in the topology. 
+Basically, the `redstorm bundle` command copy the gems specified in the Gemfile (in a specific group if specified) into the `target/gems` directory. In order for the topology to run in a Storm cluster, the fully *installed* gems must be packaged and self-contained into a single jar file. This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the jar file. This **could lead to problems** if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have **C or FFI** extensions.
 
-This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the jar file. This **could lead to problems** if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have **C or FFI** extensions.
+####IMPORTANT####
+
+Do **not** `require 'bundler/setup'` in the topology. Instead **you need** to require red_storm:
+```ruby
+require 'red_storm'
+```
+
 
 ### Custom Jar dependencies in your topology
 
@@ -207,7 +232,7 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
 1. create a `Gemfile`
 
   ``` ruby
-  source :rubygems
+  source "https://rubygems.org"
 
   group :word_count do
     gem "redis"
@@ -258,10 +283,10 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
 1. create a `Gemfile`
 
   ``` ruby
-  source :rubygems
+  source "https://rubygems.org"
 
   group :word_count do
-      gem "redis"
+    gem "redis"
   end
   ```
 

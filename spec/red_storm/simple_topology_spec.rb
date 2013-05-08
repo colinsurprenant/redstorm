@@ -32,6 +32,10 @@ describe RedStorm::SimpleTopology do
     Topology1.topology_name.should == "topology1"
   end
 
+  it "should set topology class in Configuration object" do
+    class UnconfiguredTopology < RedStorm::SimpleTopology; end
+    RedStorm::Configuration.topology_class.name.should == "UnconfiguredTopology"
+  end
 
   describe "interface" do
     it "should implement topology proxy" do

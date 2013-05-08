@@ -127,8 +127,14 @@ module RedStorm
       self.components << bolt
     end
 
+    # hook into the class lifecycle "inherited" method to automatically set the 
+    # topology class into the Configuration object.
+    # this now makes the topology configure block optional.
+    def self.inherited(subclass) 
+      Configuration.topology_class = subclass
+    end
+
     def self.configure(name = nil, &configure_block)
-      Configuration.topology_class = self
       @topology_name = name if name
       @configure_block = configure_block if block_given?
     end

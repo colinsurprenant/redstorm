@@ -135,7 +135,7 @@ module RedStorm
     end
 
     def self.configure(name = nil, &configure_block)
-      @topology_name = name if name
+      @topology_name = name.to_s if name
       @configure_block = configure_block if block_given?
     end
 

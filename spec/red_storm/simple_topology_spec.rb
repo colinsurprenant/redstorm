@@ -180,6 +180,11 @@ describe RedStorm::SimpleTopology do
           configure "name"
         end
         Topology1.topology_name.should == "name"
+
+        class Topology2 < RedStorm::SimpleTopology
+          configure :symbolname
+        end
+        Topology2.topology_name.should == "symbolname"
       end
 
       it "should parse configuration block only" do

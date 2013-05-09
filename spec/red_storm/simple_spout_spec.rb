@@ -325,6 +325,72 @@ describe RedStorm::SimpleSpout do
       end
     end
 
+    describe "on_activate statement" do
+
+      it "should parse block argument" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_activate {self.test_block_call}
+        end
+
+        spout = Spout1.new
+        spout.should_receive(:test_block_call)
+        spout.activate
+      end
+
+      it "should parse method name" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_activate :test_method
+        end
+
+        spout = Spout1.new
+        spout.should_receive(:test_method)
+        spout.activate
+      end
+
+      it "should parse method name" do
+        class Spout1 < RedStorm::SimpleSpout
+          def on_activate; test_method; end
+        end
+
+        spout = Spout1.new
+        spout.should_receive(:test_method)
+        spout.activate
+      end
+    end
+
+   describe "on_deactivate statement" do
+
+      it "should parse block argument" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_deactivate {self.test_block_call}
+        end
+
+        spout = Spout1.new
+        spout.should_receive(:test_block_call)
+        spout.deactivate
+      end
+
+      it "should parse method name" do
+        class Spout1 < RedStorm::SimpleSpout
+          on_deactivate :test_method
+        end
+
+        spout = Spout1.new
+        spout.should_receive(:test_method)
+        spout.deactivate
+      end
+
+      it "should parse method name" do
+        class Spout1 < RedStorm::SimpleSpout
+          def on_deactivate; test_method; end
+        end
+
+        spout = Spout1.new
+        spout.should_receive(:test_method)
+        spout.deactivate
+      end
+    end
+
     # log specs are mostly the same ats in the bolt specs. if these are modified, sync with bolt
     describe "log statement" do
 

@@ -158,19 +158,14 @@ end
 task :deps => "ivy:install" do
   puts("\n--> Installing dependencies")
 
-  dependencies = File.exists?(CUSTOM_DEPENDENCIES) ? eval(File.read(CUSTOM_DEPENDENCIES)) : DEFAULT_DEPENDENCIES
   ant.configure 'file' => File.exists?(CUSTOM_IVY_SETTINGS) ? CUSTOM_IVY_SETTINGS : DEFAULT_IVY_SETTINGS
 
-  dependencies[:storm_artifacts].each do |dependency|
-    artifact, transitive = dependency.split(/\s*,\s*/)
-    ivy_retrieve(*artifact.split(':').concat([transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/storm", "default"]))
-  end
+  ant.resolve 'file' => File.exists?(CUSTOM_IVY_STORM_DEPENDENCIES) ? CUSTOM_IVY_STORM_DEPENDENCIES : DEFAULT_IVY_STORM_DEPENDENCIES 
+  ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/storm/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"  
 
-  dependencies[:topology_artifacts].each do |dependency|
-    artifact, transitive = dependency.split(/\s*,\s*/)
-    ivy_retrieve(*artifact.split(':').concat([transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/topology", "default"]))
-  end
-end  
+  ant.resolve 'file' => File.exists?(CUSTOM_IVY_TOPOLOGY_DEPENDENCIES) ? CUSTOM_IVY_TOPOLOGY_DEPENDENCIES : DEFAULT_IVY_TOPOLOGY_DEPENDENCIES 
+  ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/topology/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"
+end
 
 task :jar, [:include_dir] => [:clean_jar] do |t, args|
   puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
@@ -247,31 +242,4 @@ def build_jruby(source_path)
     argv << source_path
     status =  JRuby::Compiler::compile_argv(argv)
   end
-end
-
-def truefalse(s)
-  return true if s.to_s.downcase =~ /1|yes|true/
-  return false if s.to_s.downcase =~ /0|no|false/
-  nil
-end
-
-def ivy_retrieve(org, mod, rev, transitive, dir, conf)
-  ant.resolve({
-    'organisation' => org,
-    'module' => mod,
-    'revision' => rev,
-    'inline' => true,
-    'transitive' => truefalse(transitive),
-    'conf' => conf,
-  })
-
-  ant.retrieve({
-    'organisation' => org,
-    'module' => mod,
-    'revision' => rev,
-    'pattern' => "#{dir}/[conf]/[artifact]-[revision].[ext]",
-    'inline' => true,
-    'transitive' => truefalse(transitive),
-    'conf' => conf,
-  })
 end

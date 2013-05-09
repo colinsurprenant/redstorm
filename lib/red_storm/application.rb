@@ -20,10 +20,12 @@ DST_EXAMPLES = "#{CWD}/examples"
 
 SRC_IVY_DIR = "#{RedStorm::REDSTORM_HOME}/ivy"
 DST_IVY_DIR = "#{CWD}/ivy"
-CUSTOM_DEPENDENCIES = "#{CWD}/Dependencies"
 DEFAULT_IVY_SETTINGS = "#{SRC_IVY_DIR}/settings.xml"
 CUSTOM_IVY_SETTINGS = "#{DST_IVY_DIR}/settings.xml"
-
+DEFAULT_IVY_STORM_DEPENDENCIES = "#{SRC_IVY_DIR}/storm_dependencies.xml"
+CUSTOM_IVY_STORM_DEPENDENCIES = "#{DST_IVY_DIR}/storm_dependencies.xml"
+DEFAULT_IVY_TOPOLOGY_DEPENDENCIES = "#{SRC_IVY_DIR}/topology_dependencies.xml"
+CUSTOM_IVY_TOPOLOGY_DEPENDENCIES = "#{DST_IVY_DIR}/topology_dependencies.xml"
 
 module RedStorm
   

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ivy-module version="2.0">
+  <info organisation="redstorm" module="storm-deps"/>
+  <dependencies>
+    <dependency org="storm" name="storm" rev="0.8.2" conf="default" transitive="true" />
+  </dependencies>
+</ivy-module>

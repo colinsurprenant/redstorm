@@ -313,6 +313,18 @@ describe RedStorm::SimpleBolt do
       end
     end
 
+    describe "configure statement" do
+
+      it "should parse configuration block" do
+        class Bolt1 < RedStorm::SimpleBolt
+          configure {trigger}
+        end
+        bolt = Bolt1.new
+        bolt.should_receive(:trigger)
+        bolt.instance_exec(&Bolt1.configure_block)
+      end
+    end
+
     # log specs are mostly the same ats in the spout specs. if these are modified, sync with spout
     describe "log statement" do
 
@@ -674,6 +686,15 @@ describe RedStorm::SimpleBolt do
         declarer.should_receive(:declare).with("fields")
         RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("fields")
         bolt.declare_output_fields(declarer)
+      end
+    end
+
+    describe "get_component_configuration" do
+
+      it "should return Backtype::Config object" do
+        class Bolt1 < RedStorm::SimpleBolt; end
+        bolt = Bolt1.new
+        bolt.get_component_configuration.should be_instance_of(Backtype::Config)
       end
     end
 

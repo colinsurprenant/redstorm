@@ -1,0 +1,51 @@
+package redstorm.storm.jruby;
+<% java_deps.each do |dep| %>
+import <%= dep %>;<% end %>
+
+public class <%= java_class_name %> implements <%= interface_name %> {
+  <%= interface_name %> _proxy;
+  String _realClassName;
+  String _baseClassPath;
+  String[] _fields;
+
+  public <%= java_class_name %>(final String baseClassPath, final String realClassName, final String[] fields) {
+    _baseClassPath = baseClassPath;
+    _realClassName = realClassName;
+    _fields = fields;
+  }
+
+<% functions.each do |function_name, params| %>
+  @Override
+  public <%= params[:return_type] %> <%= function_name %>(<%= params[:args].map{|n,t| ["final #{t}", n].join(' ') }.flatten.join(', ') %>) {
+    <% if function_name == :open %>
+    _proxy = newProxy(_baseClassPath, _realClassName);
+    _proxy.open(<%= params[:args].keys.flatten.join(', ') %>);
+    <% elsif function_name == :declareOutputFields %>
+    if (_fields.length > 0) {
+      <%= params[:args].values[0] %>.declare(new Fields(_fields));
+    } else {
+      newProxy(_baseClassPath, _realClassName).<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
+    }
+    <% elsif params[:before_serialization] %>
+    newProxy(_baseClassPath, _realClassName).<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
+    <% elsif params[:memoize] %>
+    if(_proxy == null) {
+      _proxy = newProxy(_baseClassPath, _realClassName);
+    }
+    _proxy.<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
+    <% else %>
+    _proxy.<%= function_name %>(<%= params[:args].keys.flatten.join(', ') %>);
+    <% end %>
+  }
+<% end %>
+
+  private static <%= interface_name %> newProxy(final String baseClassPath, final String realClassName) {
+    try {
+      redstorm.proxy.<%= ruby_class_name %> proxy = new redstorm.proxy.<%= ruby_class_name %>(baseClassPath, realClassName);
+      return proxy;
+    }
+    catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+}

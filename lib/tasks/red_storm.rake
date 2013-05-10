@@ -11,7 +11,7 @@ require 'jruby/jrubyc'
 require 'red_storm'
 require 'red_storm/application'
 
-DEP_STORM_VERSION = "0.8.1"
+DEP_STORM_VERSION = "0.8.2"
 DEP_JRUBY_VERSION = "1.6.8"
 INSTALL_IVY_VERSION = "2.2.0"
 
@@ -27,7 +27,7 @@ DEFAULT_DEPENDENCIES = {
 task :launch, :env, :ruby_mode, :class_file do |t, args|
   # use ruby mode parameter or default to current interpreter version
   version_token = RedStorm.jruby_mode_token(args[:ruby_mode])
-  
+
   command = case args[:env]
   when "local"
     RedStorm::Application.local_storm_command(args[:class_file], args[:ruby_mode])
@@ -170,7 +170,7 @@ task :deps => "ivy:install" do
     artifact, transitive = dependency.split(/\s*,\s*/)
     ivy_retrieve(*artifact.split(':').concat([transitive.split(/\s*=\s*/).last, "#{TARGET_DEPENDENCY_DIR}/topology", "default"]))
   end
-end  
+end
 
 task :jar, [:include_dir] => [:clean_jar] do |t, args|
   puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
@@ -230,8 +230,8 @@ def build_java_dir(source_folder)
     'listfiles' => true
   ) do
     # compilerarg :value => "-Xlint:unchecked"
-  end 
-end  
+  end
+end
 
 def build_jruby(source_path)
   puts("\n--> Compiling JRuby")

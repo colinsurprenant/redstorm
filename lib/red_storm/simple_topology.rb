@@ -36,7 +36,7 @@ module RedStorm
     end
 
     class SpoutDefinition < ComponentDefinition
-      
+
       # WARNING non-dry see BoltDefinition#new_instance
       def new_instance(base_class_path)
         if @clazz.name == "Java::RedstormStormJruby::JRubyShellSpout"
@@ -49,7 +49,7 @@ module RedStorm
         # is_java? ? @clazz.new : JRubySpout.new(base_class_path, @clazz.name)
       end
     end
-          
+
     class BoltDefinition < ComponentDefinition
       attr_accessor :sources, :command
 

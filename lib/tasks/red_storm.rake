@@ -11,9 +11,9 @@ require 'jruby/jrubyc'
 require 'red_storm'
 require 'red_storm/application'
 
-DEP_STORM_VERSION = "0.8.1"
-DEP_JRUBY_VERSION = "1.6.8"
-INSTALL_IVY_VERSION = "2.2.0"
+DEP_STORM_VERSION = "0.8.2"
+DEP_JRUBY_VERSION = "1.7.3"
+INSTALL_IVY_VERSION = "2.3.0"
 
 DEFAULT_DEPENDENCIES = {
   :storm_artifacts => [

@@ -7,7 +7,7 @@ TARGET_LIB_DIR = "#{TARGET_DIR}/lib"
 TARGET_SRC_DIR = "#{TARGET_DIR}/src"
 TARGET_GEM_DIR = "#{TARGET_DIR}/gems/gems"
 TARGET_SPECS_DIR = "#{TARGET_DIR}/gems/specifications"
-TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"  
+TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"
 TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
 TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
 TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
@@ -28,7 +28,7 @@ DEFAULT_IVY_TOPOLOGY_DEPENDENCIES = "#{SRC_IVY_DIR}/topology_dependencies.xml"
 CUSTOM_IVY_TOPOLOGY_DEPENDENCIES = "#{DST_IVY_DIR}/topology_dependencies.xml"
 
 module RedStorm
-  
+
   class Application 
     TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake" 
 
@@ -40,7 +40,7 @@ module RedStorm
     def self.cluster_storm_command(class_file, ruby_mode = nil)
       "storm jar #{TARGET_CLUSTER_JAR} -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} redstorm.TopologyLauncher cluster #{class_file}"
     end
-    
+
     def self.usage
       puts("usage: redstorm version")
       puts("       redstorm install")

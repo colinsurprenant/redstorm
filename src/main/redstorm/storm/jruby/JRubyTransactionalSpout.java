@@ -38,7 +38,7 @@ public class JRubyTransactionalSpout extends BaseTransactionalSpout {
   }
 
   @Override
-  public Coordinator getCoordinator(Map conf, TopologyContext context) {
+  public ITransactionalSpout.Coordinator getCoordinator(Map conf, TopologyContext context) {
     // create instance of the jruby class here, after deserialization in the workers.
     if (_proxySpout == null) {
       _proxySpout = newProxySpout(_baseClassPath, _realSpoutClassName);

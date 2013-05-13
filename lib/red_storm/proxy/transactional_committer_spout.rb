@@ -29,7 +29,7 @@ class TransactionalCommitterSpout
     @real_spout.get_emitter(conf, context)
   end
 
-  java_signature 'Coordinator getCoordinator(Map, TopologyContext)'
+  java_signature 'ITransactionalSpout.Coordinator getCoordinator(Map, TopologyContext)'
   def getCoordinator(conf, context)
     @real_spout.get_coordinator(conf, context)
   end

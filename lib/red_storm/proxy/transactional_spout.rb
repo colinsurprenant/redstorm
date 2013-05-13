@@ -23,12 +23,12 @@ class TransactionalSpout
     @real_spout = Object.module_eval(real_spout_class_name).new
   end
 
-  java_signature 'Emitter getEmitter(Map, TopologyContext)'
+  java_signature 'ITransactionalSpout.Emitter getEmitter(Map, TopologyContext)'
   def getEmitter(conf, context)
     @real_spout.get_emitter(conf, context)
   end
 
-  java_signature 'Coordinator getCoordinator(Map, TopologyContext)'
+  java_signature 'ITransactionalSpout.Coordinator getCoordinator(Map, TopologyContext)'
   def getCoordinator(conf, context)
     @real_spout.get_coordinator(conf, context)
   end

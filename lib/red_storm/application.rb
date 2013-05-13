@@ -20,15 +20,17 @@ DST_EXAMPLES = "#{CWD}/examples"
 
 SRC_IVY_DIR = "#{RedStorm::REDSTORM_HOME}/ivy"
 DST_IVY_DIR = "#{CWD}/ivy"
-CUSTOM_DEPENDENCIES = "#{CWD}/Dependencies"
 DEFAULT_IVY_SETTINGS = "#{SRC_IVY_DIR}/settings.xml"
 CUSTOM_IVY_SETTINGS = "#{DST_IVY_DIR}/settings.xml"
-
+DEFAULT_IVY_STORM_DEPENDENCIES = "#{SRC_IVY_DIR}/storm_dependencies.xml"
+CUSTOM_IVY_STORM_DEPENDENCIES = "#{DST_IVY_DIR}/storm_dependencies.xml"
+DEFAULT_IVY_TOPOLOGY_DEPENDENCIES = "#{SRC_IVY_DIR}/topology_dependencies.xml"
+CUSTOM_IVY_TOPOLOGY_DEPENDENCIES = "#{DST_IVY_DIR}/topology_dependencies.xml"
 
 module RedStorm
 
-  class Application
-    TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake"
+  class Application 
+    TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake" 
 
     def self.local_storm_command(class_file, ruby_mode = nil)
       src_dir = File.expand_path(File.dirname(class_file))

@@ -10,40 +10,32 @@ public class JRubyProxyFunction implements Function {
   Function _proxy;
   String _realClassName;
   String _baseClassPath;
-  String[] _fields;
 
-  public JRubyProxyFunction(final String baseClassPath, final String realClassName, final String[] fields) {
+  public JRubyProxyFunction(final String baseClassPath, final String realClassName) {
     _baseClassPath = baseClassPath;
     _realClassName = realClassName;
-    _fields = fields;
   }
 
 
   @Override
   public void execute(final TridentTuple _tridentTuple, final TridentCollector _tridentCollector) {
-    
     if(_proxy == null) {
       _proxy = newProxy(_baseClassPath, _realClassName);
     }
     _proxy.execute(_tridentTuple, _tridentCollector);
-    
   }
 
   @Override
   public void cleanup() {
-    
     _proxy.cleanup();
-    
   }
 
   @Override
   public void prepare(final Map _map, final TridentOperationContext _tridentOperationContext) {
-    
     if(_proxy == null) {
       _proxy = newProxy(_baseClassPath, _realClassName);
     }
     _proxy.prepare(_map, _tridentOperationContext);
-    
   }
 
 

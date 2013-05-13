@@ -119,7 +119,7 @@ module RedStorm
     def self.bolt(bolt_class, *args, &bolt_block)
       options = args.last.is_a?(Hash) ? args.pop : {}
       contructor_args = !args.empty? ? args.pop : []
-      bolt_options = {:id => options[:id] ? options[:id] : self.underscore(bolt_class), :parallelism => DEFAULT_BOLT_PARALLELISM}.merge(options)
+      bolt_options = {:id => self.underscore(bolt_class), :parallelism => DEFAULT_BOLT_PARALLELISM}.merge(options)
 
       bolt = BoltDefinition.new(bolt_class, contructor_args, bolt_options[:id], bolt_options[:parallelism])
       raise(TopologyDefinitionError, "#{bolt.clazz.name}, #{bolt.id}, bolt definition body required") unless block_given?
@@ -164,7 +164,7 @@ module RedStorm
 
       configurator = Configurator.new(defaults)
       configurator.instance_exec(env, &self.class.configure_block)
-
+ 
       submitter = (env == :local) ? @cluster = LocalCluster.new : StormSubmitter
       submitter.submitTopology(self.class.topology_name, configurator.config, builder.createTopology)
       instance_exec(env, &self.class.submit_block)

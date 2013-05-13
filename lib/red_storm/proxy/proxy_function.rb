@@ -1,16 +1,10 @@
 require 'java'
 
-
 java_import 'storm.trident.tuple.TridentTuple'
-
 java_import 'storm.trident.operation.TridentCollector'
-
-java_import 'java.util.Map'
-
 java_import 'storm.trident.operation.TridentOperationContext'
-
 java_import 'storm.trident.operation.Function'
-
+java_import 'java.util.Map'
 
 module Backtype
   java_import 'backtype.storm.Config'
@@ -43,6 +37,4 @@ class ProxyFunction
   def prepare(_map, _trident_operation_context)
     @real.prepare(_map, _trident_operation_context)
   end
-
-
 end

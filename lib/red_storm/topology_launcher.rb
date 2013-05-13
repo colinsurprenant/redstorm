@@ -8,12 +8,19 @@ end
 java_import 'backtype.storm.LocalCluster'
 java_import 'backtype.storm.StormSubmitter'
 java_import 'backtype.storm.topology.TopologyBuilder'
+java_import 'backtype.storm.coordination.BatchBoltExecutor'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'backtype.storm.tuple.Tuple'
 java_import 'backtype.storm.tuple.Values'
 
 java_import 'redstorm.storm.jruby.JRubyBolt'
 java_import 'redstorm.storm.jruby.JRubySpout'
+java_import 'redstorm.storm.jruby.JRubyBatchBolt'
+java_import 'redstorm.storm.jruby.JRubyBatchCommitterBolt'
+java_import 'redstorm.storm.jruby.JRubyBatchSpout'
+java_import 'redstorm.storm.jruby.JRubyTransactionalSpout'
+java_import 'redstorm.storm.jruby.JRubyTransactionalBolt'
+java_import 'redstorm.storm.jruby.JRubyTransactionalCommitterBolt'
 
 java_package 'redstorm'
 

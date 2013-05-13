@@ -11,18 +11,7 @@ require 'jruby/jrubyc'
 require 'red_storm'
 require 'red_storm/application'
 
-DEP_STORM_VERSION = "0.8.2"
-DEP_JRUBY_VERSION = "1.7.3"
 INSTALL_IVY_VERSION = "2.3.0"
-
-DEFAULT_DEPENDENCIES = {
-  :storm_artifacts => [
-    "storm:storm:#{DEP_STORM_VERSION}, transitive=true",
-  ],
-  :topology_artifacts => [
-    "org.jruby:jruby-complete:#{DEP_JRUBY_VERSION}, transitive=false",
-  ],
-}
 
 task :launch, :env, :ruby_mode, :class_file do |t, args|
   # use ruby mode parameter or default to current interpreter version

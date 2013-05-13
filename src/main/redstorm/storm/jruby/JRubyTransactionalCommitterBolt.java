@@ -15,8 +15,8 @@ import backtype.storm.transactional.ICommitter;
  * serialization at topology creation. 
  */
 public class JRubyTransactionalCommitterBolt extends JRubyTransactionalBolt implements ICommitter {
-  public JRubyTransactionalCommitterBolt(String baseClassPath, String realBoltClassName) {
-    super(baseClassPath, realBoltClassName);
+  public JRubyTransactionalCommitterBolt(String baseClassPath, String realBoltClassName, String[] fields) {
+    super(baseClassPath, realBoltClassName, fields);
   }
 
   private static IBatchBolt newProxyBolt(String baseClassPath, String realBoltClassName) {

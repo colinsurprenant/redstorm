@@ -2,12 +2,11 @@ package redstorm.storm.jruby;
 
 import backtype.storm.spout.SpoutOutputCollector;
 import backtype.storm.task.TopologyContext;
-
 import backtype.storm.topology.base.BaseTransactionalSpout;
-import backtype.storm.transactional.ITransactionalSpout;
-
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.transactional.ITransactionalSpout;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Fields;
 import java.util.Map;
 
 /**
@@ -24,6 +23,7 @@ public class JRubyTransactionalSpout extends BaseTransactionalSpout {
   ITransactionalSpout _proxySpout;
   String _realSpoutClassName;
   String _baseClassPath;
+  String[] _fields;
   
   /**
    * create a new JRubySpout
@@ -31,9 +31,10 @@ public class JRubyTransactionalSpout extends BaseTransactionalSpout {
    * @param baseClassPath the topology/project base JRuby class file path 
    * @param realSpoutClassName the fully qualified JRuby spout implementation class name
    */
-  public JRubyTransactionalSpout(String baseClassPath, String realSpoutClassName) {
+  public JRubyTransactionalSpout(String baseClassPath, String realSpoutClassName, String[] fields) {
     _baseClassPath = baseClassPath;
     _realSpoutClassName = realSpoutClassName;
+    _fields = fields;
   }
 
   @Override
@@ -46,7 +47,7 @@ public class JRubyTransactionalSpout extends BaseTransactionalSpout {
   }
 
   @Override
-  public Emitter getEmitter(Map conf, TopologyContext context) {
+  public ITransactionalSpout.Emitter getEmitter(Map conf, TopologyContext context) {
     // create instance of the jruby class here, after deserialization in the workers.
   	if (_proxySpout == null) {
       _proxySpout = newProxySpout(_baseClassPath, _realSpoutClassName);
@@ -59,8 +60,12 @@ public class JRubyTransactionalSpout extends BaseTransactionalSpout {
     // declareOutputFields is executed in the topology creation time before serialisation.
     // do not set the _proxySpout instance variable here to avoid JRuby serialization
     // issues. Just create tmp spout instance to call declareOutputFields.
-    ITransactionalSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
-    spout.declareOutputFields(declarer);
+    if (_fields.length > 0) {
+      declarer.declare(new Fields(_fields));
+    } else {
+      ITransactionalSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
+      spout.declareOutputFields(declarer);
+    }
   }  
 
   @Override

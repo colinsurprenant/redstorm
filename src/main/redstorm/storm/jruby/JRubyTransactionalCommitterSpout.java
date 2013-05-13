@@ -19,8 +19,8 @@ public class JRubyTransactionalCommitterSpout extends JRubyTransactionalSpout im
 
   ICommitterTransactionalSpout _proxySpout;
   
-  public JRubyTransactionalCommitterSpout(String baseClassPath, String realSpoutClassName) {
-    super(baseClassPath, realSpoutClassName);
+  public JRubyTransactionalCommitterSpout(String baseClassPath, String realSpoutClassName, String[] fields) {
+    super(baseClassPath, realSpoutClassName, fields);
   }
 
   @Override

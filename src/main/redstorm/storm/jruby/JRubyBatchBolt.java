@@ -7,6 +7,7 @@ import backtype.storm.coordination.BatchOutputCollector;
 import backtype.storm.coordination.IBatchBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
+import backtype.storm.tuple.Fields;
 import java.util.Map;
 
 /**
@@ -23,15 +24,18 @@ public class JRubyBatchBolt extends BaseBatchBolt {
   IBatchBolt _proxyBolt;
   String _realBoltClassName;
   String _baseClassPath; 
+  String[] _fields;
+
   /**
    * create a new JRubyBolt
    * 
    * @param baseClassPath the topology/project base JRuby class file path 
    * @param realBoltClassName the fully qualified JRuby bolt implementation class name
    */
-  public JRubyBatchBolt(String baseClassPath, String realBoltClassName) {
+  public JRubyBatchBolt(String baseClassPath, String realBoltClassName, String[] fields) {
     _baseClassPath = baseClassPath;
     _realBoltClassName = realBoltClassName;
+    _fields = fields;
   }
 
   @Override
@@ -56,8 +60,12 @@ public class JRubyBatchBolt extends BaseBatchBolt {
     // declareOutputFields is executed in the topology creation time, before serialisation.
     // do not set the _proxyBolt instance variable here to avoid JRuby serialization
     // issues. Just create tmp bolt instance to call declareOutputFields.
-    IBatchBolt bolt = newProxyBolt(_baseClassPath, _realBoltClassName);
-    bolt.declareOutputFields(declarer);
+    if (_fields.length > 0) {
+      declarer.declare(new Fields(_fields));
+    } else {
+      IBatchBolt bolt = newProxyBolt(_baseClassPath, _realBoltClassName);
+      bolt.declareOutputFields(declarer);
+    }
   }
 
   @Override

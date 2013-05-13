@@ -1,8 +1,7 @@
 begin
   require 'ant'
 rescue
-  puts("error: unable to load Ant, make sure Ant is installed, in your PATH")
-  puts("       and $ANT_HOME is defined properly.")
+  puts("error: unable to load Ant, make sure Ant is installed, in your PATH and $ANT_HOME is defined properly.")
   puts("\nerror detail:\n#{$!}")
   exit(1)
 end
@@ -206,8 +205,8 @@ def build_java_dir(source_folder)
     'srcdir' => source_folder,
     'destdir' => TARGET_CLASSES_DIR,
     'classpathref' => 'classpath', 
-    'source' => "1.6",
-    'target' => "1.6",
+    'source' => "1.7",
+    'target' => "1.7",
     'debug' => "yes",
     'includeantruntime' => "no",
     'verbose' => false,

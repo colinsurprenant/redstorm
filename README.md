@@ -1,4 +1,4 @@
-# RedStorm v0.6.4 - JRuby on Storm
+# RedStorm v0.6.5 - JRuby on Storm
 
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 
@@ -78,7 +78,7 @@ end
 
   ``` ruby
   source "https://rubygems.org"
-  gem "redstorm", "~> 0.6.4"
+  gem "redstorm", "~> 0.6.5"
   ```
 
 ## Usage overview

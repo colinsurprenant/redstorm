@@ -3,6 +3,5 @@
   <info organisation="redstorm" module="topology-deps"/>
   <dependencies>
     <dependency org="org.jruby" name="jruby-core" rev="1.7.3" conf="default" transitive="true"/>
-    <override org="org.yaml" module="snakeyaml" rev="1.9"/>
   </dependencies>
 </ivy-module>

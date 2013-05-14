@@ -1,5 +1,10 @@
 require 'java'
 
+# This hack get rif of the "Use RbConfig instead of obsolete and deprecated Config"
+# deprecation warning that is triggered by "java_import 'backtype.storm.Config'". 
+Object.send :remove_const, :Config
+Config = RbConfig
+
 # see https://github.com/colinsurprenant/redstorm/issues/7
 module Backtype
   java_import 'backtype.storm.Config'
@@ -46,6 +51,11 @@ class TopologyLauncher
     $:.unshift File.expand_path(launch_path + '/target/lib')
 
     require "#{class_path}"
+
+    if RedStorm::Configuration.topology_class.nil? || !RedStorm::Configuration.topology_class.method_defined?(:start)
+      puts("\nERROR: invalid topology class. make sure your topology class is a subclass of one of the DSL topology classes or that your class sets RedStorm::Configuration.topology_class and defines the start method\n\n")
+      exit(1)
+    end
 
     topology_name = RedStorm::Configuration.topology_class.respond_to?(:topology_name) ? "/#{RedStorm::Configuration.topology_class.topology_name}" : ''
     puts("RedStorm v#{RedStorm::VERSION} starting topology #{RedStorm::Configuration.topology_class.name}#{topology_name} in #{env.to_s} environment")

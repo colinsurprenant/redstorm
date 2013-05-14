@@ -1,0 +1,84 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# use version 2 config object
+Vagrant.configure("2") do |config|
+  config.ssh.forward_agent = true
+
+  config.vm.define :dev do |dev|
+    dev.vm.box = "quantal64-amd64"
+    dev.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/quantal/current/quantal-server-cloudimg-amd64-vagrant-disk1.box"
+
+    # storm ui
+    dev.vm.network :forwarded_port, :guest => 8080, :host => 8080
+
+    # storm numbus thrift
+    dev.vm.network :forwarded_port, :guest => 6627, :host => 6627
+
+    # redis
+    dev.vm.network :forwarded_port, :guest => 6379, :host => 6379
+
+    dev.vm.provider :virtualbox do |vb|
+      vb.customize ["modifyvm", :id, "--memory", 1536]
+    end
+
+    dev.vm.provision :chef_solo do |chef|
+      # chef.log_level = :debug
+
+      chef.cookbooks_path = ["./cookbooks"]
+      chef.roles_path = ["./roles"]
+      chef.data_bags_path = ["./databags"]
+
+      # setup users (from data_bags/users/*.json)
+      chef.add_recipe "users::sysadmins" # creates users and sysadmin group
+      chef.add_recipe "users::sysadmin_sudo" # adds %sysadmin group to sudoers
+
+      chef.add_recipe "ohai"
+      chef.add_recipe "apt"
+      chef.add_recipe "build-essential"
+      chef.add_recipe "git"
+      chef.add_recipe "redisio::install"
+      chef.add_recipe "redisio::enable"
+      chef.add_recipe "runit"
+      chef.add_recipe "java"
+      chef.add_recipe "storm::singlenode"
+   
+      # custom JSON attributes:
+      chef.json = {
+        :java => {
+          :oracle => {
+            "accept_oracle_download_terms" => true
+          },
+          :install_flavor => "openjdk",
+          :jdk_version => "7",
+        },
+
+        :stormproject => {
+          :nimbus => {
+            :host => "localhost",
+            :childopts => "-Xmx128m",
+          },
+          :supervisor => {
+            :hosts =>  ["localhost"],
+            :childopts => "-Xmx128m",
+          },
+          :worker => {
+            :childopts => "-Xmx128m",            
+          },
+          :ui => {
+            :childopts => "-Xmx128m",
+          },
+        },
+
+        :deployment => {
+          :user => "storm",
+          :group => "sysadmin",
+        },
+      }
+    end
+  end
+
+  # vagrant-omnibus plugin: auto install/upgrate chef
+  config.omnibus.chef_version = "10.18.2"
+
+end

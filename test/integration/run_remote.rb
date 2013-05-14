@@ -1,4 +1,4 @@
-require 'rubygems'
+require 'bundler/setup'
 
 begin
   # will work from gem, since lib dir is in gem require_paths
@@ -18,7 +18,7 @@ require 'redis'
 topology_class_path = ARGV[0]
 topology_class = topology_class_path.split("/").last
 
-@redis = Redis.new(:host => "stormcluster", :port => 6379)
+@redis = Redis.new(:host => "localhost", :port => 6379)
 @redis.del(topology_class)
 
 success, out = RedStorm::Application.subshell(RedStorm::Application.cluster_storm_command(topology_class_path))

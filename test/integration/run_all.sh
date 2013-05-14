@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TOPOLOGIES=test/topology/*.rb
-COMMANDS=("redstorm" "bin/redstorm" "bundle exec redstorm")
+COMMANDS=("redstorm" "bundle exec redstorm" "bin/redstorm" )
 REDSTORM=""
 
 export PATH="$PATH:./storm/bin"

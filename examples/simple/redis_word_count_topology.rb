@@ -1,9 +1,7 @@
-require 'rubygems'
 require 'red_storm'
-
+require 'examples/simple/word_count_bolt'
 require 'redis'
 require 'thread'
-require 'examples/simple/word_count_bolt'
 
 module RedStorm
   module Examples
@@ -46,14 +44,14 @@ module RedStorm
 
       configure do |env|
         debug true
-        set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
+        # set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
         case env
         when :local
           max_task_parallelism 3
         when :cluster
           max_task_parallelism 5
           num_workers 20
-          max_spout_pending(1000);
+          max_spout_pending(1000)
         end
       end
     end

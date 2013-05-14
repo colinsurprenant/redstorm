@@ -1,8 +1,7 @@
-require 'bundler/setup'
+require 'red_storm'
+require 'examples/native/word_count_bolt'
 require 'redis'
 require 'thread'
-require 'lib/red_storm'
-require 'examples/native/word_count_bolt'
 
 module RedStorm
   module Examples

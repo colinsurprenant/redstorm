@@ -1,8 +1,9 @@
-require 'red_storm'
 java_import 'storm.kafka.KafkaConfig'
 java_import 'storm.kafka.SpoutConfig'
 java_import 'storm.kafka.StringScheme'
 java_import 'storm.kafka.KafkaSpout'
+
+require 'red_storm'
 
 # the KafkaTopology obviously requires a Kafka server running, you can ajust the
 # host and port below. 

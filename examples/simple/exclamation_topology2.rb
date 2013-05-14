@@ -1,8 +1,9 @@
-java_import 'backtype.storm.testing.TestWordSpout'
-require 'red_storm'
-
 # this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt
 # and a locally defined ExclamationBolt
+
+java_import 'backtype.storm.testing.TestWordSpout'
+
+require 'red_storm'
 
 module RedStorm
   module Examples
@@ -12,9 +13,9 @@ module RedStorm
     end
 
     class ExclamationTopology2 < RedStorm::SimpleTopology
-      spout TestWordSpout, :parallelism => 10
+      spout TestWordSpout, :parallelism => 2
       
-      bolt ExclamationBolt, :parallelism => 3 do
+      bolt ExclamationBolt, :parallelism => 2 do
         source TestWordSpout, :shuffle
       end
       
@@ -24,13 +25,10 @@ module RedStorm
 
       configure do |env|
         debug true
-        set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
-        case env
-        when :local
-          max_task_parallelism 3
-        when :cluster
-          num_workers 20
-          max_spout_pending(1000);
+        max_task_parallelism 4
+        if env == :cluster
+          num_workers 4
+          max_spout_pending(1000)
         end
       end
 

@@ -1,3 +1,4 @@
+require 'red_storm'
 require 'examples/simple/random_sentence_spout'
 require 'examples/simple/split_sentence_bolt'
 require 'examples/simple/word_count_bolt'
@@ -5,25 +6,22 @@ require 'examples/simple/word_count_bolt'
 module RedStorm
   module Examples
     class WordCountTopology < SimpleTopology
-      spout RandomSentenceSpout, :parallelism => 5
+      spout RandomSentenceSpout, :parallelism => 2
       
-      bolt SplitSentenceBolt, :parallelism => 8 do
+      bolt SplitSentenceBolt, :parallelism => 2 do
         source RandomSentenceSpout, :shuffle
       end
       
-      bolt WordCountBolt, :parallelism => 12 do
+      bolt WordCountBolt, :parallelism => 2 do
         source SplitSentenceBolt, :fields => ["word"]
       end
 
       configure :word_count do |env|
         debug true
-        set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
-        case env
-        when :local
-          max_task_parallelism 3
-        when :cluster
-          num_workers 20
-          max_spout_pending(1000);
+        max_task_parallelism 4
+        if env == :cluster
+          num_workers 6
+          max_spout_pending(1000)
         end
       end
 

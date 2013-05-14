@@ -6,7 +6,13 @@ module RedStorm
   module Examples
     class VersionSpout < RedStorm::SimpleSpout
       output_fields :dummy
-      on_init {log.info("***************** RUBY_VERSION=#{RUBY_VERSION}")}
+      on_init do
+        log.info("***************** RUBY_VERSION=#{RUBY_VERSION}")
+        log.info("***************** JRUBY_VERSION=#{JRUBY_VERSION}")
+        log.info("***************** VERSION=#{VERSION}")
+        log.info("***************** RUBY_ENGINE=#{RUBY_ENGINE}")
+        log.info("***************** RUBY_PLATFORM=#{RUBY_PLATFORM}")
+      end
       on_send {}
     end
 

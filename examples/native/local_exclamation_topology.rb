@@ -1,6 +1,6 @@
 java_import 'backtype.storm.testing.TestWordSpout'
 
-require 'lib/red_storm'
+require 'red_storm'
 require 'examples/native/exclamation_bolt'
 
 # this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt
@@ -13,9 +13,9 @@ module RedStorm
       def start(base_class_path, env)
         builder = TopologyBuilder.new
 
-        builder.setSpout('TestWordSpout', TestWordSpout.new, 10)
-        builder.setBolt('ExclamationBolt1', JRubyBolt.new(base_class_path, 'RedStorm::Examples::ExclamationBolt', []), 3).shuffleGrouping('TestWordSpout')
-        builder.setBolt('ExclamationBolt2', JRubyBolt.new(base_class_path, 'RedStorm::Examples::ExclamationBolt', []), 3).shuffleGrouping('ExclamationBolt1')
+        builder.setSpout('TestWordSpout', TestWordSpout.new, 1)
+        builder.setBolt('ExclamationBolt1', JRubyBolt.new(base_class_path, 'RedStorm::Examples::ExclamationBolt', []), 2).shuffleGrouping('TestWordSpout')
+        builder.setBolt('ExclamationBolt2', JRubyBolt.new(base_class_path, 'RedStorm::Examples::ExclamationBolt', []), 2).shuffleGrouping('ExclamationBolt1')
 
         conf = Backtype::Config.new
         conf.setDebug(true)

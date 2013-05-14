@@ -1,0 +1,91 @@
+SITE
+  remote: http://community.opscode.com/api/v1
+  specs:
+    chef_handler (1.1.4)
+    dmg (1.1.0)
+    ulimit (0.2.0)
+    windows (1.8.10)
+      chef_handler (>= 0.0.0)
+    yum (2.2.0)
+
+GIT
+  remote: git://github.com/brianbianco/redisio.git
+  ref: master
+  sha: 4b9991591d7ad134dfbf5abeeb6e806a6f1d9aa8
+  specs:
+    redisio (1.5.0)
+      ulimit (>= 0.1.2)
+
+GIT
+  remote: git://github.com/dergachev/chef_users.git
+  ref: master
+  sha: ae22c825c3cb284a15729a20749184b3da910b51
+  specs:
+    users (1.1.4)
+
+GIT
+  remote: git://github.com/opscode-cookbooks/apt.git
+  ref: master
+  sha: 72d23842ad5997076711c7b2b25381078191df1c
+  specs:
+    apt (1.9.3)
+
+GIT
+  remote: git://github.com/opscode-cookbooks/build-essential.git
+  ref: master
+  sha: df4264aad07d706f3207cb1fe2bbfa03a0b82f31
+  specs:
+    build-essential (1.4.1)
+
+GIT
+  remote: git://github.com/opscode-cookbooks/git.git
+  ref: master
+  sha: 767b111a755ae05b22484fbb263992a97362e209
+  specs:
+    git (2.5.0)
+      build-essential (>= 0.0.0)
+      dmg (>= 0.0.0)
+      runit (>= 1.0)
+      windows (>= 0.0.0)
+      yum (>= 0.0.0)
+
+GIT
+  remote: git://github.com/opscode-cookbooks/java.git
+  ref: master
+  sha: 935da5b7263abac9d00d6069bd9c97fd01c3ce94
+  specs:
+    java (1.10.3)
+      windows (>= 0.0.0)
+
+GIT
+  remote: git://github.com/opscode-cookbooks/ohai.git
+  ref: master
+  sha: 631fcc820949f5cbf3db45437fb895e5e1856e97
+  specs:
+    ohai (1.1.8)
+
+GIT
+  remote: git://github.com/opscode-cookbooks/runit
+  ref: master
+  sha: 124e59194a1fca4563ed1a8dfd517808864a6b90
+  specs:
+    runit (1.1.4)
+      build-essential (>= 0.0.0)
+      yum (>= 0.0.0)
+
+PATH
+  remote: ../../storm-project-cookbook
+  specs:
+    storm (0.1.0)
+
+DEPENDENCIES
+  apt (>= 0)
+  build-essential (>= 0)
+  git (>= 0)
+  java (>= 0)
+  ohai (>= 0)
+  redisio (>= 0)
+  runit (>= 0)
+  storm (>= 0)
+  users (>= 0)
+

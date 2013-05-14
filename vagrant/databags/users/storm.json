@@ -1,0 +1,13 @@
+{
+  "groups": [
+    "sysadmin"
+  ],
+  "comment": "Storm User",
+  "password": "xxx",
+  "ssh_keys": [
+    "xxx"
+  ],
+  "id": "storm",
+  "shell": "/bin/bash"
+}
+

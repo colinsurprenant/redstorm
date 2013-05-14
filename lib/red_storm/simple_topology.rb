@@ -106,6 +106,7 @@ module RedStorm
 
     # def self.spout(spout_class, contructor_args = [], options = {}, &spout_block)
     def self.spout(spout_class, *args, &spout_block)
+      set_topology_class!
       options = args.last.is_a?(Hash) ? args.pop : {}
       contructor_args = !args.empty? ? args.pop : []
       spout_options = {:id => self.underscore(spout_class), :parallelism => DEFAULT_SPOUT_PARALLELISM}.merge(options)
@@ -117,6 +118,7 @@ module RedStorm
 
     # def self.bolt(bolt_class, contructor_args = [], options = {}, &bolt_block)
     def self.bolt(bolt_class, *args, &bolt_block)
+      set_topology_class!
       options = args.last.is_a?(Hash) ? args.pop : {}
       contructor_args = !args.empty? ? args.pop : []
       bolt_options = {:id => self.underscore(bolt_class), :parallelism => DEFAULT_BOLT_PARALLELISM}.merge(options)
@@ -127,14 +129,8 @@ module RedStorm
       self.components << bolt
     end
 
-    # hook into the class lifecycle "inherited" method to automatically set the 
-    # topology class into the Configuration object.
-    # this now makes the topology configure block optional.
-    def self.inherited(subclass) 
-      Configuration.topology_class = subclass
-    end
-
     def self.configure(name = nil, &configure_block)
+      set_topology_class!
       @topology_name = name.to_s if name
       @configure_block = configure_block if block_given?
     end
@@ -171,6 +167,14 @@ module RedStorm
     end
 
     private
+
+    # this is a quirk to figure out the topology class at load time when the topology file
+    # is required in the TopologyLauncher. Since we want to make the "configure" DSL statement 
+    # optional we can hook into any/all the other DSL statements that will be called at load time
+    # and set it there. This is somewhat inelegant but it works. 
+    def self.set_topology_class!
+      Configuration.topology_class = self
+    end
 
     def self.resolve_ids!(components)
       # verify duplicate implicit ids

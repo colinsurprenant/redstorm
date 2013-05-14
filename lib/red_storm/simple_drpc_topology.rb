@@ -13,11 +13,10 @@ module RedStorm
     end
 
     def grouping(grouping)
-      @grouping = @grouping
+      @grouping = grouping
     end
 
     def define_grouping(declarer)
-
       case @grouping
       when :fields
         declarer.fieldsGrouping(Fields.new(*([params].flatten.map(&:to_s))))
@@ -73,6 +72,7 @@ module RedStorm
     end
 
     def self.input_bolt(bolt_class, *args, &bolt_block)
+      set_topology_class!
       options = args.last.is_a?(Hash) ? args.pop : {}
       contructor_args = !args.empty? ? args.pop : []
       bolt_options = {:id => self.underscore(bolt_class), :parallelism => DEFAULT_BOLT_PARALLELISM}.merge(options)

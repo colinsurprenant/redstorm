@@ -72,3 +72,12 @@
 - issue #47, Log4j Logger class conflict
 - issue #48, add support for external Jars
 - issue #50, update RedStorm to target Storm 0.8
+
+# 0.6.5, 05-13-2013
+- Storm 0.8.2 and JRuby 1.7.3
+- added vagrant/chef configurations for single node Storm cluster test environment
+- issue #52 - transactional topologies
+- issue #56 - make topology class configure statement optional
+- issue #57 - DRPC topologies
+- issue #73, external jars dependencies Ivy configurations completely externalized and configurable
+- lots of other [bug fixes and improvements](https://github.com/colinsurprenant/redstorm/issues?milestone=9&page=1&state=closed)

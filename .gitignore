@@ -15,4 +15,5 @@
 /vagrant/.ruby-version
 /vagrant/tmp
 /vagrant/vendor
+/vagrant/.vagrant
 /vendor

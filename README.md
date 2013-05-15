@@ -14,57 +14,11 @@ Chances are new versions of RedStorm will introduce changes that will break comp
 - [RedStorm Gem v0.5.0 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.0-Documentation)
 - [RedStorm Gem v0.5.1 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.1-Documentation)
 - [RedStorm Gem v0.6.3 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.3-Documentation)
+- [RedStorm Gem v0.6.4 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.4-Documentation)
 
 ## Dependencies
 
-Tested on **OSX 10.8.2** and **Ubuntu Linux 12.04** using **Storm 0.8.1** and **JRuby 1.6.8** and **OpenJDK 7**
-
-## Notes about 1.8/1.9 JRuby compatibility
-
-Up until the upcoming JRuby 1.7, JRuby runs in 1.8 Ruby compatibility mode by default. Unless you have a specific need to run topologies in 1.8 mode, you should use 1.9 mode, which will become the default in JRuby. 
-
-There are two ways to have JRuby 1.6.x run in 1.9 mode by default:
-- by setting the JRUBY_OPTS env variable
-
-  ``` sh
-  $ export JRUBY_OPTS=--1.9
-  ```
-- by installing JRuby using RVM with 1.9 mode by default
-
-  ``` sh
-  $ rvm install jruby --1.9
-  ```
-
-Otherwise, to manually choose the JRuby compatibility mode, this JRuby syntax can be used 
-
-``` sh
-$ jruby --1.9 -S redstorm ...
-```
-
-By defaut, a topology will be executed in the **same mode** as the interpreter running the `$ redstorm` command. You can force RedStorm to choose a specific JRuby compatibility mode using the [--1.8|--1.9] parameter for the topology execution in local or remote cluster.
-
-``` sh
-$ redstorm local|cluster [--1.8|--1.9] ...
-```
-
-If you are **not using the DSL** and only using the proxy classes (like in `examples/native`) you will need to manually set the JRuby version in the Storm `Backtype::Config` object like this:
-
-``` ruby
-class SomeTopology
-  RedStorm::Configuration.topology_class = self
-
-  def start(base_class_path, env)
-    builder = TopologyBuilder.new
-    builder.setSpout ...
-    builder.setBolt ...
-
-    conf = Backtype::Config.new
-    conf.put("topology.worker.childopts", "-Djruby.compat.version=RUBY1_9")
-
-    StormSubmitter.submitTopology("some_topology", conf, builder.createTopology);
-  end
-end
-```
+Tested on **OSX 10.8.3** and **Ubuntu Linux 12.10** using **Storm 0.8.2** and **JRuby 1.7.3** and **OpenJDK 7**
 
 ## Installation
 
@@ -81,13 +35,23 @@ end
   gem "redstorm", "~> 0.6.5"
   ```
 
-## Usage overview
+## Usage
 
-- create a project directory.
-- install the [RedStorm gem](http://rubygems.org/gems/redstorm).
-- create a subdirectory for your topology code.
-- perform the initial setup as described below to build and install dependencies.
-- run your topology in local mode and/or on a remote cluster as described below.
+### Overview
+
+- create a project directory
+- install the [RedStorm gem](http://rubygems.org/gems/redstorm)
+- create a subdirectory for your topology code
+- perform the initial setup as to build and install dependencies
+
+  ``` sh
+  $ redstorm install
+  ```
+- run your topology in local mode
+
+  ``` sh
+  $ redstorm local <path/to/topology_class_file_name.rb>
+  ```
 
 ### Initial setup
 
@@ -95,32 +59,49 @@ end
 $ redstorm install
 ```
 
-or if your default JRuby mode is 1.8 but you want to use 1.9 for your topology development, use
-
-``` sh
-$ jruby --1.9 -S redstorm install
-```
-
-This will basically install default Java jar dependencies in `target/dependency`, generate & compile the Java bindings in `target/classes`.
+This will install default Java jar dependencies in `target/dependency`, generate & compile the Java bindings in `target/classes`.
 
 ### Create a topology
 
 Create a subdirectory for your topology code and create your topology class **using this naming convention**: *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
 
+Here's an example [hello_world_topology.rb](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/hello_world_topology.rb)
+
+``` ruby
+require 'red_storm'
+
+class HelloWorldSpout < RedStorm::SimpleSpout
+  on_init {@words = ["hello", "world"]}
+  on_send {@words.shift unless @words.empty?}
+end
+
+class HelloWorldBolt < RedStorm::SimpleBolt
+  on_receive :emit => false do |tuple|
+    log.info(tuple.getString(0))
+  end
+end
+
+class HelloWorldTopology < RedStorm::SimpleTopology
+  spout HelloWorldSpout do
+    output_fields :word
+  end
+
+  bolt HelloWorldBolt do
+    source HelloWorldSpout, :global
+  end        
+end
+```
+
 ### Gems in your topology
 
-RedStorm requires [Bundler](http://gembundler.com/) **if gems are needed** in your topology. Basically supply a `Gemfile` in the root of your project directory with the gems required in your topology. If you are using Bundler also for other gems than those required in the topology **you should** group the topology gems in a Bunder group of your choice.
+RedStorm requires [Bundler](http://gembundler.com/) if gems are needed **in your topology**. Supply a `Gemfile` in the root of your project directory with the gems required in your topology. If you are using Bundler also for other gems than those required in the topology **you should** group the topology gems in a Bunder group of your choice.
+
+Note that bundler is only used to help package the gems **prior** to running a topology. Your topology code should **not** use Bundler. With `require "red_storm"` in your topology class file, RedStorm will take care of setting the gems path. Do **not** `require 'bundler/setup'` in the topology.
 
 1. have Bundler install the gems locally
 
   ``` sh
   $ bundle install
-  ```
-
-  or if your default JRuby mode is 1.8 but you want to use 1.9 for your topology development, use
-
-  ``` sh
-  $ jruby --1.9 -S bundle install
   ```
 
 2. copy the topology gems into the `target/gems` directory
@@ -129,65 +110,79 @@ RedStorm requires [Bundler](http://gembundler.com/) **if gems are needed** in yo
   $ redstorm bundle [BUNDLER_GROUP]
   ```
 
-Basically, the `redstorm bundle` command copy the gems specified in the Gemfile (in a specific group if specified) into the `target/gems` directory. In order for the topology to run in a Storm cluster, the fully *installed* gems must be packaged and self-contained into a single jar file. This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the jar file. This **could lead to problems** if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have **C or FFI** extensions.
+3. make sure your topology class has `require "red_storm"` 
 
-####IMPORTANT####
+  ```ruby
+  require 'red_storm'
+  ```
 
-Do **not** `require 'bundler/setup'` in the topology. Instead **you need** to require red_storm:
-```ruby
-require 'red_storm'
-```
+The `redstorm bundle` command copy the gems specified in the Gemfile (in a specific group if specified) into the `target/gems` directory. In order for the topology to run in a Storm cluster, the fully *installed* gems must be packaged and self-contained into a single jar file. This has an important consequence: the gems will not be *installed* on the cluster target machines, they are already *installed* in the jar file. This **could lead to problems** if the machine used to *install* the gems is of a different architecture than the cluster target machines **and** some of these gems have **C or FFI** extensions.
 
+### Custom Jar dependencies in your topology (XML Warning! :P)
 
-### Custom Jar dependencies in your topology
+By defaut, RedStorm installs Storm and JRuby jars dependencies into `target/dependency`. RedStorm uses [Ivy](https://ant.apache.org/ivy/) 2.3 to manage dependencies. You can fully control and customize these dependencies. 
 
-By defaut, RedStorm installs Storm and JRuby jars dependencies. If you require custom dependencies, these can be specified by creating the `Dependencies` file in the root of your project. Note that this file overwrites the defaults dependencies so you must also include the Storm and JRuby dependencies. Here's an example of a `Dependencies` file which included the jars required to run the `KafkaTopology` in the examples.
+There are two distinct sets of dependencies: the `storm` dependencies manages the requirements (Storm jars) for the Storm **local mode** runtime. The `topology` dependencies manages the requirements (JRuby jars) for the **topology** runtime.
 
-``` ruby
-{
-  :storm_artifacts => [
-    "storm:storm:0.8.1, transitive=true",
-  ],
-  :topology_artifacts => [
-    "org.jruby:jruby-complete:1.6.8, transitive=false",
-    "org.scala-lang:scala-library:2.8.0, transitive=false",
-    "storm:kafka:0.7.0-incubating, transitive=false",
-    "storm:storm-kafka:0.8.0-wip4, transitive=false",
-  ],
-}
-```
+You can supply custom `storm` and `topology` dependencies by creating `ivy/storm_dependencies.xml` and `ivy/topology_dependencies.xml` files. Below are the current default content for these files:
 
-Basically the dependendencies are speified as Maven artifacts. There are two sections, the `:storm_artifacts =>` contains the dependencies for running storm in local mode and the `:topology_artifacts =>` are the dependencies specific for your topology. The format is self explainatory and the attribute `transitive=[true|false]` controls the recursive dependencies resolution (using `true`).
+- `ivy/storm_dependencies.xml`
 
-The jars repositories can be configured by adding the `ivy/settings.xml` file in the root of your project. For information on the Ivy settings format, see the [Ivy Settings Documentation](http://ant.apache.org/ivy/history/2.2.0/settings.html). I will try my best to eliminate all XML :) but for now I haven't figured how to get rid of this one. For an example Ivy settings file, RedStorm is using the following settings by default:
+  ``` xml
+  <?xml version="1.0"?>
+  <ivy-module version="2.0">
+    <info organisation="redstorm" module="storm-deps"/>
+    <dependencies>
+      <dependency org="storm" name="storm" rev="0.8.2" conf="default" transitive="true" />
+      <override org="org.slf4j" module="slf4j-log4j12" rev="1.6.3"/>
+    </dependencies>
+  </ivy-module>
+  ```
 
-``` xml
-<ivysettings>
-  <settings defaultResolver="repositories"/>
-  <resolvers>
-    <chain name="repositories">
-      <ibiblio name="ibiblio" m2compatible="true"/>
-      <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
-      <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
-      <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/> 
-    </chain>
-  </resolvers>
-</ivysettings>
-```
+- `ivy/topology_dependencies.xml`
+
+  ``` xml
+  <?xml version="1.0"?>
+  <ivy-module version="2.0">
+    <info organisation="redstorm" module="topology-deps"/>
+    <dependencies>
+      <dependency org="org.jruby" name="jruby-core" rev="1.7.3" conf="default" transitive="true"/>
+    </dependencies>
+  </ivy-module>
+  ```
+
+The jars repositories can be configured by adding the `ivy/settings.xml` file in the root of your project. For information on the Ivy settings format, see the [Ivy Settings Documentation](http://ant.apache.org/ivy/history/2.3.0/settings.html). Below is the current default:
+
+- `ivy/settings.xml`
+
+  ``` xml
+  <?xml version="1.0"?>
+  <ivysettings>
+    <settings defaultResolver="repositories"/>
+    <resolvers>
+      <chain name="repositories">
+        <ibiblio name="ibiblio" m2compatible="true"/>
+        <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
+        <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
+        <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/> 
+      </chain>
+    </resolvers>
+  </ivysettings>
+  ```
 
 ### Run in local mode
 
 ``` sh
-$ redstorm local [--1.8|--1.9]  <path/to/topology_class_file_name.rb>
+$ redstorm local <path/to/topology_class_file_name.rb>
 ```
-
-By defaut, a topology will be executed in the **same mode** as the interpreter running the `$ redstorm` command. You can force RedStorm to choose a specific JRuby compatibility mode using the [--1.8|--1.9] parameter for the topology execution in local or remote cluster.
 
 **See examples below** to run examples in local mode or on a production cluster.
 
 ### Run on production cluster
 
-1. download and unpack the [Storm 0.8.1 distribution](https://github.com/downloads/nathanmarz/storm/storm-0.8.1.zip) locally and **add** the Storm `bin/` directory to your `$PATH`.
+The Storm distribution is currently required for the cluster topology submission.
+
+1. download and unpack the [Storm 0.8.2 distribution](https://dl.dropbox.com/u/133901206/storm-0.8.2.zip) locally and **add** the Storm `bin/` directory to your `$PATH`.
 
 2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
 
@@ -198,10 +193,8 @@ By defaut, a topology will be executed in the **same mode** as the interpreter r
 3. submit the cluster topology jar file to the cluster
 
   ``` sh
-  $ redstorm cluster [--1.8|--1.9]  <path/to/topology_class_file_name.rb>
+  $ redstorm cluster <sources_directory/topology_class_file_name.rb>
   ```
-
-  By defaut, a topology will be executed in the **same mode** as the interpreter running the `$ redstorm` command. You can force RedStorm to choose a specific JRuby compatibility mode using the [--1.8|--1.9] parameter for the topology execution in local or remote cluster.
 
 The [Storm wiki](https://github.com/nathanmarz/storm/wiki) has instructions on [setting up a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster). You can also [manually submit your topology](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
 
@@ -213,7 +206,7 @@ Install the [example files](https://github.com/colinsurprenant/redstorm/tree/mas
 $ redstorm examples
 ```
 
-All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
+All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
 
 ### Local mode
 
@@ -235,7 +228,7 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
   source "https://rubygems.org"
 
   group :word_count do
-    gem "redis"
+      gem "redis"
   end
   ```
 
@@ -256,7 +249,7 @@ Using `redis-cli` push words into the `test` list and watch Storm pick them up
 
 ### Remote cluster
 
-All examples using the [simple DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) can run in both local or on a remote cluster. The only **native** example compatible with a remote cluster is `examples/native/cluster_word_count_topology.rb`.
+All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) can run in both local or on a remote cluster. The only **native** example compatible with a remote cluster is `examples/native/cluster_word_count_topology.rb`.
 
 
 #### Topologies without gems 
@@ -286,7 +279,7 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
   source "https://rubygems.org"
 
   group :word_count do
-    gem "redis"
+      gem "redis"
   end
   ```
 
@@ -336,13 +329,17 @@ end
 
 See the [shell topology example](https://github.com/colinsurprenant/redstorm/tree/master/examples/shell)
 
+## Transactional and LinearDRPC Topologies
+
+Despite the fact that both transactional and linear DRPC topologies are now [deprecated as of Storm 0.8.1](https://github.com/nathanmarz/storm/blob/master/CHANGELOG.md) work on these has been merged in RedStorm 0.6.5. Lots of the work done on this is required toward Storm Trident topologies. Documentation and examples for transactional and linear DRPC topologies will be added shorty.
+
 ## RedStorm Development
 
 It is possible to fork the RedStorm project and run local and remote/cluster topologies directly from the project sources without installing the gem. This is a useful setup when contributing to the project.
 
 ### Requirements
 
-- JRuby 1.6.8
+- JRuby 1.7.3
 
 ### Workflow
 
@@ -357,18 +354,69 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 - install dependencies in `target/dependencies`
 
   ```sh
-  $ bin/redstorm deps
+  $ bundle exec redstorm deps
   ```
 
 - generate and build Java source into `target/classes`
 
   ```sh
-  $ bin/redstorm build
+  $ bundle exec redstorm build
   ```
 
   **if you modify any of the RedStorm Ruby code or Java binding code**, you need to run this to refresh code and rebuild the bindings
 
 - follow the normal usage patterns to run the topology in local or remote cluster.
+
+  ```sh
+  $ bundle exec redstorm bundle ...
+  $ bundle exec redstorm local ...
+  $ bundle exec redstorm jar ...
+  $ bundle exec redstorm cluster ...
+  ```
+
+
+## Notes about 1.8/1.9 JRuby compatibility
+
+Ruby 1.9 is the default runtime mode in JRuby 1.7.x
+
+If you require Ruby 1.8 support, there are two ways to have JRuby run in 1.8 runtime mode:
+
+- by setting the JRUBY_OPTS env variable
+
+  ``` sh
+  $ export JRUBY_OPTS=--1.8
+  ```
+
+- by using the --1.8 option 
+
+  ``` sh
+  $ jruby --1.8 -S redstorm ...
+  ```
+
+By defaut, a topology will be executed in the **same mode** as the interpreter running the `$ redstorm` command. You can force RedStorm to choose a specific JRuby compatibility mode using the [--1.8|--1.9] parameter for the topology execution in local or remote cluster.
+
+``` sh
+$ redstorm local|cluster [--1.8|--1.9] ...
+```
+
+If you are **not using the DSL** and only using the proxy classes (like in `examples/native`) you will need to manually set the JRuby version in the Storm `Backtype::Config` object like this:
+
+``` ruby
+class SomeTopology
+  RedStorm::Configuration.topology_class = self
+
+  def start(base_class_path, env)
+    builder = TopologyBuilder.new
+    builder.setSpout ...
+    builder.setBolt ...
+
+    conf = Backtype::Config.new
+    conf.put("topology.worker.childopts", "-Djruby.compat.version=RUBY1_8")
+
+    StormSubmitter.submitTopology("some_topology", conf, builder.createTopology);
+  end
+end
+```
 
 ### How to Contribute
 
@@ -391,10 +439,15 @@ If you want to list your RedStorm project here, contact me.
 - [Tweigeist](https://github.com/colinsurprenant/tweitgeist) - realtime computation of the top trending hashtags on Twitter. See [Live Demo](http://tweitgeist.colinsurprenant.com/).
 
 ## Author
-***Colin Surprenant***, [@colinsurprenant](http://twitter.com/colinsurprenant/), [http://github.com/colinsurprenant/](http://github.com/colinsurprenant/), colin.surprenant@gmail.com, [http://colinsurprenant.com/](http://colinsurprenant.com/)
+**Colin Surprenant**, http://github.com/colinsurprenant/, [@colinsurprenant](http://twitter.com/colinsurprenant/), colin.surprenant@gmail.com, http://colinsurprenant.com/
 
 ## Contributors
-Theo Hultberg, https://github.com/iconara
+- Theo Hultberg, https://github.com/iconara
+- Paul Bergeron, https://github.com/dinedal
+- Phil Pirozhkov, https://github.com/pirj
+- Evan Broderm, https://github.com/ebroder
+- Shay Elkin, https://github.com/shayel
+- adsummos, https://github.com/adsummos
 
 ## License
 Apache License, Version 2.0. See the LICENSE.md file.

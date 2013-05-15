@@ -374,6 +374,9 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
   $ bundle exec redstorm cluster ...
   ```
 
+### Remote cluster testing
+
+Vagrant & Chef configuration to create a single node test Storm cluster is available in https://github.com/colinsurprenant/redstorm/tree/master/vagrant/
 
 ## Notes about 1.8/1.9 JRuby compatibility
 
@@ -418,7 +421,7 @@ class SomeTopology
 end
 ```
 
-### How to Contribute
+### How to contribute
 
 Fork the project, create a branch and submit a pull request.
 

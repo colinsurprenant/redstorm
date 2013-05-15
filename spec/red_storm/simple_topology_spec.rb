@@ -32,9 +32,29 @@ describe RedStorm::SimpleTopology do
     Topology1.topology_name.should == "topology1"
   end
 
-  it "should set topology class in Configuration object" do
-    class UnconfiguredTopology < RedStorm::SimpleTopology; end
-    RedStorm::Configuration.topology_class.name.should == "UnconfiguredTopology"
+  it "should set topology class in Configuration object upon configure statement" do
+    RedStorm::Configuration.topology_class = nil
+    class Topology1 < RedStorm::SimpleTopology
+      configure {}
+    end
+    RedStorm::Configuration.topology_class.name.should == "Topology1"
+  end
+
+  it "should set topology class in Configuration object upon spout statement" do
+    RedStorm::Configuration.topology_class = nil
+    class Topology1 < RedStorm::SimpleTopology
+      spout SpoutClass1
+    end
+    RedStorm::Configuration.topology_class.name.should == "Topology1"
+  end
+
+  it "should set topology class in Configuration object upon bolt statement" do
+    RedStorm::Configuration.topology_class = nil
+    class Topology1 < RedStorm::SimpleTopology
+      bolt BoltClass1 do
+      end
+    end
+    RedStorm::Configuration.topology_class.name.should == "Topology1"
   end
 
   describe "interface" do

@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
  
   s.rubyforge_project = 'redstorm'
   
-  s.files         = Dir.glob("{lib/**/*}") + Dir.glob("{ivy/*.xml}") + Dir.glob("{examples/**/*}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(Rakefile README.md CHANGELOG.md LICENSE.md)
+  s.files         = Dir.glob("{lib/**/*}") + Dir.glob("{ivy/*.xml}") + Dir.glob("{examples/**/*}") + Dir.glob("{src/**/*.java}") + Dir.glob("{bin/**/*}") + %w(redstorm.gemspec Rakefile README.md CHANGELOG.md LICENSE.md)
   s.require_paths = ['lib']
   s.bindir        = 'bin'
   s.executables   = ['redstorm']

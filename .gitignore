@@ -9,3 +9,10 @@
 /redstorm.wiki
 /Dependencies
 /ivy/ivy-*.jar
+/vagrant/cookbooks
+/.ruby-version
+/vagrant/.bundle
+/vagrant/.ruby-version
+/vagrant/tmp
+/vagrant/vendor
+/vendor

@@ -19,6 +19,6 @@ Gem::Specification.new do |s|
   s.bindir        = 'bin'
   s.executables   = ['redstorm']
 
-  s.add_development_dependency 'rspec', '~> 2.12.0'
+  s.add_development_dependency 'rspec', '~> 2.11.0'
   s.add_runtime_dependency 'rake'
 end

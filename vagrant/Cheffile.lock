@@ -17,6 +17,13 @@ GIT
       ulimit (>= 0.1.2)
 
 GIT
+  remote: git://github.com/colinsurprenant/storm-project-cookbook.git
+  ref: master
+  sha: 296b9ad9c78bb9cf4cecd8213fe8eca524307fb1
+  specs:
+    storm (0.2.0)
+
+GIT
   remote: git://github.com/dergachev/chef_users.git
   ref: master
   sha: ae22c825c3cb284a15729a20749184b3da910b51
@@ -52,9 +59,9 @@ GIT
 GIT
   remote: git://github.com/opscode-cookbooks/java.git
   ref: master
-  sha: 935da5b7263abac9d00d6069bd9c97fd01c3ce94
+  sha: 5f18e789f1ca42302ed01fa0a3c63ae94221cc4a
   specs:
-    java (1.10.3)
+    java (1.11.3)
       windows (>= 0.0.0)
 
 GIT
@@ -65,18 +72,13 @@ GIT
     ohai (1.1.8)
 
 GIT
-  remote: git://github.com/opscode-cookbooks/runit
+  remote: git://github.com/opscode-cookbooks/runit.git
   ref: master
   sha: 124e59194a1fca4563ed1a8dfd517808864a6b90
   specs:
     runit (1.1.4)
       build-essential (>= 0.0.0)
       yum (>= 0.0.0)
-
-PATH
-  remote: ../../storm-project-cookbook
-  specs:
-    storm (0.1.0)
 
 DEPENDENCIES
   apt (>= 0)

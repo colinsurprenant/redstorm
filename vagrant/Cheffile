@@ -11,5 +11,5 @@ cookbook 'build-essential', :git => 'git://github.com/opscode-cookbooks/build-es
 cookbook 'git', :git => 'git://github.com/opscode-cookbooks/git.git'
 cookbook 'redisio', :git => 'git://github.com/brianbianco/redisio.git'
 cookbook 'java', :git => 'git://github.com/opscode-cookbooks/java.git'
-cookbook 'runit', :git => 'git://github.com/opscode-cookbooks/runit'
-cookbook 'storm', :path => '../../storm-project-cookbook'
+cookbook 'runit', :git => 'git://github.com/opscode-cookbooks/runit.git'
+cookbook 'storm', :git => 'git://github.com/colinsurprenant/storm-project-cookbook.git'

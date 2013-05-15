@@ -329,10 +329,32 @@ end
 
 See the [shell topology example](https://github.com/colinsurprenant/redstorm/tree/master/examples/shell)
 
-## Transactional and LinearDRPC Topologies
+## Transactional and LinearDRPC topologies
 
 Despite the fact that both transactional and linear DRPC topologies are now [deprecated as of Storm 0.8.1](https://github.com/nathanmarz/storm/blob/master/CHANGELOG.md) work on these has been merged in RedStorm 0.6.5. Lots of the work done on this is required toward Storm Trident topologies. Documentation and examples for transactional and linear DRPC topologies will be added shorty.
 
+## Known issues
+
+- SnakeYAML conflict between Storm and JRuby
+
+  See [issue](https://github.com/colinsurprenant/redstorm/issues/78). This is a classic Java world jar conflict. Storm 0.8.2 uses snakeyaml 1.9 and JRuby 1.7.3 uses snakeyaml 1.11. If you try to use YAML serialization in your topology it will crash with an exception. This problem is easy to solve when running topologies in **local** mode, simply override in the storm dependencies with the correct jar version. You can do this be creating a custom storm dependencies:
+
+  - `ivy/storm_dependencies.xml`
+
+    ``` xml
+    <?xml version="1.0"?>
+    <ivy-module version="2.0">
+      <info organisation="redstorm" module="storm-deps"/>
+      <dependencies>
+        <dependency org="storm" name="storm" rev="0.8.2" conf="default" transitive="true" />
+        <override org="org.slf4j" module="slf4j-log4j12" rev="1.6.3"/>
+        <override org="org.yaml" module="snakeyaml" rev="1.11"/>
+      </dependencies>
+    </ivy-module>
+    ```
+
+  In remote **cluster** mode you will have to update snakeyaml manually or with your favorite deployment/provisioning tool.
+            
 ## RedStorm Development
 
 It is possible to fork the RedStorm project and run local and remote/cluster topologies directly from the project sources without installing the gem. This is a useful setup when contributing to the project.

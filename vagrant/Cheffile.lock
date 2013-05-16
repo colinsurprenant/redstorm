@@ -17,7 +17,7 @@ GIT
       ulimit (>= 0.1.2)
 
 GIT
-  remote: git://github.com/colinsurprenant/storm-project-cookbook.git
+  remote: git://github.com/colinsurprenant/storm-cookbook.git
   ref: master
   sha: 296b9ad9c78bb9cf4cecd8213fe8eca524307fb1
   specs:
@@ -59,9 +59,9 @@ GIT
 GIT
   remote: git://github.com/opscode-cookbooks/java.git
   ref: master
-  sha: 5f18e789f1ca42302ed01fa0a3c63ae94221cc4a
+  sha: 50fc41a16bdb2c9df35ad23d0296b32372cfbc0a
   specs:
-    java (1.11.3)
+    java (1.11.5)
       windows (>= 0.0.0)
 
 GIT

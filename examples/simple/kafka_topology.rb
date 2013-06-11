@@ -6,22 +6,21 @@ java_import 'storm.kafka.KafkaSpout'
 require 'red_storm'
 
 # the KafkaTopology obviously requires a Kafka server running, you can ajust the
-# host and port below. 
+# host and port below.
 #
 # custom dependencies are required for the Kafka and Scala jars. put the following
-# dependencies in the "Dependencies" file in the root of your RedStorm project:
+# dependencies in the "ivy/topology_dependencies.xml" file in the root of your RedStorm project:
 #
-# {
-#   :storm_artifacts => [
-#     "storm:storm:0.8.1, transitive=true",
-#   ],
-#   :topology_artifacts => [
-#     "org.jruby:jruby-complete:1.6.8, transitive=false",
-#     "org.scala-lang:scala-library:2.8.0, transitive=false",
-#     "storm:kafka:0.7.0-incubating, transitive=false",
-#     "storm:storm-kafka:0.8.0-wip4, transitive=false",
-#   ],
-# }
+# <?xml version="1.0"?>
+# <ivy-module version="2.0">
+#   <info organisation="redstorm" module="topology-deps"/>
+#   <dependencies>
+#     <dependency org="org.jruby" name="jruby-core" rev="1.7.3" conf="default" transitive="true"/>
+#     <dependency org="org.scala-lang" name="scala-library" rev="2.8.0" conf="default" transitive="false"/>
+#     <dependency org="storm" name="kafka" rev="0.7.0-incubating" conf="default" transitive="false"/>
+#     <dependency org="storm" name="storm-kafka" rev="0.8.0-wip4" conf="default" transitive="false"/>
+#   </dependencies>
+# </ivy-module>
 
 class KafkaTopology < RedStorm::SimpleTopology
   spout_config = SpoutConfig.new(
@@ -37,7 +36,7 @@ class KafkaTopology < RedStorm::SimpleTopology
   end
 
   spout KafkaSpout, [spout_config]
-      
+
   bolt SplitStringBolt do
     output_fields :word
     source KafkaSpout, :shuffle

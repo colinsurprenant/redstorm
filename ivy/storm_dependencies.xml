@@ -2,7 +2,7 @@
 <ivy-module version="2.0">
   <info organisation="redstorm" module="storm-deps"/>
   <dependencies>
-    <dependency org="storm" name="storm" rev="0.8.2" conf="default" transitive="true" />
+    <dependency org="storm" name="storm" rev="0.9.0-wip16" conf="default" transitive="true" />
     <override org="org.slf4j" module="slf4j-log4j12" rev="1.6.3"/>
   </dependencies>
 </ivy-module>

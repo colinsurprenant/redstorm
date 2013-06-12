@@ -1,6 +1,17 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+$ADD_SWAP  = <<SCRIPT
+  if [ ! -f /swapfile1 ]; then
+    echo "Creating swap file. This could take a while..."
+    dd if=/dev/zero of=/swapfile1 bs=1024 count=262144
+    mkswap /swapfile1
+    chmod 0600 /swapfile1
+    swapon /swapfile1
+    echo "/swapfile1 swap swap defaults 0 0" >> /etc/fstab
+  fi
+SCRIPT
+
 # use version 2 config object
 Vagrant.configure("2") do |config|
   config.ssh.forward_agent = true
@@ -22,6 +33,8 @@ Vagrant.configure("2") do |config|
       vb.customize ["modifyvm", :id, "--memory", 1536]
     end
 
+    dev.vm.provision :shell, :inline => $ADD_SWAP
+
     dev.vm.provision :chef_solo do |chef|
       # chef.log_level = :debug
 
@@ -42,7 +55,7 @@ Vagrant.configure("2") do |config|
       chef.add_recipe "runit"
       chef.add_recipe "java"
       chef.add_recipe "storm::singlenode"
-   
+
       # custom JSON attributes:
       chef.json = {
         :java => {
@@ -54,6 +67,8 @@ Vagrant.configure("2") do |config|
         },
 
         :storm => {
+          :version => "0.9.0-wip16",
+
           :deploy => {
             :user => "storm",
             :group => "storm",
@@ -67,7 +82,7 @@ Vagrant.configure("2") do |config|
             :childopts => "-Xmx128m",
           },
           :worker => {
-            :childopts => "-Xmx128m",            
+            :childopts => "-Xmx128m",
           },
           :ui => {
             :childopts => "-Xmx128m",

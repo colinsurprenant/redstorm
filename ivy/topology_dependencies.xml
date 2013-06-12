@@ -2,6 +2,6 @@
 <ivy-module version="2.0">
   <info organisation="redstorm" module="topology-deps"/>
   <dependencies>
-    <dependency org="org.jruby" name="jruby-core" rev="1.7.3" conf="default" transitive="true"/>
+    <dependency org="org.jruby" name="jruby-core" rev="1.7.4" conf="default" transitive="true"/>
   </dependencies>
 </ivy-module>

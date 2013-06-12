@@ -6,7 +6,7 @@ RedStorm provides a Ruby DSL using JRuby integration for the [Storm](https://git
 
 ## Documentation
 
-Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept in the wiki when necessary. 
+Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept in the wiki when necessary.
 
 ### Released gems
 
@@ -88,7 +88,7 @@ class HelloWorldTopology < RedStorm::SimpleTopology
 
   bolt HelloWorldBolt do
     source HelloWorldSpout, :global
-  end        
+  end
 end
 ```
 
@@ -110,7 +110,7 @@ Note that bundler is only used to help package the gems **prior** to running a t
   $ redstorm bundle [BUNDLER_GROUP]
   ```
 
-3. make sure your topology class has `require "red_storm"` 
+3. make sure your topology class has `require "red_storm"`
 
   ```ruby
   require 'red_storm'
@@ -120,7 +120,7 @@ The `redstorm bundle` command copy the gems specified in the Gemfile (in a speci
 
 ### Custom Jar dependencies in your topology (XML Warning! :P)
 
-By defaut, RedStorm installs Storm and JRuby jars dependencies into `target/dependency`. RedStorm uses [Ivy](https://ant.apache.org/ivy/) 2.3 to manage dependencies. You can fully control and customize these dependencies. 
+By defaut, RedStorm installs Storm and JRuby jars dependencies into `target/dependency`. RedStorm uses [Ivy](https://ant.apache.org/ivy/) 2.3 to manage dependencies. You can fully control and customize these dependencies.
 
 There are two distinct sets of dependencies: the `storm` dependencies manages the requirements (Storm jars) for the Storm **local mode** runtime. The `topology` dependencies manages the requirements (JRuby jars) for the **topology** runtime.
 
@@ -162,9 +162,9 @@ The jars repositories can be configured by adding the `ivy/settings.xml` file in
     <resolvers>
       <chain name="repositories">
         <ibiblio name="ibiblio" m2compatible="true"/>
-        <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
-        <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
-        <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/> 
+        <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/>
+        <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/>
+        <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/>
       </chain>
     </resolvers>
   </ivysettings>
@@ -173,7 +173,13 @@ The jars repositories can be configured by adding the `ivy/settings.xml` file in
 ### Run in local mode
 
 ``` sh
-$ redstorm local <path/to/topology_class_file_name.rb>
+$ redstorm local <sources_directory_path/topology_class_file_name.rb>
+```
+
+note that the topology can also be launched with the following command:
+
+``` sh
+$ java -Djruby.compat.version=RUBY1_9 -cp "target/classes:target/dependency/storm/default/*:target/dependency/topology/default/*:<sources_directory_path>" redstorm.TopologyLauncher local <sources_directory_path/topology_class_file_name.rb>
 ```
 
 **See examples below** to run examples in local mode or on a production cluster.
@@ -182,18 +188,32 @@ $ redstorm local <path/to/topology_class_file_name.rb>
 
 The Storm distribution is currently required for the cluster topology submission.
 
-1. download and unpack the [Storm 0.8.2 distribution](https://dl.dropbox.com/u/133901206/storm-0.8.2.zip) locally and **add** the Storm `bin/` directory to your `$PATH`.
+1. download and unpack the [Storm 0.8.2 distribution](https://dl.dropbox.com/u/133901206/storm-0.8.2.zip) locally
 
-2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
+2. add the Storm `bin/` directory to your `$PATH`
+
+3. create `~/.storm/storm.yaml` and add the following
+
+  ```yaml
+  nimbus.host: "host_name_or_ip"
+  ```
+
+4. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
 
   ``` sh
   $ redstorm jar <sources_directory1> <sources_directory2> ...
   ```
 
-3. submit the cluster topology jar file to the cluster
+5. submit the cluster topology jar file to the cluster
 
   ``` sh
   $ redstorm cluster <sources_directory/topology_class_file_name.rb>
+  ```
+
+  note that the cluster topology jar can also be submitted using the storm command with:
+
+  ``` sh
+  $ storm jar target/cluster-topology.jar -Djruby.compat.version=RUBY1_9 redstorm.TopologyLauncher cluster <sources_directory/topology_class_file_name.rb>
   ```
 
 The [Storm wiki](https://github.com/nathanmarz/storm/wiki) has instructions on [setting up a production cluster](https://github.com/nathanmarz/storm/wiki/Setting-up-a-Storm-cluster). You can also [manually submit your topology](https://github.com/nathanmarz/storm/wiki/Running-topologies-on-a-production-cluster).
@@ -210,7 +230,7 @@ All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ru
 
 ### Local mode
 
-#### Example topologies without gems 
+#### Example topologies without gems
 
 ``` sh
 $ redstorm local examples/simple/exclamation_topology.rb
@@ -218,7 +238,7 @@ $ redstorm local examples/simple/exclamation_topology2.rb
 $ redstorm local examples/simple/word_count_topology.rb
 ```
 
-#### Example topologies with gems 
+#### Example topologies with gems
 
 For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
 
@@ -252,7 +272,7 @@ Using `redis-cli` push words into the `test` list and watch Storm pick them up
 All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) can run in both local or on a remote cluster. The only **native** example compatible with a remote cluster is `examples/native/cluster_word_count_topology.rb`.
 
 
-#### Topologies without gems 
+#### Topologies without gems
 
 1. genererate the `target/cluster-topology.jar` and include the `examples/` directory.
 
@@ -269,7 +289,7 @@ All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ru
   ```
 
 
-#### Topologies with gems 
+#### Topologies with gems
 
 For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
 
@@ -354,7 +374,7 @@ Despite the fact that both transactional and linear DRPC topologies are now [dep
     ```
 
   In remote **cluster** mode you will have to update snakeyaml manually or with your favorite deployment/provisioning tool.
-            
+
 ## RedStorm Development
 
 It is possible to fork the RedStorm project and run local and remote/cluster topologies directly from the project sources without installing the gem. This is a useful setup when contributing to the project.
@@ -412,7 +432,7 @@ If you require Ruby 1.8 support, there are two ways to have JRuby run in 1.8 run
   $ export JRUBY_OPTS=--1.8
   ```
 
-- by using the --1.8 option 
+- by using the --1.8 option
 
   ``` sh
   $ jruby --1.8 -S redstorm ...

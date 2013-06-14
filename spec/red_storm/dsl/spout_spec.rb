@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'red_storm/simple_spout'
+require 'red_storm/dsl/spout'
 
 describe RedStorm::SimpleSpout do
 
@@ -33,8 +33,8 @@ describe RedStorm::SimpleSpout do
       RedStorm::SimpleSpout.should respond_to :on_deactivate
       RedStorm::SimpleSpout.should respond_to :on_send
       RedStorm::SimpleSpout.should respond_to :on_ack
-      RedStorm::SimpleSpout.should respond_to :on_fail      
-      RedStorm::SimpleSpout.should respond_to :log      
+      RedStorm::SimpleSpout.should respond_to :on_fail
+      RedStorm::SimpleSpout.should respond_to :log
     end
 
     it "should implement dsl instance statements" do
@@ -514,7 +514,7 @@ describe RedStorm::SimpleSpout do
 
       it "should auto reliable emit on single value output" do
         class Spout1 < RedStorm::SimpleSpout
-          on_send :reliable => true do 
+          on_send :reliable => true do
             [1, "output"]
           end
         end
@@ -577,7 +577,7 @@ describe RedStorm::SimpleSpout do
 
       it "should auto reliable emit on multiple values output" do
         class Spout1 < RedStorm::SimpleSpout
-          on_send :reliable => true do 
+          on_send :reliable => true do
             [1, "output1", "output2"]
           end
         end
@@ -643,7 +643,7 @@ describe RedStorm::SimpleSpout do
 
       it "should respect :emit => false" do
         class Spout1 < RedStorm::SimpleSpout
-          on_send :emit => false do 
+          on_send :emit => false do
             "output"
           end
         end
@@ -678,12 +678,12 @@ describe RedStorm::SimpleSpout do
 
       it "should support manual emit" do
         class Spout1 < RedStorm::SimpleSpout
-          on_send :emit => false do 
+          on_send :emit => false do
             reliable_emit 1, "reliable output"
           end
         end
         class Spout2 < RedStorm::SimpleSpout
-          on_send :emit => false do 
+          on_send :emit => false do
             unreliable_emit "unreliable output"
           end
         end
@@ -777,7 +777,7 @@ describe RedStorm::SimpleSpout do
         spout.close
       end
     end
- 
+
     describe "declare_output_fields" do
       it "should declare fields" do
         class Spout1 < RedStorm::SimpleSpout

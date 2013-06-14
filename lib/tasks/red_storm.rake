@@ -143,16 +143,29 @@ namespace :ivy do
   end
 end
 
-task :deps => "ivy:install" do
-  puts("\n--> Installing dependencies")
-
+task :ivy_config do
   ant.configure 'file' => File.exists?(CUSTOM_IVY_SETTINGS) ? CUSTOM_IVY_SETTINGS : DEFAULT_IVY_SETTINGS
+end
+
+task :storm_deps => ["ivy:install", :ivy_config] do
+  puts("\n--> Installing Storm dependencies")
 
   ant.resolve 'file' => File.exists?(CUSTOM_IVY_STORM_DEPENDENCIES) ? CUSTOM_IVY_STORM_DEPENDENCIES : DEFAULT_IVY_STORM_DEPENDENCIES
   ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/storm/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"
+end
+
+# task :storm_deps => ["ivy:install", :ivy_config, :storm_deps_only] do
+#   puts("\n--> Installing Storm dependencies")
+# end
+
+task :topology_deps => ["ivy:install", :ivy_config] do
+  puts("\n--> Installing topology dependencies")
 
   ant.resolve 'file' => File.exists?(CUSTOM_IVY_TOPOLOGY_DEPENDENCIES) ? CUSTOM_IVY_TOPOLOGY_DEPENDENCIES : DEFAULT_IVY_TOPOLOGY_DEPENDENCIES
   ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/topology/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"
+end
+
+task :deps => ["ivy:install", :ivy_config, :storm_deps, :topology_deps] do
 end
 
 task :jar, [:include_dir] => [:clean_jar] do |t, args|

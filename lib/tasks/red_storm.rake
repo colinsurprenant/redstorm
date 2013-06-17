@@ -55,10 +55,12 @@ task :setup do
   end
 end
 
+desc "install dependencies and compile proxy classes"
 task :install => [:deps, :build] do
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
+desc "locally install examples"
 task :examples do
   if File.identical?(SRC_EXAMPLES, DST_EXAMPLES)
     STDERR.puts("error: cannot copy examples into itself")
@@ -78,6 +80,7 @@ task :copy_red_storm do
   FileUtils.cp_r(REDSTORM_LIB_DIR, TARGET_DIR)
 end
 
+desc "compile JRuby and Java proxy classes"
 task :build => [:setup, :copy_red_storm] do
   # compile the JRuby proxy classes to Java
   build_jruby("#{REDSTORM_LIB_DIR}/red_storm/proxy")
@@ -95,6 +98,7 @@ task :build => [:setup, :copy_red_storm] do
   build_java_dir("#{TARGET_SRC_DIR}")
 end
 
+desc "package topology gems into #{TARGET_GEM_DIR}"
 task :bundle, [:groups] => :setup do |t, args|
   require 'bundler'
   defaulted_args = {:groups => 'default'}.merge(args.to_hash.delete_if{|k, v| v.to_s.empty?})
@@ -154,10 +158,6 @@ task :storm_deps => ["ivy:install", :ivy_config] do
   ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/storm/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"
 end
 
-# task :storm_deps => ["ivy:install", :ivy_config, :storm_deps_only] do
-#   puts("\n--> Installing Storm dependencies")
-# end
-
 task :topology_deps => ["ivy:install", :ivy_config] do
   puts("\n--> Installing topology dependencies")
 
@@ -165,9 +165,11 @@ task :topology_deps => ["ivy:install", :ivy_config] do
   ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/topology/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"
 end
 
+desc "install storm and topology dependencies in #{TARGET_DEPENDENCY_DIR}"
 task :deps => ["ivy:install", :ivy_config, :storm_deps, :topology_deps] do
 end
 
+desc "generate #{TARGET_CLUSTER_JAR}"
 task :jar, [:include_dir] => [:clean_jar] do |t, args|
   puts("\n--> Generating JAR file #{TARGET_CLUSTER_JAR}")
 

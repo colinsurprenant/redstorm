@@ -2,7 +2,7 @@ require 'red_storm'
 require 'thread'
 require 'redis'
 
-class ReliableSpout < RedStorm::SimpleSpout
+class ReliableSpout < RedStorm::DSL::Spout
   output_fields :string
 
   on_init do
@@ -36,30 +36,30 @@ class ReliableSpout < RedStorm::SimpleSpout
   end
 end
 
-class AckBolt < RedStorm::SimpleBolt
+class AckBolt < RedStorm::DSL::Bolt
   on_receive :emit => false do |tuple|
     ack(tuple)
   end
 end
 
-class ImplicitPassthruBolt < RedStorm::SimpleBolt
+class ImplicitPassthruBolt < RedStorm::DSL::Bolt
   output_fields :string
 
   on_receive :emit => true, :ack => true, :anchor => true do |tuple|
-    tuple.getString(0)
+    tuple[0]
   end
 end
 
-class ExplicitPassthruBolt < RedStorm::SimpleBolt
+class ExplicitPassthruBolt < RedStorm::DSL::Bolt
   output_fields :string
 
   on_receive :emit => false do |tuple|
-    anchored_emit(tuple, tuple.getString(0))
+    anchored_emit(tuple, tuple[0])
     ack(tuple)
   end
 end
 
-class ReliableTopology < RedStorm::SimpleTopology
+class ReliableTopology < RedStorm::DSL::Topology
   spout ReliableSpout, :parallelism => 1
 
   bolt ImplicitPassthruBolt, :parallelism => 1 do

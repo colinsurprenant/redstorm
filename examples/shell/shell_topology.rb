@@ -3,7 +3,7 @@ require 'thread'
 
 java_import 'redstorm.storm.jruby.JRubyShellBolt'
 
-class SimpleSpout < RedStorm::SimpleSpout
+class SimpleSpout < RedStorm::DSL::Spout
   on_init do
     @q = Queue.new
     @q << "the quick red fox"
@@ -16,7 +16,7 @@ class SimpleSpout < RedStorm::SimpleSpout
   end
 end
 
-class ShellTopology < RedStorm::SimpleTopology
+class ShellTopology < RedStorm::DSL::Topology
   spout SimpleSpout do
     output_fields :string
   end

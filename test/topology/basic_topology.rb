@@ -2,7 +2,7 @@ require 'red_storm'
 require 'thread'
 require 'redis'
 
-class SingleTupleSpout < RedStorm::SimpleSpout
+class SingleTupleSpout < RedStorm::DSL::Spout
   output_fields :string
 
   on_init do
@@ -17,16 +17,16 @@ class SingleTupleSpout < RedStorm::SimpleSpout
   end
 end
 
-class RedisPushBolt < RedStorm::SimpleBolt
+class RedisPushBolt < RedStorm::DSL::Bolt
   on_init {@redis = Redis.new(:host => "localhost", :port => 6379)}
 
   on_receive :emit => false do |tuple|
-    data = tuple.getValue(0).to_s
+    data = tuple[0].to_s
     @redis.lpush(File.basename(__FILE__), data)
   end
 end
 
-class BasicTopology < RedStorm::SimpleTopology
+class BasicTopology < RedStorm::DSL::Topology
   spout SingleTupleSpout, :parallelism => 1
 
   bolt RedisPushBolt, :parallelism => 1 do

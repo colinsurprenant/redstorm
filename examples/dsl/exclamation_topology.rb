@@ -1,21 +1,21 @@
 java_import 'backtype.storm.testing.TestWordSpout'
 
 require 'red_storm'
-require 'examples/simple/exclamation_bolt'
+require 'examples/dsl/exclamation_bolt'
 
 # this example topology uses the Storm TestWordSpout and our own JRuby ExclamationBolt
 
 module RedStorm
   module Examples
-    class ExclamationTopology < SimpleTopology
+    class ExclamationTopology < DSL::Topology
       spout TestWordSpout, :parallelism => 2 do
         debug true
       end
-      
+
       bolt ExclamationBolt, :parallelism => 2 do
         source TestWordSpout, :shuffle
       end
-      
+
       bolt ExclamationBolt, :id => :ExclamationBolt2, :parallelism => 2 do
         source ExclamationBolt, :shuffle
         debug true
@@ -32,7 +32,7 @@ module RedStorm
 
       on_submit do |env|
         if env == :local
-          sleep(5)
+          sleep(10)
           cluster.shutdown
         end
       end

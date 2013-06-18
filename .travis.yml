@@ -1,6 +1,6 @@
 language: ruby
 rvm:
-  - jruby-19mode
+  - jruby-1.7.3
 
 install: bundle install; bundle exec rake storm_deps
 script: bundle exec rake spec

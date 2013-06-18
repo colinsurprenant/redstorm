@@ -1,4 +1,4 @@
-# RedStorm v0.6.5 - JRuby on Storm
+# RedStorm v0.6.6.beta1 - JRuby on Storm
 
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 
@@ -32,7 +32,7 @@ Tested on **OSX 10.8.3** and **Ubuntu Linux 12.10** using **Storm 0.9.0-wip16** 
 
   ``` ruby
   source "https://rubygems.org"
-  gem "redstorm", "~> 0.6.5"
+  gem "redstorm", "~> 0.6.6.beta1"
   ```
 
 ## Usage

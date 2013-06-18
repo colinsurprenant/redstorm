@@ -1,5 +1,5 @@
 language: ruby
 rvm:
   - jruby-1.7.3
-bundler_args: --binstubs
-script: bin/rake storm_deps spec
+before_script: bundle exec rake storm_deps
+script: bundle exec rspec

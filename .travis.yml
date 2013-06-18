@@ -1,5 +1,8 @@
 language: ruby
 rvm:
   - jruby-19mode
-install: jruby --1.9 -S bundle install; jruby --1.9 -S rake storm_deps
-script: jruby --1.9 -S rake spec
+jdk:
+  - openjdk7
+
+install: bundle install; bundle exec rake storm_deps
+script: bundle exec rake spec

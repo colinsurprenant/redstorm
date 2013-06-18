@@ -29,8 +29,8 @@ CUSTOM_IVY_TOPOLOGY_DEPENDENCIES = "#{DST_IVY_DIR}/topology_dependencies.xml"
 
 module RedStorm
 
-  class Application 
-    TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake" 
+  class Application
+    TASKS_FILE = "#{RedStorm::REDSTORM_HOME}/lib/tasks/red_storm.rake"
 
     def self.local_storm_command(class_file, ruby_mode = nil)
       src_dir = File.expand_path(File.dirname(class_file))
@@ -43,9 +43,9 @@ module RedStorm
 
     def self.usage
       puts("usage: redstorm version")
-      puts("       redstorm install")
+      puts("       redstorm install [--JVM_VERSION] (ex.: --1.6 or --1.7) default is current JVM version")
       puts("       redstorm deps")
-      puts("       redstorm build")
+      puts("       redstorm build [--JVM_VERSION] (ex.: --1.6 or --1.7) default is current JVM version")
       puts("       redstorm examples")
       puts("       redstorm bundle [BUNDLER_GROUP]")
       puts("       redstorm jar DIR1, [DIR2, ...]")
@@ -59,7 +59,7 @@ module RedStorm
         if args[0] == "version"
           puts("RedStorm v#{VERSION}")
           exit
-        elsif ["install", "examples", "jar", "bundle", "deps", "build"].include?(args[0])
+        elsif ["examples", "jar", "bundle", "deps", "install", "build"].include?(args[0])
           load(TASKS_FILE)
           Rake::Task[args.shift].invoke(args.join(":"))
           exit

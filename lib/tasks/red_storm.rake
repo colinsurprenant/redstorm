@@ -56,7 +56,7 @@ task :setup do
 end
 
 desc "install dependencies and compile proxy classes"
-task :install => [:deps, :build] do
+task :install, [:jvm_version] => [:deps, :build] do |t, args|
   puts("\nRedStorm install completed. All dependencies installed in #{TARGET_DIR}")
 end
 
@@ -81,21 +81,23 @@ task :copy_red_storm do
 end
 
 desc "compile JRuby and Java proxy classes"
-task :build => [:setup, :copy_red_storm] do
+task :build, [:jvm_version] => [:setup, :copy_red_storm] do |t, args|
+  jvm_version = args[:jvm_version].to_s =~ /--(1.\d)/ ? $1 : RedStorm.java_runtime_version
+
   # compile the JRuby proxy classes to Java
   build_jruby("#{REDSTORM_LIB_DIR}/red_storm/proxy")
 
   # compile the generated Java proxy classes
-  build_java_dir("#{TARGET_SRC_DIR}")
+  build_java_dir("#{TARGET_SRC_DIR}", jvm_version)
 
   # generate the JRuby topology launcher
   build_jruby("#{REDSTORM_LIB_DIR}/red_storm/topology_launcher.rb")
 
   # compile the JRuby proxy classes
-  build_java_dir("#{REDSTORM_JAVA_SRC_DIR}")
+  build_java_dir("#{REDSTORM_JAVA_SRC_DIR}", jvm_version)
 
   # compile the JRuby proxy classes
-  build_java_dir("#{TARGET_SRC_DIR}")
+  build_java_dir("#{TARGET_SRC_DIR}", jvm_version)
 end
 
 desc "package topology gems into #{TARGET_GEM_DIR}"
@@ -214,19 +216,20 @@ task :jar, [:include_dir] => [:clean_jar] do |t, args|
   puts("\nRedStorm generated JAR file #{TARGET_CLUSTER_JAR}")
 end
 
-def build_java_dir(source_folder)
-  puts("\n--> Compiling Java")
+def build_java_dir(source_folder, jvm_version)
+  puts("\n--> Compiling Java for JVM #{jvm_version}")
   ant.javac(
     'srcdir' => source_folder,
     'destdir' => TARGET_CLASSES_DIR,
     'classpathref' => 'classpath',
-    'source' => "1.7",
-    'target' => "1.7",
+    'source' => jvm_version,
+    'target' => jvm_version,
     'debug' => "yes",
     'includeantruntime' => "no",
     'verbose' => false,
     'listfiles' => true
   ) do
+    # compilerarg :value => "-Xlint:deprecation"
     # compilerarg :value => "-Xlint:unchecked"
   end
 end

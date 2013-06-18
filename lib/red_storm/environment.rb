@@ -1,3 +1,6 @@
+require 'java'
+java_import 'java.lang.System'
+
 module RedStorm
 
   LAUNCH_PATH = File.expand_path(File.dirname(__FILE__))
@@ -12,7 +15,7 @@ module RedStorm
     REDSTORM_HOME = File.expand_path(LAUNCH_PATH + '/../..')
     TARGET_PATH = "#{BASE_PATH}/target"
   end
-  
+
   unless defined?(SPECS_CONTEXT)
     GEM_PATH = "#{TARGET_PATH}/gems/"
     ENV["GEM_PATH"] = GEM_PATH
@@ -30,12 +33,9 @@ module RedStorm
     version_map[ruby_version.to_s] || version_map[RedStorm.current_ruby_mode]
   end
 
-  module_function :current_ruby_mode, :jruby_mode_token
+  def java_runtime_version
+    System.properties["java.runtime.version"].to_s =~ /^(\d+\.\d+).[^\s]+$/ ? $1 : "1.7"
+  end
 
-  # puts("*** LAUNCH_PATH=#{LAUNCH_PATH}")
-  # puts("*** JAR_CONTEXT=#{JAR_CONTEXT}")
-  # puts("*** BASE_PATH=#{BASE_PATH}")
-  # puts("*** REDSTORM_HOME=#{REDSTORM_HOME}")
-  # puts("*** TARGET_PATH=#{TARGET_PATH}")
-  # puts("*** GEM_PATH=#{GEM_PATH}") if defined?(GEM_PATH)
+  module_function :current_ruby_mode, :jruby_mode_token, :java_runtime_version
 end

@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    redstorm (0.6.5)
+    redstorm (0.6.6.beta1)
       rake
 
 GEM

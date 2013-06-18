@@ -2,5 +2,4 @@ language: ruby
 rvm:
   - jruby-1.7.3
 
-install: bundle install; bundle exec rake storm_deps
-script: bundle exec rake spec
+script: rake storm_deps spec

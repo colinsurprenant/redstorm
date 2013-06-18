@@ -22,7 +22,7 @@ require 'red_storm'
 #   </dependencies>
 # </ivy-module>
 
-class KafkaTopology < RedStorm::SimpleTopology
+class KafkaTopology < RedStorm::DSL::Topology
   spout_config = SpoutConfig.new(
     KafkaConfig::ZkHosts.new("localhost:2181", "/brokers"),
     "words",        # topic to read from
@@ -31,8 +31,8 @@ class KafkaTopology < RedStorm::SimpleTopology
   )
   spout_config.scheme = StringScheme.new
 
-  class SplitStringBolt < RedStorm::SimpleBolt
-    on_receive {|tuple| tuple.getString(0).split.map{|w| [w]}}
+  class SplitStringBolt < RedStorm::DSL::Bolt
+    on_receive {|tuple| tuple[0].split.map{|w| [w]}}
   end
 
   spout KafkaSpout, [spout_config]

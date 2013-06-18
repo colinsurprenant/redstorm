@@ -7,18 +7,18 @@ require 'red_storm'
 
 module RedStorm
   module Examples
-    class ExclamationBolt < RedStorm::SimpleBolt
+    class ExclamationBolt < DSL::Bolt
       output_fields :word
-      on_receive(:ack => true, :anchor => true) {|tuple| "!#{tuple.getString(0)}!"}
+      on_receive(:ack => true, :anchor => true) {|tuple| "!#{tuple[0]}!"} # tuple[:word] or tuple["word"] are also valid
     end
 
-    class ExclamationTopology2 < RedStorm::SimpleTopology
+    class ExclamationTopology2 < DSL::Topology
       spout TestWordSpout, :parallelism => 2
-      
+
       bolt ExclamationBolt, :parallelism => 2 do
         source TestWordSpout, :shuffle
       end
-      
+
       bolt ExclamationBolt, :id => :ExclamationBolt2, :parallelism => 2 do
         source ExclamationBolt, :shuffle
       end

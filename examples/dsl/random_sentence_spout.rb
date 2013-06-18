@@ -2,7 +2,7 @@ require 'red_storm'
 
 module RedStorm
   module Examples
-    class RandomSentenceSpout < RedStorm::SimpleSpout
+    class RandomSentenceSpout < DSL::Spout
       output_fields :word
 
       on_send {@sentences[rand(@sentences.length)]}

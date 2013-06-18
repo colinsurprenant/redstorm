@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'red_storm/simple_bolt'
+require 'red_storm/dsl/bolt'
 
 describe RedStorm::SimpleBolt do
 
@@ -495,19 +495,19 @@ describe RedStorm::SimpleBolt do
 
       it "should anchor on single value output" do
         class Bolt1 < RedStorm::SimpleBolt
-          on_receive :anchor => true do |tuple| 
+          on_receive :anchor => true do |tuple|
             "output"
           end
         end
         class Bolt2 < RedStorm::SimpleBolt
-          on_receive :my_method, :anchor => true 
-          def my_method(tuple) 
+          on_receive :my_method, :anchor => true
+          def my_method(tuple)
             "output"
           end
         end
         class Bolt3 < RedStorm::SimpleBolt
-          on_receive :anchor => true 
-          def on_receive(tuple) 
+          on_receive :anchor => true
+          def on_receive(tuple)
             "output"
           end
         end
@@ -531,19 +531,19 @@ describe RedStorm::SimpleBolt do
 
       it "should ack on single value output" do
         class Bolt1 < RedStorm::SimpleBolt
-          on_receive :anchor => true, :ack => true do |tuple| 
+          on_receive :anchor => true, :ack => true do |tuple|
             "output"
           end
         end
         class Bolt2 < RedStorm::SimpleBolt
           on_receive :my_method, :anchor => true, :ack => true
-          def my_method(tuple) 
+          def my_method(tuple)
             "output"
           end
         end
         class Bolt3 < RedStorm::SimpleBolt
-          on_receive :anchor => true, :ack => true 
-          def on_receive(tuple) 
+          on_receive :anchor => true, :ack => true
+          def on_receive(tuple)
             "output"
           end
         end
@@ -568,7 +568,7 @@ describe RedStorm::SimpleBolt do
 
       it "should not emit" do
         class Bolt1 < RedStorm::SimpleBolt
-          on_receive :emit => false do |tuple| 
+          on_receive :emit => false do |tuple|
             tuple
           end
         end
@@ -580,7 +580,7 @@ describe RedStorm::SimpleBolt do
         end
         class Bolt3 < RedStorm::SimpleBolt
           on_receive :emit => false
-          def on_receive(tuple) 
+          def on_receive(tuple)
             tuple
           end
         end

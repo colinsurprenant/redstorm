@@ -65,23 +65,23 @@ This will install default Java jar dependencies in `target/dependency`, generate
 
 Create a subdirectory for your topology code and create your topology class **using this naming convention**: *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
 
-Here's an example [hello_world_topology.rb](https://github.com/colinsurprenant/redstorm/tree/master/examples/simple/hello_world_topology.rb)
+Here's an example [hello_world_topology.rb](https://github.com/colinsurprenant/redstorm/tree/master/examples/dsl/hello_world_topology.rb)
 
 ``` ruby
 require 'red_storm'
 
-class HelloWorldSpout < RedStorm::SimpleSpout
+class HelloWorldSpout < RedStorm::DSL::Spout
   on_init {@words = ["hello", "world"]}
   on_send {@words.shift unless @words.empty?}
 end
 
-class HelloWorldBolt < RedStorm::SimpleBolt
+class HelloWorldBolt < RedStorm::DSL::Bolt
   on_receive :emit => false do |tuple|
     log.info(tuple.getString(0))
   end
 end
 
-class HelloWorldTopology < RedStorm::SimpleTopology
+class HelloWorldTopology < RedStorm::DSL::Topology
   spout HelloWorldSpout do
     output_fields :word
   end
@@ -226,21 +226,21 @@ Install the [example files](https://github.com/colinsurprenant/redstorm/tree/mas
 $ redstorm examples
 ```
 
-All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) are located in `examples/simple`. Examples using the standard Java interface are in `examples/native`.
+All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ruby-DSL-Documentation) are located in `examples/dsl`. Examples using the standard Java interface are in `examples/native`.
 
 ### Local mode
 
 #### Example topologies without gems
 
 ``` sh
-$ redstorm local examples/simple/exclamation_topology.rb
-$ redstorm local examples/simple/exclamation_topology2.rb
-$ redstorm local examples/simple/word_count_topology.rb
+$ redstorm local examples/dsl/exclamation_topology.rb
+$ redstorm local examples/dsl/exclamation_topology2.rb
+$ redstorm local examples/dsl/word_count_topology.rb
 ```
 
 #### Example topologies with gems
 
-For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
+For `examples/dsl/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
 
 1. create a `Gemfile`
 
@@ -262,7 +262,7 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
 3. run the topology in local mode
 
   ``` sh
-  $ redstorm local examples/simple/redis_word_count_topology.rb
+  $ redstorm local examples/dsl/redis_word_count_topology.rb
   ```
 
 Using `redis-cli` push words into the `test` list and watch Storm pick them up
@@ -283,15 +283,15 @@ All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ru
 2. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
 
   ``` sh
-  $ redstorm cluster examples/simple/exclamation_topology.rb
-  $ redstorm cluster examples/simple/exclamation_topology2.rb
-  $ redstorm cluster examples/simple/word_count_topology.rb
+  $ redstorm cluster examples/dsl/exclamation_topology.rb
+  $ redstorm cluster examples/dsl/exclamation_topology2.rb
+  $ redstorm cluster examples/dsl/word_count_topology.rb
   ```
 
 
 #### Topologies with gems
 
-For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
+For `examples/dsl/redis_word_count_topology.rb` the `redis` gem is required and you need a [Redis](http://redis.io/) server running on `localhost:6379`
 
 1. create a `Gemfile`
 
@@ -319,7 +319,7 @@ For `examples/simple/redis_word_count_topology.rb` the `redis` gem is required a
 4. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
 
   ``` sh
-  $ redstorm cluster examples/simple/redis_word_count_topology.rb
+  $ redstorm cluster examples/dsl/redis_word_count_topology.rb
   ```
 
 Using `redis-cli` push words into the `test` list and watch Storm pick them up

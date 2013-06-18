@@ -1,15 +1,15 @@
 require 'red_storm'
-require 'examples/simple/word_count_bolt'
+require 'examples/dsl/word_count_bolt'
 require 'redis'
 require 'thread'
 
 module RedStorm
   module Examples
 
-    # RedisWordSpout reads the Redis queue "test" on localhost:6379 
+    # RedisWordSpout reads the Redis queue "test" on localhost:6379
     # and emits each word items pop'ed from the queue.
 
-    class RedisWordSpout < RedStorm::SimpleSpout
+    class RedisWordSpout < DSL::Spout
       output_fields :word
 
       on_send {@q.pop.to_s if @q.size > 0}
@@ -18,7 +18,7 @@ module RedStorm
         @q = Queue.new
         @redis_reader = detach_redis_reader
       end
-      
+
       private
 
       def detach_redis_reader
@@ -35,16 +35,15 @@ module RedStorm
       end
     end
 
-    class RedisWordCountTopology < RedStorm::SimpleTopology
+    class RedisWordCountTopology < DSL::Topology
       spout RedisWordSpout
-          
+
       bolt WordCountBolt, :parallelism => 3 do
         source RedisWordSpout, :fields => ["word"]
       end
 
       configure do |env|
         debug true
-        # set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
         case env
         when :local
           max_task_parallelism 3

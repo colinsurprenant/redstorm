@@ -4,27 +4,23 @@ require 'red_storm'
 
 module RedStorm
   module Examples
-    class VersionSpout < RedStorm::SimpleSpout
+    class VersionSpout < DSL::Spout
       output_fields :dummy
       on_init do
+        log.info("***************** REDSTORM VERSION=#{VERSION}")
         log.info("***************** RUBY_VERSION=#{RUBY_VERSION}")
         log.info("***************** JRUBY_VERSION=#{JRUBY_VERSION}")
-        log.info("***************** VERSION=#{VERSION}")
         log.info("***************** RUBY_ENGINE=#{RUBY_ENGINE}")
         log.info("***************** RUBY_PLATFORM=#{RUBY_PLATFORM}")
       end
       on_send {}
     end
 
-    class RubyVersionTopology < RedStorm::SimpleTopology
+    class RubyVersionTopology < DSL::Topology
       spout VersionSpout
-            
-      configure do |env|
-        debug true
 
-        # force the JRuby version property for this topology. this will only affect remote cluster execution
-        # for local execution use the --1.8|--1.9 switch when launching
-        # set "topology.worker.childopts", "-Djruby.compat.version=RUBY1_9"
+      configure do |env|
+        debug false
       end
 
       on_submit do |env|

@@ -1,4 +1,7 @@
+require 'java'
 require 'red_storm'
+java_import 'java.lang.System'
+
 
 # this example topology only prints the Ruby version string. No tuple is emitted.
 
@@ -12,6 +15,7 @@ module RedStorm
         log.info("***************** JRUBY_VERSION=#{JRUBY_VERSION}")
         log.info("***************** RUBY_ENGINE=#{RUBY_ENGINE}")
         log.info("***************** RUBY_PLATFORM=#{RUBY_PLATFORM}")
+        log.info("***************** JAVA VERSION=#{System.properties["java.runtime.version"]}")
       end
       on_send {}
     end

@@ -18,7 +18,7 @@ Chances are new versions of RedStorm will introduce changes that will break comp
 
 ## Dependencies
 
-Tested on **OSX 10.8.3** and **Ubuntu Linux 12.10** using **Storm 0.8.2** and **JRuby 1.7.3** and **OpenJDK 7**
+Tested on **OSX 10.8.3** and **Ubuntu Linux 12.10** using **Storm 0.9.0-wip16** and **JRuby 1.7.4** and **OpenJDK 7**
 
 ## Installation
 
@@ -133,7 +133,7 @@ You can supply custom `storm` and `topology` dependencies by creating `ivy/storm
   <ivy-module version="2.0">
     <info organisation="redstorm" module="storm-deps"/>
     <dependencies>
-      <dependency org="storm" name="storm" rev="0.8.2" conf="default" transitive="true" />
+      <dependency org="storm" name="storm" rev="0.9.0-wip16" conf="default" transitive="true" />
       <override org="org.slf4j" module="slf4j-log4j12" rev="1.6.3"/>
     </dependencies>
   </ivy-module>
@@ -146,7 +146,7 @@ You can supply custom `storm` and `topology` dependencies by creating `ivy/storm
   <ivy-module version="2.0">
     <info organisation="redstorm" module="topology-deps"/>
     <dependencies>
-      <dependency org="org.jruby" name="jruby-core" rev="1.7.3" conf="default" transitive="true"/>
+      <dependency org="org.jruby" name="jruby-core" rev="1.7.4" conf="default" transitive="true"/>
     </dependencies>
   </ivy-module>
   ```
@@ -188,7 +188,7 @@ $ java -Djruby.compat.version=RUBY1_9 -cp "target/classes:target/dependency/stor
 
 The Storm distribution is currently required for the cluster topology submission.
 
-1. download and unpack the [Storm 0.8.2 distribution](https://dl.dropbox.com/u/133901206/storm-0.8.2.zip) locally
+1. download and unpack the [Storm 0.9.0-wip16 distribution](https://dl.dropbox.com/u/133901206/storm-0.9.0-wip16.zip) locally
 
 2. add the Storm `bin/` directory to your `$PATH`
 
@@ -357,7 +357,7 @@ Despite the fact that both transactional and linear DRPC topologies are now [dep
 
 - SnakeYAML conflict between Storm and JRuby
 
-  See [issue](https://github.com/colinsurprenant/redstorm/issues/78). This is a classic Java world jar conflict. Storm 0.8.2 uses snakeyaml 1.9 and JRuby 1.7.3 uses snakeyaml 1.11. If you try to use YAML serialization in your topology it will crash with an exception. This problem is easy to solve when running topologies in **local** mode, simply override in the storm dependencies with the correct jar version. You can do this be creating a custom storm dependencies:
+  See [issue](https://github.com/colinsurprenant/redstorm/issues/78). This is a classic Java world jar conflict. Storm 0.9.0 uses snakeyaml 1.9 and JRuby 1.7.x uses snakeyaml 1.11. If you try to use YAML serialization in your topology it will crash with an exception. This problem is easy to solve when running topologies in **local** mode, simply override in the storm dependencies with the correct jar version. You can do this be creating a custom storm dependencies:
 
   - `ivy/storm_dependencies.xml`
 
@@ -366,7 +366,7 @@ Despite the fact that both transactional and linear DRPC topologies are now [dep
     <ivy-module version="2.0">
       <info organisation="redstorm" module="storm-deps"/>
       <dependencies>
-        <dependency org="storm" name="storm" rev="0.8.2" conf="default" transitive="true" />
+        <dependency org="storm" name="storm" rev="0.9.0-wip16" conf="default" transitive="true" />
         <override org="org.slf4j" module="slf4j-log4j12" rev="1.6.3"/>
         <override org="org.yaml" module="snakeyaml" rev="1.11"/>
       </dependencies>
@@ -381,7 +381,7 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 
 ### Requirements
 
-- JRuby 1.7.3
+- JRuby 1.7.4
 
 ### Workflow
 

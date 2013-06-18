@@ -15,7 +15,7 @@ require 'red_storm'
 # <ivy-module version="2.0">
 #   <info organisation="redstorm" module="topology-deps"/>
 #   <dependencies>
-#     <dependency org="org.jruby" name="jruby-core" rev="1.7.3" conf="default" transitive="true"/>
+#     <dependency org="org.jruby" name="jruby-core" rev="1.7.4" conf="default" transitive="true"/>
 #     <dependency org="org.scala-lang" name="scala-library" rev="2.8.0" conf="default" transitive="false"/>
 #     <dependency org="storm" name="kafka" rev="0.7.0-incubating" conf="default" transitive="false"/>
 #     <dependency org="storm" name="storm-kafka" rev="0.8.0-wip4" conf="default" transitive="false"/>

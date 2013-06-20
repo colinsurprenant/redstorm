@@ -2,6 +2,7 @@ require 'java'
 require 'red_storm/configuration'
 require 'red_storm/configurator'
 
+java_import 'backtype.storm.topology.TopologyBuilder'
 
 module RedStorm
   module DSL
@@ -39,15 +40,14 @@ module RedStorm
       class SpoutDefinition < ComponentDefinition
 
         # WARNING non-dry see BoltDefinition#new_instance
-        def new_instance(base_class_path)
+        def new_instance
           if @clazz.name == "Java::RedstormStormJruby::JRubyShellSpout"
             @clazz.new(constructor_args, @output_fields)
           elsif is_java?
             @clazz.new(*constructor_args)
           else
-            JRubySpout.new(base_class_path, @clazz.name, @output_fields)
+            JRubySpout.new(@clazz.base_class_path, @clazz.name, @output_fields)
           end
-          # is_java? ? @clazz.new : JRubySpout.new(base_class_path, @clazz.name)
         end
       end
 
@@ -88,16 +88,15 @@ module RedStorm
           end
         end
 
-        def new_instance(base_class_path)
+        def new_instance
           # WARNING non-dry see BoltDefinition#new_instance
           if @clazz.name == "Java::RedstormStormJruby::JRubyShellBolt"
             @clazz.new(constructor_args, @output_fields)
           elsif is_java?
             @clazz.new(*constructor_args)
           else
-            JRubyBolt.new(base_class_path, @clazz.name, @output_fields)
+            JRubyBolt.new(@clazz.base_class_path, @clazz.name, @output_fields)
           end
-          # is_java? ? @clazz.new : @clazz.is_a?(Bolt) ? JRubyBolt.new(base_class_path, @clazz.name) : @clazz.new
         end
       end
 
@@ -140,21 +139,24 @@ module RedStorm
         @submit_block = block_given? ? submit_block : lambda {|env| self.send(method_name, env)}
       end
 
-      # topology proxy interface
-
-      def start(base_class_path, env)
-        self.class.resolve_ids!(self.class.components)
+      def self.build_topology
+        resolve_ids!(components)
 
         builder = TopologyBuilder.new
-        self.class.spouts.each do |spout|
-          declarer = builder.setSpout(spout.id, spout.new_instance(base_class_path), spout.parallelism.to_java)
+        spouts.each do |spout|
+          declarer = builder.setSpout(spout.id, spout.new_instance, spout.parallelism.to_java)
           declarer.addConfigurations(spout.config)
         end
-        self.class.bolts.each do |bolt|
-          declarer = builder.setBolt(bolt.id, bolt.new_instance(base_class_path), bolt.parallelism.to_java)
+        bolts.each do |bolt|
+          declarer = builder.setBolt(bolt.id, bolt.new_instance, bolt.parallelism.to_java)
           declarer.addConfigurations(bolt.config)
           bolt.define_grouping(declarer)
         end
+        builder.createTopology
+      end
+
+      def start(env)
+        topology = self.class.build_topology
 
         # set the JRuby compatibility mode option for Storm workers, default to current JRuby mode
         defaults = {"topology.worker.childopts" => "-Djruby.compat.version=#{RedStorm.jruby_mode_token}"}
@@ -163,7 +165,7 @@ module RedStorm
         configurator.instance_exec(env, &self.class.configure_block)
 
         submitter = (env == :local) ? @cluster = LocalCluster.new : StormSubmitter
-        submitter.submitTopology(self.class.topology_name, configurator.config, builder.createTopology)
+        submitter.submitTopology(self.class.topology_name, configurator.config, topology)
         instance_exec(env, &self.class.submit_block)
       end
 

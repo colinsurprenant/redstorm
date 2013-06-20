@@ -25,6 +25,10 @@ describe RedStorm::SimpleTopology do
     class SpoutClass2; end
     class BoltClass1; end
     class BoltClass2; end
+    SpoutClass1.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
+    SpoutClass2.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
+    BoltClass1.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
+    BoltClass2.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
   end
 
   it "should set default topology name" do
@@ -265,7 +269,7 @@ describe RedStorm::SimpleTopology do
       cluster = mock(RedStorm::LocalCluster)
       RedStorm::LocalCluster.should_receive(:new).and_return(cluster)
       cluster.should_receive(:submitTopology).with("topology1", "config", "topology")
-      Topology1.new.start("base_path", :local)
+      Topology1.new.start(:local)
     end
 
     it "should start in :cluster env" do
@@ -277,7 +281,7 @@ describe RedStorm::SimpleTopology do
       RedStorm::Configurator.should_receive(:new).and_return(configurator)
       configurator.should_receive(:config).and_return("config")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
-      Topology1.new.start("base_path", :cluster)
+      Topology1.new.start(:cluster)
     end
 
     it "should raise for invalid env" do
@@ -308,7 +312,7 @@ describe RedStorm::SimpleTopology do
       configurator.should_receive(:config).and_return("config")
       builder.should_receive(:createTopology).and_return("topology")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
-      Topology1.new.start("base_path", :cluster)
+      Topology1.new.start(:cluster)
     end
 
     it "should build bolts" do
@@ -352,7 +356,7 @@ describe RedStorm::SimpleTopology do
       builder.should_receive(:createTopology).and_return("topology")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", "config", "topology")
 
-      Topology1.new.start("base_path", :cluster)
+      Topology1.new.start(:cluster)
     end
 
 
@@ -387,7 +391,7 @@ describe RedStorm::SimpleTopology do
 
         RedStorm::Fields.should_receive(:new).with("f1").and_return("fields")
         @declarer.should_receive("fieldsGrouping").with('1', "fields")
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support single symbolic fields" do
@@ -400,7 +404,7 @@ describe RedStorm::SimpleTopology do
 
         RedStorm::Fields.should_receive(:new).with("s1").and_return("fields")
         @declarer.should_receive("fieldsGrouping").with('1', "fields")
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support string array fields" do
@@ -413,7 +417,7 @@ describe RedStorm::SimpleTopology do
 
         RedStorm::Fields.should_receive(:new).with("f1", "f2").and_return("fields")
         @declarer.should_receive("fieldsGrouping").with('1', "fields")
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support symbolic array fields" do
@@ -426,7 +430,7 @@ describe RedStorm::SimpleTopology do
 
         RedStorm::Fields.should_receive(:new).with("s1", "s2").and_return("fields")
         @declarer.should_receive("fieldsGrouping").with('1', "fields")
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support shuffle" do
@@ -438,7 +442,7 @@ describe RedStorm::SimpleTopology do
         end
 
         @declarer.should_receive("shuffleGrouping").with('1')
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support local_or_shuffle" do
@@ -450,7 +454,7 @@ describe RedStorm::SimpleTopology do
         end
 
         @declarer.should_receive("localOrShuffleGrouping").with('1')
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support none" do
@@ -462,7 +466,7 @@ describe RedStorm::SimpleTopology do
         end
 
         @declarer.should_receive("noneGrouping").with('1')
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support global" do
@@ -474,7 +478,7 @@ describe RedStorm::SimpleTopology do
         end
 
         @declarer.should_receive("globalGrouping").with('1')
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support all" do
@@ -486,7 +490,7 @@ describe RedStorm::SimpleTopology do
         end
 
         @declarer.should_receive("allGrouping").with('1')
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
 
       it "should support direct" do
@@ -498,7 +502,7 @@ describe RedStorm::SimpleTopology do
         end
 
         @declarer.should_receive("directGrouping").with('1')
-        Topology1.new.start("base_path", :cluster)
+        Topology1.new.start(:cluster)
       end
     end
 
@@ -521,7 +525,7 @@ describe RedStorm::SimpleTopology do
       builder.should_receive(:createTopology).and_return("topology")
       RedStorm::StormSubmitter.should_receive("submitTopology").with("topology1", config, "topology")
 
-      Topology1.new.start("base_path", :cluster)
+      Topology1.new.start(:cluster)
     end
 
     it "should provide local cluster reference" do
@@ -539,7 +543,7 @@ describe RedStorm::SimpleTopology do
       cluster.should_receive(:submitTopology).with("topology1", "config", "topology").and_return("cluster")
 
       topology = Topology1.new
-      topology.start("base_path", :local)
+      topology.start(:local)
 
       topology.cluster.should == cluster
     end

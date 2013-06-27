@@ -1,7 +1,15 @@
 <?xml version="1.0"?>
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
   <info organisation="redstorm" module="topology-deps"/>
   <dependencies>
     <dependency org="org.jruby" name="jruby-core" rev="1.7.4" conf="default" transitive="true"/>
+
+    <!-- explicitely specify jffi to also fetch the native jar. make sure to update jffi version matching jruby-core version -->
+    <!-- this is the only way I found using Ivy to fetch the native jar -->
+    <dependency org="com.github.jnr" name="jffi" rev="1.2.5" conf="default" transitive="true">
+      <artifact name="jffi" type="jar" />
+      <artifact name="jffi" type="jar" m:classifier="native"/>
+    </dependency>
+
   </dependencies>
 </ivy-module>

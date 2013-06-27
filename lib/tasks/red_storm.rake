@@ -157,14 +157,14 @@ task :storm_deps => ["ivy:install", :ivy_config] do
   puts("\n--> Installing Storm dependencies")
 
   ant.resolve 'file' => File.exists?(CUSTOM_IVY_STORM_DEPENDENCIES) ? CUSTOM_IVY_STORM_DEPENDENCIES : DEFAULT_IVY_STORM_DEPENDENCIES
-  ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/storm/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"
+  ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/storm/[conf]/[artifact](-[classifier])-[revision].[ext]", 'sync' => "true"
 end
 
 task :topology_deps => ["ivy:install", :ivy_config] do
   puts("\n--> Installing topology dependencies")
 
   ant.resolve 'file' => File.exists?(CUSTOM_IVY_TOPOLOGY_DEPENDENCIES) ? CUSTOM_IVY_TOPOLOGY_DEPENDENCIES : DEFAULT_IVY_TOPOLOGY_DEPENDENCIES
-  ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/topology/[conf]/[artifact]-[revision].[ext]", 'sync' => "true"
+  ant.retrieve 'pattern' => "#{TARGET_DEPENDENCY_DIR}/topology/[conf]/[artifact](-[classifier])-[revision].[ext]", 'sync' => "true"
 end
 
 desc "install storm and topology dependencies in #{TARGET_DEPENDENCY_DIR}"

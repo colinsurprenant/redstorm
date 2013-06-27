@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
   <info organisation="redstorm" module="storm-deps"/>
   <dependencies>
     <dependency org="storm" name="storm" rev="0.9.0-wip16" conf="default" transitive="true" />

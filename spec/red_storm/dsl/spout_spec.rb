@@ -7,6 +7,7 @@ describe RedStorm::SimpleSpout do
     Object.send(:remove_const, "Spout1") if Object.const_defined?("Spout1")
     Object.send(:remove_const, "Spout2") if Object.const_defined?("Spout2")
     Object.send(:remove_const, "Spout3") if Object.const_defined?("Spout3")
+    Object.send(:remove_const, "Spout4") if Object.const_defined?("Spout4")
   end
 
   describe "interface" do
@@ -815,6 +816,8 @@ describe RedStorm::SimpleSpout do
         class Spout3 < RedStorm::SimpleSpout
           def on_ack(msg_id) trigger(msg_id); end
         end
+        class Spout4 < RedStorm::SimpleSpout
+        end
 
         spout = Spout1.new
         spout.should_receive(:trigger).once.with("test")
@@ -826,6 +829,10 @@ describe RedStorm::SimpleSpout do
 
         spout = Spout3.new
         spout.should_receive(:trigger).once.with("test")
+        spout.ack("test")
+
+        spout = Spout4.new
+        spout.should respond_to :ack
         spout.ack("test")
       end
     end
@@ -842,6 +849,8 @@ describe RedStorm::SimpleSpout do
         class Spout3 < RedStorm::SimpleSpout
           def on_fail(msg_id) trigger(msg_id); end
         end
+        class Spout4 < RedStorm::SimpleSpout
+        end
 
         spout = Spout1.new
         spout.should_receive(:trigger).once.with("test")
@@ -853,6 +862,10 @@ describe RedStorm::SimpleSpout do
 
         spout = Spout3.new
         spout.should_receive(:trigger).once.with("test")
+        spout.fail("test")
+
+        spout = Spout4.new
+        spout.should respond_to :fail
         spout.fail("test")
       end
     end

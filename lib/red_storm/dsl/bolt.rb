@@ -30,15 +30,21 @@ module RedStorm
         method_name = args.first
 
         self.receive_options.merge!(options)
-        @on_receive_block = block_given? ? on_receive_block : lambda {|tuple| self.send(method_name || :on_receive, tuple)}
+
+        # indirecting through a lambda defers the method lookup at invocation time
+        # and the performance penalty is negligible
+        body = block_given? ? on_receive_block : lambda{|tuple| self.send((method_name || :on_receive).to_sym, tuple)}
+        define_method(:on_receive, body)
       end
 
       def self.on_init(method_name = nil, &on_init_block)
-        @on_init_block = block_given? ? on_init_block : lambda {self.send(method_name || :on_init)}
+        body = block_given? ? on_init_block : lambda {self.send((method_name || :on_init).to_sym)}
+        define_method(:on_init, body)
       end
 
-      def self.on_close(method_name = nil, &close_block)
-        @close_block = block_given? ? close_block : lambda {self.send(method_name || :on_close)}
+      def self.on_close(method_name = nil, &on_close_block)
+        body = block_given? ? on_close_block : lambda {self.send((method_name || :on_close).to_sym)}
+        define_method(:on_close, body)
       end
 
       # DSL instance methods
@@ -66,7 +72,7 @@ module RedStorm
       # Bolt proxy interface
 
       def execute(tuple)
-        output = instance_exec(tuple, &self.class.on_receive_block)
+        output = on_receive(tuple)
         if output && self.class.emit?
           values_list = !output.is_a?(Array) ? [[output]] : !output.first.is_a?(Array) ? [output] : output
           values_list.each{|values| self.class.anchor? ? anchored_emit(tuple, *values) : unanchored_emit(*values)}
@@ -78,11 +84,12 @@ module RedStorm
         @collector = collector
         @context = context
         @config = config
-        instance_exec(&self.class.on_init_block)
+
+        on_init
       end
 
       def cleanup
-        instance_exec(&self.class.close_block)
+        on_close
       end
 
       def declare_output_fields(declarer)
@@ -107,18 +114,6 @@ module RedStorm
 
       def self.configure_block
         @configure_block ||= lambda {}
-      end
-
-      def self.on_receive_block
-        @on_receive_block ||= lambda {|tuple| self.send(:on_receive, tuple)}
-      end
-
-      def self.on_init_block
-        @on_init_block ||= lambda {self.send(:on_init)}
-      end
-
-      def self.close_block
-        @close_block ||= lambda {self.send(:on_close)}
       end
 
       def self.receive_options

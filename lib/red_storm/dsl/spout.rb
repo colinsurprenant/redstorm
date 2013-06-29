@@ -30,31 +30,43 @@ module RedStorm
         method_name = args.first
 
         self.send_options.merge!(options)
-        @on_send_block = block_given? ? on_send_block : lambda {self.send(method_name || :on_send)}
+
+        # indirecting through a lambda defers the method lookup at invocation time
+        # and the performance penalty is negligible
+        body = block_given? ? on_send_block : lambda{self.send((method_name || :on_send).to_sym)}
+        define_method(:on_send, body)
       end
 
       def self.on_init(method_name = nil, &on_init_block)
-        @on_init_block = block_given? ? on_init_block : lambda {self.send(method_name || :on_init)}
+        body = block_given? ? on_init_block : lambda {self.send((method_name || :on_init).to_sym)}
+        define_method(:on_init, body)
       end
 
       def self.on_close(method_name = nil, &on_close_block)
-        @on_close_block = block_given? ? on_close_block : lambda {self.send(method_name || :on_close)}
+        body = block_given? ? on_close_block : lambda {self.send((method_name || :on_close).to_sym)}
+        define_method(:on_close, body)
       end
 
       def self.on_activate(method_name = nil, &on_activate_block)
-        @on_activate_block = block_given? ? on_activate_block : lambda {self.send(method_name || :on_activate)}
+        # @on_activate_block = block_given? ? on_activate_block : lambda {self.send(method_name || :on_activate)}
+        body = block_given? ? on_activate_block : lambda {self.send((method_name || :on_activate).to_sym)}
+        define_method(:on_activate, body)
       end
 
       def self.on_deactivate(method_name = nil, &on_deactivate_block)
-        @on_deactivate_block = block_given? ? on_deactivate_block : lambda {self.send(method_name || :on_deactivate)}
+        # @on_deactivate_block = block_given? ? on_deactivate_block : lambda {self.send(method_name || :on_deactivate)}
+        body = block_given? ? on_deactivate_block : lambda {self.send((method_name || :on_deactivate).to_sym)}
+        define_method(:on_deactivate, body)
       end
 
       def self.on_ack(method_name = nil, &on_ack_block)
-        @on_ack_block = block_given? ? on_ack_block : lambda {|msg_id| self.send(method_name || :on_ack, msg_id)}
+        body = block_given? ? on_ack_block : lambda {|msg_id| self.send((method_name || :on_ack).to_sym, msg_id)}
+        define_method(:on_ack, body)
       end
 
       def self.on_fail(method_name = nil, &on_fail_block)
-        @on_fail_block = block_given? ? on_fail_block : lambda {|msg_id| self.send(method_name || :on_fail, msg_id)}
+        body = block_given? ? on_fail_block : lambda {|msg_id| self.send((method_name || :on_fail).to_sym, msg_id)}
+        define_method(:on_fail, body)
       end
 
       # DSL instance methods
@@ -75,7 +87,8 @@ module RedStorm
       # Spout proxy interface
 
       def next_tuple
-        output = instance_exec(&self.class.on_send_block)
+        output = on_send
+
         if self.class.emit?
           if output
             values = [output].flatten
@@ -95,19 +108,20 @@ module RedStorm
         @collector = collector
         @context = context
         @config = config
-        instance_exec(&self.class.on_init_block)
+
+        on_init
       end
 
       def close
-        instance_exec(&self.class.on_close_block)
+        on_close
       end
 
       def activate
-        instance_exec(&self.class.on_activate_block)
+        on_activate
       end
 
       def deactivate
-        instance_exec(&self.class.on_deactivate_block)
+        on_deactivate
       end
 
       def declare_output_fields(declarer)
@@ -115,11 +129,11 @@ module RedStorm
       end
 
       def ack(msg_id)
-        instance_exec(msg_id, &self.class.on_ack_block)
+        on_ack(msg_id)
       end
 
       def fail(msg_id)
-        instance_exec(msg_id, &self.class.on_fail_block)
+        on_fail(msg_id)
       end
 
       def get_component_configuration
@@ -144,34 +158,6 @@ module RedStorm
 
       def self.configure_block
         @configure_block ||= lambda {}
-      end
-
-      def self.on_send_block
-        @on_send_block ||= lambda {self.send(:on_send)}
-      end
-
-      def self.on_init_block
-        @on_init_block ||= lambda {self.send(:on_init)}
-      end
-
-      def self.on_close_block
-        @on_close_block ||= lambda {self.send(:on_close)}
-      end
-
-      def self.on_activate_block
-        @on_activate_block ||= lambda {self.send(:on_activate)}
-      end
-
-      def self.on_deactivate_block
-        @on_deactivate_block ||= lambda {self.send(:on_deactivate)}
-      end
-
-      def self.on_ack_block
-        @on_ack_block ||= lambda {|msg_id| self.send(:on_ack, msg_id)}
-      end
-
-      def self.on_fail_block
-        @on_fail_block ||= lambda {|msg_id| self.send(:on_fail, msg_id)}
       end
 
       def self.send_options

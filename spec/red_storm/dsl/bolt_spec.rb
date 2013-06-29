@@ -164,7 +164,9 @@ describe RedStorm::SimpleBolt do
 
         it "should parse without options" do
           class Bolt1 < RedStorm::SimpleBolt
+            def test_method; end
             on_receive :test_method
+
           end
 
           Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS

@@ -60,6 +60,12 @@ $ redstorm install
 
 This will install default Java jar dependencies in `target/dependency`, generate & compile the Java bindings in `target/classes`.
 
+By default, the Java compilation will use the current JVM version as source/target compilation compatibility. If you want to force a specific source/target version, use the `--[JVM VERSION]` option. For example, to force compiling for 1.6 use:
+
+``` sh
+$ redstorm install --1.6
+```
+
 ### Create a topology
 
 Create a subdirectory for your topology code and create your topology class **using this naming convention**: *underscore* topology_class_file_name.rb **MUST** correspond to its *CamelCase* class name.
@@ -402,6 +408,12 @@ It is possible to fork the RedStorm project and run local and remote/cluster top
 
   ```sh
   $ bundle exec redstorm build
+  ```
+
+  By default, the Java compilation will use the current JVM version as source/target compilation compatibility. If you want to force a specific source/target version, use the `--[JVM VERSION]` option. For example, to force compiling for 1.6 use:
+
+  ``` sh
+  $ bundle exec redstorm build --1.6
   ```
 
   **if you modify any of the RedStorm Ruby code or Java binding code**, you need to run this to refresh code and rebuild the bindings

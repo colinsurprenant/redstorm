@@ -14,7 +14,7 @@ Check also these related projects:
 ## Documentation
 
 ---
-This is the documentation for the **current WIP version of RedStorm** - the **[latest released Gem is v0.6.5](wiki/RedStorm-Gem-v0.6.5-Documentation)**
+This is the documentation for the **current WIP version of RedStorm** - the **[latest released Gem is v0.6.5](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.5-Documentation)**
 
 ---
 

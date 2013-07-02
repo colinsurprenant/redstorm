@@ -88,6 +88,7 @@
 - [issue #82](https://github.com/colinsurprenant/redstorm/issues/82) - configurable javac compilation source/target
 - [issue #83](https://github.com/colinsurprenant/redstorm/issues/83) - syntactic sugar on the Tuple class
 - [issue #84](https://github.com/colinsurprenant/redstorm/issues/84) - DSL classes naming and namespace
-- improved DSL performance by refactoring closures invocation
+- improved DSL performance by refactoring closures invocation, see [redstorm-benchmark](https://github.com/colinsurprenant/redstorm-benchmark/)
 - fixed FFI support
-- exposed topology builder for specs, see [redstorm-started](https://github.com/colinsurprenant/redstorm-starter/)
+- exposed topology builder for specs
+- [issue #11](https://github.com/colinsurprenant/redstorm/issues/11), [#17](https://github.com/colinsurprenant/redstorm/issues/17) -  example specs using the Storm testing API see [redstorm-starter](https://github.com/colinsurprenant/redstorm-starter/)

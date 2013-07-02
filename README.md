@@ -13,6 +13,11 @@ Check also these related projects:
 
 ## Documentation
 
+---
+This is the documentation for the **current WIP version of RedStorm** - the **[latest released Gem is v0.6.5](wiki/RedStorm-Gem-v0.6.5-Documentation)**
+
+---
+
 Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept [in the wiki](https://github.com/colinsurprenant/redstorm/wiki) when necessary.
 
 ## Dependencies
@@ -24,7 +29,7 @@ Tested on **OSX 10.8.3** and **Ubuntu Linux 12.10** using **Storm 0.9.0-wip16** 
 - RubyGems
 
   ``` sh
-  $ gem install redstorm
+  $ gem install redstorm --pre
   ```
 
 - Bundler

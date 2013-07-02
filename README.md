@@ -1,4 +1,4 @@
-# RedStorm v0.6.6.beta1 - JRuby on Storm
+# RedStorm
 
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 
@@ -14,7 +14,7 @@ Check also these related projects:
 ## Documentation
 
 ---
-This is the documentation for the **current WIP version of RedStorm** - the **[latest released Gem is v0.6.5](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.5-Documentation)**
+This is the documentation for the **current 0.6.6-beta1 version of RedStorm** - the **[latest released Gem is v0.6.5](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.5-Documentation)**
 
 ---
 

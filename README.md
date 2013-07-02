@@ -4,17 +4,16 @@
 
 RedStorm provides a Ruby DSL using JRuby integration for the [Storm](https://github.com/nathanmarz/storm/) distributed realtime computation system.
 
+Like RedStorm? visit us on IRC at #redstorm on freenode
+
+Check also these related projects:
+
+- [redstorm-starter](https://github.com/colinsurprenant/redstorm-starter/)
+- [redstorm-benchmark](https://github.com/colinsurprenant/redstorm-benchmark/)
+
 ## Documentation
 
-Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept in the wiki when necessary.
-
-### Released gems
-
-- [RedStorm Gem v0.4.x Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.4.x-Documentation)
-- [RedStorm Gem v0.5.0 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.0-Documentation)
-- [RedStorm Gem v0.5.1 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.5.1-Documentation)
-- [RedStorm Gem v0.6.3 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.3-Documentation)
-- [RedStorm Gem v0.6.4 Documentation](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.4-Documentation)
+Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept [in the wiki](https://github.com/colinsurprenant/redstorm/wiki) when necessary.
 
 ## Dependencies
 

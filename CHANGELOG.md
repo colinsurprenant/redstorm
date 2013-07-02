@@ -81,3 +81,13 @@
 - issue #57 - DRPC topologies
 - issue #73, external jars dependencies Ivy configurations completely externalized and configurable
 - lots of other [bug fixes and improvements](https://github.com/colinsurprenant/redstorm/issues?milestone=9&page=1&state=closed)
+
+# 0.6.6, WIP
+- Storm 0.9.0-wip16 and JRuby 1.7.4
+- [issue #79](https://github.com/colinsurprenant/redstorm/issues/79) - fix example Kafka topology dependency doc
+- [issue #82](https://github.com/colinsurprenant/redstorm/issues/82) - configurable javac compilation source/target
+- [issue #83](https://github.com/colinsurprenant/redstorm/issues/83) - syntactic sugar on the Tuple class
+- [issue #84](https://github.com/colinsurprenant/redstorm/issues/84) - DSL classes naming and namespace
+- improved DSL performance by refactoring closures invocation
+- fixed FFI support
+- exposed topology builder for specs, see [redstorm-started](https://github.com/colinsurprenant/redstorm-starter/)

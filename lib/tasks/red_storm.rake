@@ -12,7 +12,7 @@ require 'red_storm/application'
 
 INSTALL_IVY_VERSION = "2.3.0"
 
-task :launch, :env, :ruby_mode, :class_file do |t, args|
+task :launch, :env, :storm_conf, :ruby_mode, :class_file do |t, args|
   # use ruby mode parameter or default to current interpreter version
   version_token = RedStorm.jruby_mode_token(args[:ruby_mode])
 
@@ -24,7 +24,11 @@ task :launch, :env, :ruby_mode, :class_file do |t, args|
       puts("error: cluster jar file #{TARGET_CLUSTER_JAR} not found. Generate it using $redstorm jar DIR1 [DIR2, ...]")
       exit(1)
     end
-    RedStorm::Application.cluster_storm_command(args[:class_file], args[:ruby_mode])
+    unless File.exist?(args[:storm_conf])
+      puts("error: Storm config file #{args[:storm_conf]} not found. Create it or supply alternate path using $redstorm cluster --config STORM_CONFIG_PATH ...")
+      exit(1)
+    end
+    RedStorm::Application.cluster_storm_command(args[:storm_conf], args[:class_file], args[:ruby_mode])
   end
 
   puts("launching #{command}")

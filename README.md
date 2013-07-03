@@ -196,28 +196,32 @@ $ java -Djruby.compat.version=RUBY1_9 -cp "target/classes:target/dependency/stor
 
 ### Run on production cluster
 
-The Storm distribution is currently required for the cluster topology submission.
+Locally installing the Storm distribution is **not required**. Note that RedStorm does not provide the Storm command line utilities and you will need to install the Storm distribution to use the Storm command line utilities.
 
-1. download and unpack the [Storm 0.9.0-wip16 distribution](https://dl.dropbox.com/u/133901206/storm-0.9.0-wip16.zip) locally
-
-2. add the Storm `bin/` directory to your `$PATH`
-
-3. create `~/.storm/storm.yaml` and add the following
+1. create the Storm config file `~/.storm/storm.yaml` and add the following
 
   ```yaml
   nimbus.host: "host_name_or_ip"
   ```
 
-4. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
+  you can also use an alternate path and use the `--config <other/path/to/config.yaml>`
+
+2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
 
   ``` sh
   $ redstorm jar <sources_directory1> <sources_directory2> ...
   ```
 
-5. submit the cluster topology jar file to the cluster
+3. submit the cluster topology jar file to the cluster
 
   ``` sh
   $ redstorm cluster <sources_directory/topology_class_file_name.rb>
+  ```
+
+  or if you have an alternate Storm config path:
+
+  ``` sh
+  $ redstorm cluster --config <some/other/path/to/config.yaml> <sources_directory/topology_class_file_name.rb>
   ```
 
   note that the cluster topology jar can also be submitted using the storm command with:
@@ -284,13 +288,13 @@ All examples using the [DSL](https://github.com/colinsurprenant/redstorm/wiki/Ru
 
 #### Topologies without gems
 
-1. genererate the `target/cluster-topology.jar` and include the `examples/` directory.
+1. genererate the `target/cluster-topology.jar` and include the `examples/` directory
 
   ``` sh
   $ redstorm jar examples
   ```
 
-2. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
+2. submit the cluster topology jar file to the cluster
 
   ``` sh
   $ redstorm cluster examples/dsl/exclamation_topology.rb
@@ -320,13 +324,13 @@ For `examples/dsl/redis_word_count_topology.rb` the `redis` gem is required and 
   $ redstorm bundle word_count
   ```
 
-3. genererate the `target/cluster-topology.jar` and include the `examples/` directory.
+3. genererate the `target/cluster-topology.jar` and include the `examples/` directory
 
   ``` sh
   $ redstorm jar examples
   ```
 
-4. submit the cluster topology jar file to the cluster, assuming you have the Storm distribution installed and the Storm `bin/` directory in your path:
+4. submit the cluster topology jar file to the cluster
 
   ``` sh
   $ redstorm cluster examples/dsl/redis_word_count_topology.rb

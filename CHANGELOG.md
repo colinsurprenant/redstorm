@@ -82,7 +82,7 @@
 - issue #73, external jars dependencies Ivy configurations completely externalized and configurable
 - lots of other [bug fixes and improvements](https://github.com/colinsurprenant/redstorm/issues?milestone=9&page=1&state=closed)
 
-# 0.6.6, WIP
+# 0.6.6.beta1, 07-02-2013
 - Storm 0.9.0-wip16 and JRuby 1.7.4
 - [issue #79](https://github.com/colinsurprenant/redstorm/issues/79) - fix example Kafka topology dependency doc
 - [issue #82](https://github.com/colinsurprenant/redstorm/issues/82) - configurable javac compilation source/target
@@ -92,3 +92,6 @@
 - fixed FFI support
 - exposed topology builder for specs
 - [issue #11](https://github.com/colinsurprenant/redstorm/issues/11), [#17](https://github.com/colinsurprenant/redstorm/issues/17) -  example specs using the Storm testing API see [redstorm-starter](https://github.com/colinsurprenant/redstorm-starter/)
+
+# 0.6.6.beta2, 07-20-2013
+- [issue #76](https://github.com/colinsurprenant/redstorm/issues/76) - avoid shelling out to storm jar command for cluster submission

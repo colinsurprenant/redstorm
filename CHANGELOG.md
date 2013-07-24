@@ -91,7 +91,10 @@
 - improved DSL performance by refactoring closures invocation, see [redstorm-benchmark](https://github.com/colinsurprenant/redstorm-benchmark/)
 - fixed FFI support
 - exposed topology builder for specs
-- [issue #11](https://github.com/colinsurprenant/redstorm/issues/11), [#17](https://github.com/colinsurprenant/redstorm/issues/17) -  example specs using the Storm testing API see [redstorm-starter](https://github.com/colinsurprenant/redstorm-starter/)
+- [issue #11](https://github.com/colinsurprenant/redstorm/issues/11), [#17](https://github.com/colinsurprenant/redstorm/issues/17) -  example specs using the Storm testing API see [redstorm-starter](https://github.com/colinsurprenant/redsto  rm-starter/)
 
 # 0.6.6.beta2, 07-20-2013
 - [issue #76](https://github.com/colinsurprenant/redstorm/issues/76) - avoid shelling out to storm jar command for cluster submission
+
+# 0.6.6 WIP
+- updated examples Kafka topology for new dependencies for Storm KafkaSpout

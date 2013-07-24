@@ -4,9 +4,9 @@
   <resolvers>
     <chain name="repositories">
       <ibiblio name="ibiblio" m2compatible="true"/>
-      <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
-      <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/> 
-      <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/> 
+      <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/>
+      <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/>
+      <ibiblio name="conjars" root="http://conjars.org/repo/" m2compatible="true"/>
     </chain>
   </resolvers>
 </ivysettings>

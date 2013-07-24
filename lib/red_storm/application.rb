@@ -27,6 +27,8 @@ CUSTOM_IVY_STORM_DEPENDENCIES = "#{DST_IVY_DIR}/storm_dependencies.xml"
 DEFAULT_IVY_TOPOLOGY_DEPENDENCIES = "#{SRC_IVY_DIR}/topology_dependencies.xml"
 CUSTOM_IVY_TOPOLOGY_DEPENDENCIES = "#{DST_IVY_DIR}/topology_dependencies.xml"
 
+DEFAULT_STORM_CONF_FILE = File.expand_path("~/.storm/storm.yaml")
+
 module RedStorm
 
   class Application
@@ -34,11 +36,11 @@ module RedStorm
 
     def self.local_storm_command(class_file, ruby_mode = nil)
       src_dir = File.expand_path(File.dirname(class_file))
-      "java -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/storm/default/*:#{TARGET_DEPENDENCY_DIR}/topology/default/*:#{src_dir}/\" redstorm.TopologyLauncher local #{class_file}"
+      "java -server -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} -cp \"#{TARGET_CLASSES_DIR}:#{TARGET_DEPENDENCY_DIR}/storm/default/*:#{TARGET_DEPENDENCY_DIR}/topology/default/*:#{src_dir}/\" redstorm.TopologyLauncher local #{class_file}"
     end
 
-    def self.cluster_storm_command(class_file, ruby_mode = nil)
-      "storm jar #{TARGET_CLUSTER_JAR} -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} redstorm.TopologyLauncher cluster #{class_file}"
+    def self.cluster_storm_command(storm_conf, class_file, ruby_mode = nil)
+      "java -client -Dstorm.conf.file=#{File.basename(storm_conf)} -Dstorm.jar=#{TARGET_CLUSTER_JAR} -Djruby.compat.version=#{RedStorm.jruby_mode_token(ruby_mode)} -cp #{TARGET_DEPENDENCY_DIR}/storm/default/*:#{TARGET_CLUSTER_JAR}:#{File.dirname(storm_conf)} redstorm.TopologyLauncher cluster #{class_file}"
     end
 
     def self.usage
@@ -50,9 +52,11 @@ module RedStorm
       puts("       redstorm bundle [BUNDLER_GROUP]")
       puts("       redstorm jar DIR1, [DIR2, ...]")
       puts("       redstorm local [--1.8|--1.9] TOPOLOGY_CLASS_PATH")
-      puts("       redstorm cluster [--1.8|--1.9] TOPOLOGY_CLASS_PATH")
+      puts("       redstorm cluster [--1.8|--1.9] [--config STORM_CONFIG_PATH] TOPOLOGY_CLASS_PATH")
       exit(1)
     end
+
+    # TODO: refactor args parsing... becoming a mess.
 
     def self.run(args)
       if args.size > 0
@@ -66,10 +70,11 @@ module RedStorm
         elsif args.size >= 2 && ["local", "cluster"].include?(args[0])
           env = args.delete_at(0)
           version = args.delete("--1.8") || args.delete("--1.9")
+          storm_conf = args.delete("--config") ? File.expand_path(args.delete_at(0)) : DEFAULT_STORM_CONF_FILE
           if args.size == 1
             file = args[0]
             load(TASKS_FILE)
-            Rake::Task['launch'].invoke(env, version, file)
+            Rake::Task['launch'].invoke(env, storm_conf, version, file)
             exit
           end
         end

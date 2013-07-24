@@ -14,7 +14,7 @@ Check also these related projects:
 ## Documentation
 
 ---
-This is the documentation for the **current 0.6.6-beta1 version of RedStorm** - the **[latest released Gem is v0.6.5](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.5-Documentation)**
+This is the documentation for the **current 0.6.6-beta2 version of RedStorm** - the **[latest released Gem is v0.6.5](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.5-Documentation)**
 
 ---
 
@@ -140,7 +140,7 @@ You can supply custom `storm` and `topology` dependencies by creating `ivy/storm
 
   ``` xml
   <?xml version="1.0"?>
-  <ivy-module version="2.0">
+  <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
     <info organisation="redstorm" module="storm-deps"/>
     <dependencies>
       <dependency org="storm" name="storm" rev="0.9.0-wip16" conf="default" transitive="true" />
@@ -153,10 +153,18 @@ You can supply custom `storm` and `topology` dependencies by creating `ivy/storm
 
   ``` xml
   <?xml version="1.0"?>
-  <ivy-module version="2.0">
+  <ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
     <info organisation="redstorm" module="topology-deps"/>
     <dependencies>
       <dependency org="org.jruby" name="jruby-core" rev="1.7.4" conf="default" transitive="true"/>
+
+      <!-- explicitely specify jffi to also fetch the native jar. make sure to update jffi version matching jruby-core version -->
+      <!-- this is the only way I found using Ivy to fetch the native jar -->
+      <dependency org="com.github.jnr" name="jffi" rev="1.2.5" conf="default" transitive="true">
+        <artifact name="jffi" type="jar" />
+        <artifact name="jffi" type="jar" m:classifier="native"/>
+      </dependency>
+
     </dependencies>
   </ivy-module>
   ```
@@ -172,9 +180,9 @@ The jars repositories can be configured by adding the `ivy/settings.xml` file in
     <resolvers>
       <chain name="repositories">
         <ibiblio name="ibiblio" m2compatible="true"/>
-        <ibiblio name="maven2" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/>
         <ibiblio name="sonatype" root="http://repo.maven.apache.org/maven2/" m2compatible="true"/>
         <ibiblio name="clojars" root="http://clojars.org/repo/" m2compatible="true"/>
+        <ibiblio name="conjars" root="http://conjars.org/repo/" m2compatible="true"/>
       </chain>
     </resolvers>
   </ivysettings>
@@ -189,7 +197,7 @@ $ redstorm local <sources_directory_path/topology_class_file_name.rb>
 note that the topology can also be launched with the following command:
 
 ``` sh
-$ java -Djruby.compat.version=RUBY1_9 -cp "target/classes:target/dependency/storm/default/*:target/dependency/topology/default/*:<sources_directory_path>" redstorm.TopologyLauncher local <sources_directory_path/topology_class_file_name.rb>
+$ java -cp "target/classes:target/dependency/storm/default/*:target/dependency/topology/default/*:<sources_directory_path>" redstorm.TopologyLauncher local <sources_directory_path/topology_class_file_name.rb>
 ```
 
 **See examples below** to run examples in local mode or on a production cluster.

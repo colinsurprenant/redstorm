@@ -3,9 +3,8 @@
 [![Gem Version](https://badge.fury.io/rb/redstorm.png)](http://badge.fury.io/rb/redstorm)
 [![build status](https://secure.travis-ci.org/colinsurprenant/redstorm.png)](http://travis-ci.org/colinsurprenant/redstorm)
 [![Code Climate](https://codeclimate.com/github/colinsurprenant/redstorm.png)](https://codeclimate.com/github/colinsurprenant/redstorm)
-<!--
 [![Coverage Status](https://coveralls.io/repos/colinsurprenant/redstorm/badge.png?branch=master)](https://coveralls.io/r/colinsurprenant/redstorm?branch=master)
- -->
+
 RedStorm provides a Ruby DSL using JRuby integration for the [Storm](https://github.com/nathanmarz/storm/) distributed realtime computation system.
 
 Like RedStorm? visit us on IRC at #redstorm on freenode

@@ -38,7 +38,7 @@ module RedStorm
     class RedisWordCountTopology < DSL::Topology
       spout RedisWordSpout
 
-      bolt WordCountBolt, :parallelism => 3 do
+      bolt WordCountBolt, :parallelism => 2 do
         source RedisWordSpout, :fields => ["word"]
       end
 
@@ -46,10 +46,10 @@ module RedStorm
         debug true
         case env
         when :local
-          max_task_parallelism 3
+          max_task_parallelism 2
         when :cluster
-          max_task_parallelism 5
-          num_workers 20
+          max_task_parallelism 2
+          num_workers 2
           max_spout_pending(1000)
         end
       end

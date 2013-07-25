@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/colinsurprenant/redstorm'
   s.summary     = 'JRuby on Storm'
   s.description = 'JRuby integration & DSL for the Storm distributed realtime computation system'
+  s.license     = "Apache 2.0"
 
   s.rubyforge_project = 'redstorm'
 

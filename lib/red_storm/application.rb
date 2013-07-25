@@ -1,33 +1,6 @@
 require 'red_storm/version'
 require 'red_storm/environment'
 
-CWD = Dir.pwd
-TARGET_DIR = "#{CWD}/target"
-TARGET_LIB_DIR = "#{TARGET_DIR}/lib"
-TARGET_SRC_DIR = "#{TARGET_DIR}/src"
-TARGET_GEM_DIR = "#{TARGET_DIR}/gems/gems"
-TARGET_SPECS_DIR = "#{TARGET_DIR}/gems/specifications"
-TARGET_CLASSES_DIR = "#{TARGET_DIR}/classes"
-TARGET_DEPENDENCY_DIR = "#{TARGET_DIR}/dependency"
-TARGET_DEPENDENCY_UNPACKED_DIR = "#{TARGET_DIR}/dependency-unpacked"
-TARGET_CLUSTER_JAR = "#{TARGET_DIR}/cluster-topology.jar"
-
-REDSTORM_JAVA_SRC_DIR = "#{RedStorm::REDSTORM_HOME}/src/main"
-REDSTORM_LIB_DIR = "#{RedStorm::REDSTORM_HOME}/lib"
-
-SRC_EXAMPLES = "#{RedStorm::REDSTORM_HOME}/examples"
-DST_EXAMPLES = "#{CWD}/examples"
-
-SRC_IVY_DIR = "#{RedStorm::REDSTORM_HOME}/ivy"
-DST_IVY_DIR = "#{CWD}/ivy"
-DEFAULT_IVY_SETTINGS = "#{SRC_IVY_DIR}/settings.xml"
-CUSTOM_IVY_SETTINGS = "#{DST_IVY_DIR}/settings.xml"
-DEFAULT_IVY_STORM_DEPENDENCIES = "#{SRC_IVY_DIR}/storm_dependencies.xml"
-CUSTOM_IVY_STORM_DEPENDENCIES = "#{DST_IVY_DIR}/storm_dependencies.xml"
-DEFAULT_IVY_TOPOLOGY_DEPENDENCIES = "#{SRC_IVY_DIR}/topology_dependencies.xml"
-CUSTOM_IVY_TOPOLOGY_DEPENDENCIES = "#{DST_IVY_DIR}/topology_dependencies.xml"
-
-DEFAULT_STORM_CONF_FILE = File.expand_path("~/.storm/storm.yaml")
 
 module RedStorm
 

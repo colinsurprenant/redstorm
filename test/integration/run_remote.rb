@@ -21,7 +21,7 @@ topology_class = topology_class_path.split("/").last
 @redis = Redis.new(:host => "localhost", :port => 6379)
 @redis.del(topology_class)
 
-success, out = RedStorm::Application.subshell(RedStorm::Application.cluster_storm_command(topology_class_path))
+success, out = RedStorm::Application.subshell(RedStorm::Application.cluster_storm_command(RedStorm::DEFAULT_STORM_CONF_FILE, topology_class_path))
 puts("storm FAILED\n\n#{out}") unless success
 
 result = success ? @redis.blpop(topology_class, :timeout => 120) : nil

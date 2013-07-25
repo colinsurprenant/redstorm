@@ -2,6 +2,8 @@ $:.unshift File.dirname(__FILE__) + '/../lib/'
 $:.unshift File.dirname(__FILE__) + '/../spec'
 
 require 'rspec'
+require 'coveralls'
+Coveralls.wear!
 
 # load Storm jars
 storm_jars = File.dirname(__FILE__) + '/../target/dependency/storm/default/*.jar'

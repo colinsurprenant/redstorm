@@ -1,6 +1,6 @@
 language: ruby
 rvm:
-  - jruby-1.7.3
+  - jruby-1.7.4
 before_script: bundle exec rake storm_deps
 script: bundle exec rspec
 notifications:

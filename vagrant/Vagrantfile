@@ -1,18 +1,28 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-add_swap = <<SCRIPT
-  if [ ! -f /swapfile1 ]; then
-    echo "Creating swap file. This could take a while..."
-    dd if=/dev/zero of=/swapfile1 bs=1024 count=262144
-    mkswap /swapfile1
-    chmod 0600 /swapfile1
-    swapon /swapfile1
-    echo "/swapfile1 swap swap defaults 0 0" >> /etc/fstab
-  fi
-SCRIPT
+# @param swap_size_mb [Integer] swap size in megabytes
+# @param swap_file [String] full path for swap file, default is /swapfile1
+# @return [String] the script text for shell inline provisioning
+def create_swap(swap_size_mb, swap_file = "/swapfile1")
+  <<-EOS
+    if [ ! -f /swapfile1 ]; then
+      echo "Creating #{swap_size_mb}mb swap file=#{swap_file}. This could take a while..."
+      dd if=/dev/zero of=#{swap_file} bs=1024 count=#{swap_size_mb * 1024}
+      mkswap #{swap_file}
+      chmod 0600 #{swap_file}
+      swapon #{swap_file}
+      echo "#{swap_file} swap swap defaults 0 0" >> /etc/fstab
+    fi
+  EOS
+end
 
-provision = lambda do |chef|
+# execute chef provisionning with environment specific configs
+# this is an attempt to DRY up the dev/prod provisionning
+# @param chef [Object] the chef provisionner, see Vagrant doc
+# @param env [Symbol] the environment symbol, :dev, :prod, etc
+def provision(chef, env)
+# provision = lambda do |chef|
   # chef.log_level = :debug
 
   chef.cookbooks_path = ["./cookbooks"]
@@ -33,7 +43,6 @@ provision = lambda do |chef|
   chef.add_recipe "java"
   chef.add_recipe "storm::singlenode"
 
-  # custom JSON attributes:
   chef.json = {
     :java => {
       :oracle => {
@@ -50,6 +59,12 @@ provision = lambda do |chef|
         :user => "storm",
         :group => "storm",
       },
+    },
+  }
+
+  case env
+  when :dev
+    chef.json[:storm].merge!({
       :nimbus => {
         :host => "localhost",
         :childopts => "-Xmx128m",
@@ -64,10 +79,28 @@ provision = lambda do |chef|
       :ui => {
         :childopts => "-Xmx128m",
       },
-    },
-  }
+    })
+  when :prod
+    chef.json[:storm].merge!({
+      :nimbus => {
+        :host => "localhost",
+        :childopts => "-Xmx768m",
+      },
+      :supervisor => {
+        :hosts =>  ["localhost"],
+        :childopts => "-Xmx256m",
+      },
+      :worker => {
+        :childopts => "-Xmx768m",
+      },
+      :ui => {
+        :childopts => "-Xmx768m",
+      },
+    })
+  else
+    raise("invalid env=#{env.inspect}")
+  end
 end
-
 
 # use version 2 config object
 Vagrant.configure("2") do |config|
@@ -91,13 +124,12 @@ Vagrant.configure("2") do |config|
     end
 
     # TODO on EC2, add swap on ephemeral device not ebs boot
-    # prod.vm.provision :shell, :inline => add_swap
+    prod.vm.provision :shell, :inline => create_swap(1024, "/mnt/swapfile1")
 
     prod.vm.provision :chef_solo do |chef|
-      provision.call(chef)
+      provision(chef, :prod)
     end
   end
-
 
   config.vm.define :dev do |dev|
     dev.vm.box = "quantal64-amd64"
@@ -116,14 +148,13 @@ Vagrant.configure("2") do |config|
       vb.customize ["modifyvm", :id, "--memory", 1536]
     end
 
-    dev.vm.provision :shell, :inline => add_swap
+    dev.vm.provision :shell, :inline => create_swap(256)
 
     dev.vm.provision :chef_solo do |chef|
-      provision.call(chef)
+      provision(chef, :dev)
     end
   end
 
   # vagrant-omnibus plugin: auto install/upgrate chef
   config.omnibus.chef_version = "10.18.2"
-
 end

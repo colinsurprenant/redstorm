@@ -1,6 +1,11 @@
 #!/usr/bin/env ruby
 
-require 'rubygems' 
+unless RUBY_PLATFORM =~ /java/
+  puts("error: RedStorm requires JRuby. Check http://jruby.org/ or https://github.com/sstephenson/rbenv or https://rvm.io/")
+  exit(1)
+end
+
+require 'rubygems'
 require 'rake'
 
 begin

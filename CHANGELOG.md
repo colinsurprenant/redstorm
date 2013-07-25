@@ -96,5 +96,5 @@
 # 0.6.6.beta2, 07-20-2013
 - [issue #76](https://github.com/colinsurprenant/redstorm/issues/76) - avoid shelling out to storm jar command for cluster submission
 
-# 0.6.6 WIP
-- updated examples Kafka topology for new dependencies for Storm KafkaSpout
+# 0.6.6, 07-25-2013
+- updated example Kafka topology for new dependencies for Storm KafkaSpout

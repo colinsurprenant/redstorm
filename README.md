@@ -13,11 +13,12 @@ Check also these related projects:
 
 ## Documentation
 
+<!--
 ---
 This is the documentation for the **current 0.6.6-beta2 version of RedStorm** - the **[latest released Gem is v0.6.5](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.5-Documentation)**
 
 ---
-
+-->
 Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept [in the wiki](https://github.com/colinsurprenant/redstorm/wiki) when necessary.
 
 ## Dependencies
@@ -29,14 +30,14 @@ Tested on **OSX 10.8.3** and **Ubuntu Linux 12.10** using **Storm 0.9.0-wip16** 
 - RubyGems
 
   ``` sh
-  $ gem install redstorm --pre
+  $ gem install redstorm
   ```
 
 - Bundler
 
   ``` ruby
   source "https://rubygems.org"
-  gem "redstorm", "~> 0.6.6.beta2"
+  gem "redstorm", "~> 0.6.6"
   ```
 
 ## Usage

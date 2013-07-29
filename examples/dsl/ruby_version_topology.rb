@@ -24,6 +24,8 @@ module RedStorm
       spout VersionSpout
 
       configure do |env|
+        max_task_parallelism 1
+        num_workers 1
         debug false
       end
 

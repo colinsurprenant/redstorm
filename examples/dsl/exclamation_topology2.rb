@@ -21,15 +21,14 @@ module RedStorm
 
       bolt ExclamationBolt, :id => :ExclamationBolt2, :parallelism => 2 do
         source ExclamationBolt, :shuffle
+        debug true
       end
 
       configure do |env|
-        debug true
+        debug false
         max_task_parallelism 4
-        if env == :cluster
-          num_workers 4
-          max_spout_pending(1000)
-        end
+        num_workers 1
+        max_spout_pending 1000
       end
 
       on_submit do |env|

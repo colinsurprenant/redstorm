@@ -19,4 +19,11 @@ class HelloWorldTopology < RedStorm::DSL::Topology
   bolt HelloWorldBolt do
     source HelloWorldSpout, :global
   end
+
+  configure do
+    debug false
+    max_task_parallelism 4
+    num_workers 1
+    max_spout_pending 1000
+  end
 end

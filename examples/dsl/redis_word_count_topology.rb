@@ -39,19 +39,15 @@ module RedStorm
       spout RedisWordSpout
 
       bolt WordCountBolt, :parallelism => 2 do
+        debug true
         source RedisWordSpout, :fields => ["word"]
       end
 
       configure do |env|
-        debug true
-        case env
-        when :local
-          max_task_parallelism 2
-        when :cluster
-          max_task_parallelism 2
-          num_workers 2
-          max_spout_pending(1000)
-        end
+        debug false
+        max_task_parallelism 2
+        num_workers 1
+        max_spout_pending 1000
       end
     end
   end

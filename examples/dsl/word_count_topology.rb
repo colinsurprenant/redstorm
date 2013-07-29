@@ -13,16 +13,15 @@ module RedStorm
       end
 
       bolt WordCountBolt, :parallelism => 2 do
+        debug true
         source SplitSentenceBolt, :fields => ["word"]
       end
 
       configure :word_count do |env|
-        debug true
+        debug false
         max_task_parallelism 4
-        if env == :cluster
-          num_workers 6
-          max_spout_pending(1000)
-        end
+        num_workers 1
+        max_spout_pending 1000
       end
 
       on_submit do |env|

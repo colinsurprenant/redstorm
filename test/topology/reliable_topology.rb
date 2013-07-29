@@ -76,6 +76,8 @@ class ReliableTopology < RedStorm::DSL::Topology
 
   configure do |environment|
     debug true
+    max_task_parallelism 1
+    num_workers 1
     message_timeout_secs 10
     num_ackers 2
   end

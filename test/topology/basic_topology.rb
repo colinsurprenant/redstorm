@@ -34,6 +34,8 @@ class BasicTopology < RedStorm::DSL::Topology
   end
 
   configure do |environment|
+    max_task_parallelism 1
+    num_workers 1
     debug false
   end
 

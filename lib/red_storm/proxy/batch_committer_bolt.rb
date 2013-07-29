@@ -8,10 +8,6 @@ java_import 'backtype.storm.topology.OutputFieldsDeclarer'
 java_import 'backtype.storm.tuple.Tuple'
 java_import 'java.util.Map'
 
-module Backtype
-  java_import 'backtype.storm.Config'
-end
-
 java_package 'redstorm.proxy'
 
 class BatchCommitterBolt

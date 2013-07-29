@@ -6,10 +6,6 @@ java_import 'storm.trident.operation.TridentOperationContext'
 java_import 'storm.trident.operation.Function'
 java_import 'java.util.Map'
 
-module Backtype
-  java_import 'backtype.storm.Config'
-end
-
 java_package 'redstorm.proxy'
 
 class ProxyFunction

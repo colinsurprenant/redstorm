@@ -6,10 +6,6 @@ java_import 'storm.trident.spout.IBatchSpout'
 java_import 'backtype.storm.tuple.Fields'
 java_import 'java.util.Map'
 
-module Backtype
-  java_import 'backtype.storm.Config'
-end
-
 java_package 'redstorm.proxy'
 
 # the Spout class is a proxy to the real spout to avoid having to deal with all the

@@ -3,6 +3,9 @@ require 'red_storm/configurator'
 require 'red_storm/environment'
 require 'pathname'
 
+java_import 'backtype.storm.tuple.Fields'
+java_import 'backtype.storm.tuple.Values'
+
 module RedStorm
   module DSL
 
@@ -54,11 +57,11 @@ module RedStorm
       end
 
       def unanchored_emit(*values)
-        @collector.emit(Values.new(*values))
+        @collector.emit_tuple(Values.new(*values))
       end
 
       def anchored_emit(tuple, *values)
-        @collector.emit(tuple, Values.new(*values))
+        @collector.emit_anchor_tuple(tuple, Values.new(*values))
       end
 
       def ack(tuple)

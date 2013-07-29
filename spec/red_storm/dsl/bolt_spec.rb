@@ -420,7 +420,7 @@ describe RedStorm::SimpleBolt do
 
         collector = mock("Collector")
         RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
-        collector.should_receive(:emit).with("values").exactly(3).times
+        collector.should_receive(:emit_tuple).with("values").exactly(3).times
 
         bolt = Bolt1.new
         bolt.prepare(nil, nil, collector)
@@ -449,7 +449,7 @@ describe RedStorm::SimpleBolt do
 
         collector = mock("Collector")
         RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values")
-        collector.should_receive(:emit).with("values").exactly(3).times
+        collector.should_receive(:emit_tuple).with("values").exactly(3).times
 
         bolt = Bolt1.new
         bolt.prepare(nil, nil, collector)
@@ -479,8 +479,8 @@ describe RedStorm::SimpleBolt do
         collector = mock("Collector")
         RedStorm::Values.should_receive(:new).with("output1", "output2").exactly(3).times.and_return("values1")
         RedStorm::Values.should_receive(:new).with("output3", "output4").exactly(3).times.and_return("values2")
-        collector.should_receive(:emit).with("values1").exactly(3).times
-        collector.should_receive(:emit).with("values2").exactly(3).times
+        collector.should_receive(:emit_tuple).with("values1").exactly(3).times
+        collector.should_receive(:emit_tuple).with("values2").exactly(3).times
 
         bolt = Bolt1.new
         bolt.prepare(nil, nil, collector)
@@ -516,7 +516,7 @@ describe RedStorm::SimpleBolt do
 
         collector = mock("Collector")
         RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
-        collector.should_receive(:emit).with("tuple", "values").exactly(3).times
+        collector.should_receive(:emit_anchor_tuple).with("tuple", "values").exactly(3).times
 
         bolt = Bolt1.new
         bolt.prepare(nil, nil, collector)
@@ -552,7 +552,7 @@ describe RedStorm::SimpleBolt do
 
         collector = mock("Collector")
         RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
-        collector.should_receive(:emit).with("tuple", "values").exactly(3).times
+        collector.should_receive(:emit_anchor_tuple).with("tuple", "values").exactly(3).times
         collector.should_receive(:ack).with("tuple").exactly(3).times
 
         bolt = Bolt1.new

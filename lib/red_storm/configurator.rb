@@ -1,7 +1,10 @@
 # This hack get rif of the "Use RbConfig instead of obsolete and deprecated Config"
 # deprecation warning that is triggered by "java_import 'backtype.storm.Config'".
-Object.send :remove_const, :Config
-Config = RbConfig
+begin
+  Object.send :remove_const, :Config
+  Config = RbConfig
+rescue NameError
+end
 
 module Backtype
   java_import 'backtype.storm.Config'

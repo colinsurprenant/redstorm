@@ -27,8 +27,12 @@ describe RedStorm::SimpleTopology do
     class BoltClass2; end
     SpoutClass1.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
     SpoutClass2.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
+    SpoutClass1.should_receive(:java_proxy).at_least(0).times.and_return("RedStorm::JRubySpout")
+    SpoutClass2.should_receive(:java_proxy).at_least(0).times.and_return("RedStorm::JRubySpout")
     BoltClass1.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
     BoltClass2.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
+    BoltClass1.should_receive(:java_proxy).at_least(0).times.and_return("RedStorm::JRubyBolt")
+    BoltClass2.should_receive(:java_proxy).at_least(0).times.and_return("RedStorm::JRubyBolt")
   end
 
   it "should set default topology name" do

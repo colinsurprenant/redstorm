@@ -14,6 +14,8 @@ module RedStorm
     class Bolt
       attr_reader :collector, :context, :config
 
+      def self.java_proxy; "Java::RedstormStormJruby::JRubyBolt"; end
+
       # DSL class methods
 
       def self.log

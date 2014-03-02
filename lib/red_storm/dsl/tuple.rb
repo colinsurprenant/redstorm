@@ -23,6 +23,8 @@ class TupleImpl
   end
   alias_method :[], :value
 
+  alias_method :values, :getValues # wire directly to avoid method missing indirection
+
   def field_index(field)
     fieldIndex(field.to_s)
   end

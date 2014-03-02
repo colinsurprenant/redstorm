@@ -6,83 +6,118 @@ import storm.trident.operation.TridentCollector;
 import storm.trident.spout.IBatchSpout;
 import java.util.Map;
 
+import org.jruby.Ruby;
+import org.jruby.RubyObject;
+import org.jruby.runtime.Helpers;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.javasupport.JavaUtil;
+import org.jruby.RubyModule;
+import org.jruby.exceptions.RaiseException;
+
 /**
- * the JRubySpout class is a simple proxy class to the actual spout implementation in JRuby.
- * this proxy is required to bypass the serialization/deserialization process when dispatching
- * the spout to the workers. JRuby does not yet support serialization from Java
- * (Java serialization call on a JRuby class). 
+ * the JRubySpout class is a proxy class to the actual spout implementation in JRuby.
+ * this proxy is required to bypass the serialization/deserialization issues of JRuby objects.
+ * JRuby classes do not support Java serialization.
  *
- * Note that the JRuby spout proxy class is instanciated in the open method which is called after 
- * deserialization at the worker and in both the declareOutputFields and isDistributed methods which 
- * are called once before serialization at topology creation. 
+ * Note that the JRuby spout class is instanciated in the open method which is called after
+ * deserialization at the worker and in the declareOutputFields & getComponentConfiguration
+ * methods which are called once before serialization at topology creation.
  */
 public class JRubyBatchSpout implements IBatchSpout {
-  IBatchSpout _proxySpout;
-  String _realSpoutClassName;
-  String _baseClassPath;
-  
+  private final String _realSpoutClassName;
+  private final String[] _fields;
+  private final String _bootstrap;
+
+  // transient to avoid serialization
+  private transient IRubyObject _ruby_spout;
+  private transient Ruby __ruby__;
+
   /**
-   * create a new JRubySpout
-   * 
-   * @param baseClassPath the topology/project base JRuby class file path 
+   * create a new JRubyBatchSpout
+   *
+   * @param baseClassPath the topology/project base JRuby class file path
    * @param realSpoutClassName the fully qualified JRuby spout implementation class name
+   * @param fields the output fields names
    */
   public JRubyBatchSpout(String baseClassPath, String realSpoutClassName) {
-    _baseClassPath = baseClassPath;
     _realSpoutClassName = realSpoutClassName;
+    _fields = null;
+    _bootstrap = "require '" + baseClassPath + "'";
+  }
+
+  /* constructor for compatibility with JRubySpout signature */
+  public JRubyBatchSpout(String baseClassPath, String realSpoutClassName, String[] fields) {
+    _realSpoutClassName = realSpoutClassName;
+    _fields = fields;
+    _bootstrap = "require '" + baseClassPath + "'";
   }
 
   @Override
   public void open(final Map conf, final TopologyContext context) {
-    // create instance of the jruby proxy class here, after deserialization in the workers.
-    _proxySpout = newProxySpout(_baseClassPath, _realSpoutClassName);
-    _proxySpout.open(conf, context);
+    // // create instance of the jruby proxy class here, after deserialization in the workers.
+    // _proxySpout = newProxySpout(_baseClassPath, _realSpoutClassName);
+    // _proxySpout.open(conf, context);
+
+
+    _ruby_spout = initialize_ruby_spout();
+    IRubyObject ruby_conf = JavaUtil.convertJavaToRuby(__ruby__, conf);
+    IRubyObject ruby_context = JavaUtil.convertJavaToRuby(__ruby__, context);
+    Helpers.invoke(__ruby__.getCurrentContext(), _ruby_spout, "open", ruby_conf, ruby_context);
   }
 
   @Override
   public void emitBatch(long batchId, TridentCollector collector) {
-    _proxySpout.emitBatch(batchId, collector);
-  } 
+    // _proxySpout.emitBatch(batchId, collector);
+
+    IRubyObject ruby_batch_id = JavaUtil.convertJavaToRuby(__ruby__, batchId);
+    IRubyObject ruby_collector = JavaUtil.convertJavaToRuby(__ruby__, collector);
+    Helpers.invoke(__ruby__.getCurrentContext(), _ruby_spout, "emit_batch", ruby_batch_id, ruby_collector);
+  }
 
   @Override
   public void close() {
-    _proxySpout.close();
+    // _proxySpout.close();
+
+    Helpers.invoke(__ruby__.getCurrentContext(), _ruby_spout, "close");
   }
 
   @Override
   public void ack(long batchId) {
-    _proxySpout.ack(batchId);
+    // _proxySpout.ack(batchId);
+
+    IRubyObject ruby_batch_id = JavaUtil.convertJavaToRuby(__ruby__, batchId);
+    Helpers.invoke(__ruby__.getCurrentContext(), _ruby_spout, "ack", ruby_batch_id);
   }
 
   @Override
   public Fields getOutputFields() {
-    if (_proxySpout == null) {
-      // getOutputFields is executed in the topology creation time before serialisation.
-      // do not set the _proxySpout instance variable here to avoid JRuby serialization
-      // issues. Just create tmp spout instance to call getOutputFields.
-      IBatchSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
-      return spout.getOutputFields();
-    } else {
-      return _proxySpout.getOutputFields();
-    }
+    IRubyObject ruby_spout = initialize_ruby_spout();
+    IRubyObject ruby_result = Helpers.invoke(__ruby__.getCurrentContext(), ruby_spout, "get_output_fields");
+    return (Fields)ruby_result.toJava(Fields.class);
   }
 
   @Override
   public Map<String, Object> getComponentConfiguration() {
-    // getComponentConfiguration is executed in the topology creation time before serialisation.
-    // do not set the _proxySpout instance variable here to avoid JRuby serialization
-    // issues. Just create tmp spout instance to call declareOutputFields.
-    IBatchSpout spout = newProxySpout(_baseClassPath, _realSpoutClassName);
-    return spout.getComponentConfiguration();
+    // getComponentConfiguration is executed in the topology creation time, before serialisation.
+    // just create tmp spout instance to call getComponentConfiguration.
+
+    IRubyObject ruby_spout = initialize_ruby_spout();
+    IRubyObject ruby_result = Helpers.invoke(__ruby__.getCurrentContext(), ruby_spout, "get_component_configuration");
+    return (Map)ruby_result.toJava(Map.class);
   }
- 
-  private static IBatchSpout newProxySpout(String baseClassPath, String realSpoutClassName) {
+
+  private IRubyObject initialize_ruby_spout() {
+    __ruby__ = Ruby.getGlobalRuntime();
+
+    RubyModule ruby_class;
     try {
-      redstorm.proxy.BatchSpout proxy = new redstorm.proxy.BatchSpout(baseClassPath, realSpoutClassName);
-      return proxy;
+      ruby_class = __ruby__.getClassFromPath(_realSpoutClassName);
     }
-    catch (Exception e) {
-      throw new RuntimeException(e);
+    catch (RaiseException e) {
+      // after deserialization we need to recreate ruby environment
+      __ruby__.evalScriptlet(_bootstrap);
+      ruby_class = __ruby__.getClassFromPath(_realSpoutClassName);
     }
+    return Helpers.invoke(__ruby__.getCurrentContext(), ruby_class, "new");
   }
 }

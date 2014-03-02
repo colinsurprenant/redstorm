@@ -46,7 +46,7 @@ module RedStorm
           elsif is_java?
             @clazz.new(*constructor_args)
           else
-            JRubySpout.new(@clazz.base_class_path, @clazz.name, @output_fields)
+            Object.module_eval(@clazz.java_proxy).new(@clazz.base_class_path, @clazz.name, @output_fields)
           end
         end
       end
@@ -95,7 +95,7 @@ module RedStorm
           elsif is_java?
             @clazz.new(*constructor_args)
           else
-            JRubyBolt.new(@clazz.base_class_path, @clazz.name, @output_fields)
+            Object.module_eval(@clazz.java_proxy).new(@clazz.base_class_path, @clazz.name, @output_fields)
           end
         end
       end

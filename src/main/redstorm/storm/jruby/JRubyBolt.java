@@ -19,13 +19,12 @@ import org.jruby.exceptions.RaiseException;
 /**
  * the JRubyBolt class is a proxy class to the actual bolt implementation in JRuby.
  * this proxy is required to bypass the serialization/deserialization issues of JRuby objects.
- * JRuby classes are not support Java serialization.
+ * JRuby classes do not support Java serialization.
  *
  * Note that the JRuby bolt class is instanciated in the prepare method which is called after
  * deserialization at the worker and in the declareOutputFields & getComponentConfiguration
  * methods which are called once before serialization at topology creation.
  */
-
 public class JRubyBolt implements IRichBolt {
   private final String _realBoltClassName;
   private final String[] _fields;

@@ -6,46 +6,64 @@ import java.util.Map;
 import storm.trident.operation.TridentOperationContext;
 import storm.trident.operation.Function;
 
+import org.jruby.Ruby;
+import org.jruby.RubyObject;
+import org.jruby.runtime.Helpers;
+import org.jruby.runtime.builtin.IRubyObject;
+import org.jruby.javasupport.JavaUtil;
+import org.jruby.RubyModule;
+import org.jruby.exceptions.RaiseException;
+
 public class JRubyProxyFunction implements Function {
-  Function _proxy;
-  String _realClassName;
-  String _baseClassPath;
+  private final String _realClassName;
+  private final String _bootstrap;
+
+  // transient to avoid serialization
+  private transient IRubyObject _proxy;
+  private transient Ruby __ruby__;
 
   public JRubyProxyFunction(final String baseClassPath, final String realClassName) {
-    _baseClassPath = baseClassPath;
     _realClassName = realClassName;
+    _bootstrap = "require '" + baseClassPath + "'";
   }
 
-
   @Override
-  public void execute(final TridentTuple _tridentTuple, final TridentCollector _tridentCollector) {
+  public void execute(final TridentTuple tuple, final TridentCollector collector) {
     if(_proxy == null) {
-      _proxy = newProxy(_baseClassPath, _realClassName);
+      _proxy = initialize_proxy();
     }
-    _proxy.execute(_tridentTuple, _tridentCollector);
+    IRubyObject ruby_tuple = JavaUtil.convertJavaToRuby(__ruby__, tuple);
+    IRubyObject ruby_collector = JavaUtil.convertJavaToRuby(__ruby__, collector);
+    Helpers.invoke(__ruby__.getCurrentContext(), _proxy, "execute", ruby_tuple, ruby_collector);
   }
 
   @Override
   public void cleanup() {
-    _proxy.cleanup();
+    Helpers.invoke(__ruby__.getCurrentContext(), _proxy, "cleanup");
   }
 
   @Override
-  public void prepare(final Map _map, final TridentOperationContext _tridentOperationContext) {
+  public void prepare(final Map conf, final TridentOperationContext context) {
     if(_proxy == null) {
-      _proxy = newProxy(_baseClassPath, _realClassName);
+      _proxy = initialize_proxy();
     }
-    _proxy.prepare(_map, _tridentOperationContext);
+    IRubyObject ruby_conf = JavaUtil.convertJavaToRuby(__ruby__, conf);
+    IRubyObject ruby_context = JavaUtil.convertJavaToRuby(__ruby__, context);
+    Helpers.invoke(__ruby__.getCurrentContext(), _proxy, "prepare", ruby_conf, ruby_context);
   }
 
+  private IRubyObject initialize_proxy() {
+    __ruby__ = Ruby.getGlobalRuntime();
 
-  private static Function newProxy(final String baseClassPath, final String realClassName) {
+    RubyModule ruby_class;
     try {
-      redstorm.proxy.ProxyFunction proxy = new redstorm.proxy.ProxyFunction(baseClassPath, realClassName);
-      return proxy;
+      ruby_class = __ruby__.getClassFromPath(_realClassName);
     }
-    catch (Exception e) {
-      throw new RuntimeException(e);
+    catch (RaiseException e) {
+      // after deserialization we need to recreate ruby environment
+      __ruby__.evalScriptlet(_bootstrap);
+      ruby_class = __ruby__.getClassFromPath(_realClassName);
     }
+    return Helpers.invoke(__ruby__.getCurrentContext(), ruby_class, "new");
   }
 }

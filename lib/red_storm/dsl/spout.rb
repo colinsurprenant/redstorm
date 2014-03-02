@@ -11,6 +11,8 @@ module RedStorm
     class Spout
       attr_reader :config, :context, :collector
 
+      def self.java_proxy; "Java::RedstormStormJruby::JRubySpout"; end
+
       # DSL class methods
 
       def self.configure(&configure_block)
@@ -99,7 +101,7 @@ module RedStorm
               unreliable_emit(*values)
             end
           else
-            sleep(0.1)
+            sleep(0.1)  # see https://twitter.com/colinsurprenant/status/406445541904494592
           end
         end
       end

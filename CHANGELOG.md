@@ -98,3 +98,8 @@
 
 # 0.6.6, 07-25-2013
 - updated example Kafka topology for new dependencies for Storm KafkaSpout
+
+# 0.7.0.beta1, 03-2014
+- refactored the proxy classes for better performance
+- Storm 0.9.1-incubating and JRuby 1.7.11
+- added Trident example in `examples/trident/`

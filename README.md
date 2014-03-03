@@ -16,17 +16,15 @@ Check also these related projects:
 
 ## Documentation
 
-<!--
----
-This is the documentation for the **current 0.6.6-beta2 version of RedStorm** - the **[latest released Gem is v0.6.5](https://github.com/colinsurprenant/redstorm/wiki/RedStorm-Gem-v0.6.5-Documentation)**
-
----
--->
 Chances are new versions of RedStorm will introduce changes that will break compatibility or change the developement workflow. To prevent out-of-sync documentation, per version specific documentation are kept [in the wiki](https://github.com/colinsurprenant/redstorm/wiki) when necessary.
 
 ## Dependencies
 
-Tested on **OSX 10.8.3** and **Ubuntu Linux 12.10** using **Storm 0.9.0-wip16** and **JRuby 1.7.4** and **OpenJDK 7**
+#### Stable 0.6.6
+- Tested on **OSX 10.8.3**, **Ubuntu Linux 12.10** using **Storm 0.9.0-wip16**, **JRuby 1.7.4**, **OpenJDK 7**
+
+#### Current 0.7.0.beta1
+- Tested on **OSX 10.9.1**, **Ubuntu Linux 12.10** using **Storm 0.9.1-incubating**, **JRuby 1.7.11**, **OpenJDK 7**
 
 ## Installation
 

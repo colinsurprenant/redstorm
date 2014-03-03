@@ -31,6 +31,7 @@ java_import 'backtype.storm.tuple.Values'
 # java_import 'redstorm.storm.jruby.JRubyTransactionalSpout'
 # java_import 'redstorm.storm.jruby.JRubyTransactionalBolt'
 # java_import 'redstorm.storm.jruby.JRubyTransactionalCommitterBolt'
+# java_import 'redstorm.storm.jruby.JRubyProxyFunction'
 
 java_package 'redstorm'
 

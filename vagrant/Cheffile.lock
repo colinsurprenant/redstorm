@@ -19,9 +19,9 @@ GIT
 GIT
   remote: git://github.com/colinsurprenant/storm-cookbook.git
   ref: master
-  sha: 6348b3cbaf1f11da12043df5961dcb1d5cac6ad8
+  sha: bf72057e8d1aa7a7e16e0efd29b1dedfa22a335e
   specs:
-    storm (0.2.1)
+    storm (0.2.2)
 
 GIT
   remote: git://github.com/dergachev/chef_users.git

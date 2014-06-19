@@ -12,5 +12,11 @@
       <artifact name="jffi" type="jar" m:classifier="native"/>
     </dependency>
 
+
+    <dependency org="org.scala-lang" name="scala-library" rev="2.9.2" conf="default" transitive="false"/>
+    <dependency org="org.apache.kafka" name="kafka_2.9.2" rev="0.8.1.1" conf="default" transitive="false" />
+    <dependency org="net.wurstmeister.storm" name="storm-kafka-0.8-plus" rev="0.4.0" conf="default" transitive="false" />
+    <dependency org="com.yammer.metrics" name="metrics-core" rev="2.2.0"/>
+
   </dependencies>
 </ivy-module>

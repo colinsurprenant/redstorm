@@ -413,7 +413,7 @@ describe RedStorm::SimpleSpout do
       class Java::OrgSlf4j::LoggerFactory; end
 
       describe "in class" do
-        it "should proxy to storm log4j logger" do
+        it "should proxy to storm slf4j logger" do
           logger = mock(Java::OrgSlf4j::Logger)
           Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Spout1").and_return(logger)
           logger.should_receive(:info).with("test")
@@ -441,7 +441,7 @@ describe RedStorm::SimpleSpout do
       end
 
       describe "in instance" do
-        it "should proxy to storm log4j logger" do
+        it "should proxy to storm slf4j logger" do
           logger = mock(Java::OrgSlf4j::Logger)
           Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Spout1").and_return(logger)
 
@@ -474,6 +474,22 @@ describe RedStorm::SimpleSpout do
           logger2.should_receive(:info).with("test2")
           spout2 = Spout2.new
           spout2.open(nil, nil, nil)
+        end
+
+        it "should conform to SLF4J Named Hierarchy when loading loggers" do
+          logger = mock(Java::OrgSlf4j::Logger)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Named.Hierarchy.Spout").and_return(logger)
+          module Named
+            module Hierarchy
+              class Spout < RedStorm::SimpleSpout
+                on_init {log.info("test1")}
+              end
+            end
+          end
+
+          logger.should_receive(:info).with("test1")
+          spout = Named::Hierarchy::Spout.new
+          spout.open(nil, nil, nil)
         end
       end
     end

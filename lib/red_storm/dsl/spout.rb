@@ -20,7 +20,7 @@ module RedStorm
       end
 
       def self.log
-        @log ||= Java::OrgSlf4j::LoggerFactory.get_logger(self.name)
+        @log ||= Java::OrgSlf4j::LoggerFactory.get_logger(self.name.gsub(/::/,'.'))
       end
 
       def self.output_fields(*fields)

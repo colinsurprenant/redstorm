@@ -102,7 +102,7 @@ module RedStorm
       end
 
       def self.log
-        @log ||= Java::OrgSlf4j::LoggerFactory.get_logger(self.name)
+        @log ||= Java::OrgSlf4j::LoggerFactory.get_logger(self.name.gsub(/::/,'.'))
       end
 
       # def self.spout(spout_class, contructor_args = [], options = {}, &spout_block)

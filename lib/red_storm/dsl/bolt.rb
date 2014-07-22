@@ -19,7 +19,7 @@ module RedStorm
       # DSL class methods
 
       def self.log
-        @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
+        @log ||= Java::OrgSlf4j::LoggerFactory.get_logger(self.name)
       end
 
       def self.output_fields(*fields)

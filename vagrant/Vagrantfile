@@ -136,8 +136,8 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define :dev do |dev|
-    dev.vm.box = "quantal64-amd64"
-    dev.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/quantal/current/quantal-server-cloudimg-amd64-vagrant-disk1.box"
+    dev.vm.box = "precise-amd64"
+    dev.vm.box_url = "http://cloud-images.ubuntu.com/vagrant/precise/current/precise-server-cloudimg-amd64-vagrant-disk1.box"
 
     # storm ui
     dev.vm.network :forwarded_port, :guest => 8080, :host => 8080

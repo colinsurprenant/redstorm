@@ -185,7 +185,7 @@ task :jar, [:include_dir] => [:clean_jar] do |t, args|
     # rejar all topology jars
     Dir["target/dependency/topology/default/*.jar"].each do |jar|
       puts("Extracting #{jar}")
-      zipfileset 'src' => jar, 'includes' => "**/*"
+      zipfileset 'src' => jar, 'includes' => "**/*", 'excludes' => '**/META-INF/*.SF,**/META-INF/*.DSA,**/META-INF/*.RSA,**/META-INF/SIG-*'
     end
     fileset 'dir' => RedStorm::TARGET_DIR do
       include 'name' => "gems/**"

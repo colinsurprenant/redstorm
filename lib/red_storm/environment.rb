@@ -47,7 +47,7 @@ module RedStorm
   DEFAULT_IVY_TOPOLOGY_DEPENDENCIES = "#{SRC_IVY_DIR}/topology_dependencies.xml"
   CUSTOM_IVY_TOPOLOGY_DEPENDENCIES = "#{DST_IVY_DIR}/topology_dependencies.xml"
 
-  DEFAULT_STORM_CONF_FILE = File.expand_path("~/.storm/storm.yaml")
+  DEFAULT_STORM_CONF_FILE = File.expand_path("~/.storm/storm.yaml") rescue ''
 
   def current_ruby_mode
     version = RUBY_VERSION[/(\d+\.\d+)(\.\d+)*/, 1]

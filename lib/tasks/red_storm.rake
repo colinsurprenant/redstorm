@@ -177,8 +177,20 @@ desc "install storm and topology dependencies in #{RedStorm::TARGET_DEPENDENCY_D
 task :deps => ["ivy:install", :ivy_config, :storm_deps, :topology_deps] do
 end
 
+desc "copies topology resource files into the #{RedStorm::TARGET_CLASSES_DIR} directory"
+task :cp_resources, [:include_dir] do |t, args|
+  if args[:include_dir]
+    dirs = args[:include_dir].split(":")
+    #add any resources/ dir in the tree in the jar root - requirement for ShellBolt multilang resources
+    all_resource_dirs = dirs.map do |dir|
+      Dir.glob("#{dir}/**/resources")
+    end
+    FileUtils.cp_r(all_resource_dirs.flatten, RedStorm::TARGET_CLASSES_DIR, verbose: true)
+  end
+end
+
 desc "generate #{RedStorm::TARGET_CLUSTER_JAR}"
-task :jar, [:include_dir] => [:clean_jar] do |t, args|
+task :jar, [:include_dir] => [:clean_jar, :cp_resources] do |t, args|
   puts("\n--> Generating JAR file #{RedStorm::TARGET_CLUSTER_JAR}")
 
   ant.jar 'destfile' => RedStorm::TARGET_CLUSTER_JAR do
@@ -198,17 +210,6 @@ task :jar, [:include_dir] => [:clean_jar] do |t, args|
     end
     if args[:include_dir]
       dirs = args[:include_dir].split(":")
-
-      # first add any resources/ dir in the tree in the jar root - requirement for ShellBolt multilang resources
-      dirs.each do |dir|
-        resources_dirs = Dir.glob("#{dir}/**/resources")
-        resources_dirs.each do |resources_dir|
-          resources_parent = resources_dir.gsub("/resources", "")
-          fileset 'dir' => resources_parent do
-            include 'name' => "resources/**/*"
-          end
-        end
-      end
 
       # include complete source dir tree (note we don't care about potential duplicated resources dir)
       fileset 'dir' => RedStorm::CWD do

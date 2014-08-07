@@ -190,6 +190,12 @@ The jars repositories can be configured by adding the `ivy/settings.xml` file in
   </ivysettings>
   ```
 
+### Update the java dependencies if you've changed them
+
+``` sh
+$ redstorm dep
+``` 
+
 ### Run in local mode
 
 ``` sh

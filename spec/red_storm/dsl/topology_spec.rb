@@ -65,6 +65,19 @@ describe RedStorm::SimpleTopology do
     RedStorm::Configuration.topology_class.name.should == "Topology1"
   end
 
+  it "should proxy to storm slf4j logger" do
+    logger = mock(Java::OrgSlf4j::Logger)
+    Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Topology1").and_return(logger)
+    logger.should_receive(:info).with("test")
+
+    RedStorm::Configuration.topology_class = nil
+    class Topology1 < RedStorm::SimpleTopology
+      log.info("test")
+      bolt BoltClass1 do
+      end
+    end
+  end
+
   describe "interface" do
     it "should implement topology proxy" do
       topology = RedStorm::SimpleTopology.new

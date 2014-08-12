@@ -36,20 +36,27 @@ module RedStorm
 
         self.receive_options.merge!(options)
 
-        # indirecting through a lambda defers the method lookup at invocation time
-        # and the performance penalty is negligible
-        body = block_given? ? on_receive_block : lambda{|tuple| self.send((method_name || :on_receive).to_sym, tuple)}
-        define_method(:on_receive, body)
+        if block_given?
+          define_method(:on_receive, on_receive_block)
+        elsif method_name
+          define_method(:on_receive, lambda {|tuple| self.send(method_name, tuple) } )
+        end
       end
 
       def self.on_init(method_name = nil, &on_init_block)
-        body = block_given? ? on_init_block : lambda {self.send((method_name || :on_init).to_sym)}
-        define_method(:on_init, body)
+        if block_given?
+          define_method(:on_init, on_init_block)
+        elsif method_name
+          define_method(:on_init, lambda { self.send(method_name) } )
+        end
       end
 
       def self.on_close(method_name = nil, &on_close_block)
-        body = block_given? ? on_close_block : lambda {self.send((method_name || :on_close).to_sym)}
-        define_method(:on_close, body)
+        if block_given?
+          define_method(:on_close, on_close_block)
+        elsif method_name
+          define_method(:on_close, lambda { self.send(method_name) } )
+        end
       end
 
       # DSL instance methods

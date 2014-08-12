@@ -105,6 +105,13 @@ describe RedStorm::SimpleBolt do
       end
 
       describe "with block argument" do
+        it "should set the on_receive method to the block" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive { 'a block value' }
+          end
+
+          Bolt1.new.on_receive.should == 'a block value'
+        end
 
         it "should parse without options" do
           class Bolt1 < RedStorm::SimpleBolt
@@ -218,6 +225,18 @@ describe RedStorm::SimpleBolt do
       end
 
       describe "with default method" do
+        it "should use the default method" do
+          CUSTOM_RECEIVE_OPTIONS = {:emit => false, :ack => false, :anchor => true}
+
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive CUSTOM_RECEIVE_OPTIONS
+            def on_receive ; 'a method value' ; end
+          end
+
+          Bolt1.new.on_receive.should == 'a method value'
+
+          Bolt1.receive_options.should == CUSTOM_RECEIVE_OPTIONS
+        end
 
         it "should parse without options" do
           class Bolt1 < RedStorm::SimpleBolt
@@ -290,10 +309,19 @@ describe RedStorm::SimpleBolt do
         bolt.should_receive(:test_method)
         bolt.prepare(nil, nil, nil)
       end
+
+      it "should use a predefined method" do
+        class Bolt1 < RedStorm::SimpleBolt
+          def on_init
+            'a method value'
+          end
+        end
+
+        Bolt1.new.on_init.should == 'a method value'
+      end
     end
 
     describe "on_close statement" do
-
       it "should parse block argument" do
         class Bolt1 < RedStorm::SimpleBolt
           on_close {self.test_block_call}
@@ -312,6 +340,16 @@ describe RedStorm::SimpleBolt do
         bolt = Bolt1.new
         bolt.should_receive(:test_method)
         bolt.cleanup
+      end
+
+      it "should use a predefined method" do
+        class Bolt1 < RedStorm::SimpleBolt
+          def on_close
+            'a method value'
+          end
+        end
+
+        Bolt1.new.on_close.should == 'a method value'
       end
     end
 

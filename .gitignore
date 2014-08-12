@@ -18,3 +18,4 @@
 /vagrant/.vagrant
 /vendor
 /coverage/
+bundle

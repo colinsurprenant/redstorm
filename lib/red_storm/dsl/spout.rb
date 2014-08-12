@@ -1,6 +1,7 @@
 require 'java'
 require 'red_storm/configurator'
 require 'red_storm/environment'
+require 'red_storm/loggable'
 require 'pathname'
 
 module RedStorm
@@ -9,6 +10,7 @@ module RedStorm
     class SpoutError < StandardError; end
 
     class Spout
+      include Loggable
       attr_reader :config, :context, :collector
 
       def self.java_proxy; "Java::RedstormStormJruby::JRubySpout"; end
@@ -17,10 +19,6 @@ module RedStorm
 
       def self.configure(&configure_block)
         @configure_block = block_given? ? configure_block : lambda {}
-      end
-
-      def self.log
-        @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
       end
 
       def self.output_fields(*fields)
@@ -81,10 +79,6 @@ module RedStorm
         @collector.emit(Values.new(*values))
       end
       alias_method :emit, :unreliable_emit
-
-      def log
-        self.class.log
-      end
 
       # Spout proxy interface
 

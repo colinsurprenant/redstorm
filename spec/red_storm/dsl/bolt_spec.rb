@@ -330,13 +330,14 @@ describe RedStorm::SimpleBolt do
     # log specs are mostly the same ats in the spout specs. if these are modified, sync with spout
     describe "log statement" do
 
-      module Java::OrgApacheLog4j end;
-      class Java::OrgApacheLog4j::Logger; end
+      module Java::OrgSlf4j end;
+      class Java::OrgSlf4j::Logger; end
+      class Java::OrgSlf4j::LoggerFactory; end
 
        describe "in class" do
-        it "should proxy to storm log4j logger" do
-          logger = mock(Java::OrgApacheLog4j::Logger)
-          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
+        it "should proxy to storm slf4j logger" do
+          logger = mock(Java::OrgSlf4j::Logger)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Bolt1").and_return(logger)
           logger.should_receive(:info).with("test")
 
           class Bolt1 < RedStorm::SimpleBolt
@@ -345,10 +346,10 @@ describe RedStorm::SimpleBolt do
         end
 
         it "should use own class name as logger id" do
-          logger1 = mock(Java::OrgApacheLog4j::Logger)
-          logger2 = mock(Java::OrgApacheLog4j::Logger)
-          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
-          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
+          logger1 = mock(Java::OrgSlf4j::Logger)
+          logger2 = mock(Java::OrgSlf4j::Logger)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Bolt1").and_return(logger1)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Bolt2").and_return(logger2)
           logger1.should_receive(:info).with("test1")
           logger2.should_receive(:info).with("test2")
 
@@ -362,9 +363,9 @@ describe RedStorm::SimpleBolt do
       end
 
       describe "in instance" do
-        it "should proxy to storm log4j logger" do
-          logger = mock(Java::OrgApacheLog4j::Logger)
-          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger)
+        it "should proxy to storm slf4j logger" do
+          logger = mock(Java::OrgSlf4j::Logger)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Bolt1").and_return(logger)
 
           class Bolt1 < RedStorm::SimpleBolt
             on_init {log.info("test")}
@@ -376,10 +377,10 @@ describe RedStorm::SimpleBolt do
         end
 
         it "should use own class name as logger id" do
-          logger1 = mock(Java::OrgApacheLog4j::Logger)
-          logger2 = mock(Java::OrgApacheLog4j::Logger)
-          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt1").and_return(logger1)
-          Java::OrgApacheLog4j::Logger.should_receive("getLogger").with("Bolt2").and_return(logger2)
+          logger1 = mock(Java::OrgSlf4j::Logger)
+          logger2 = mock(Java::OrgSlf4j::Logger)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Bolt1").and_return(logger1)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Bolt2").and_return(logger2)
 
           class Bolt1 < RedStorm::SimpleBolt
             on_init {log.info("test1")}
@@ -395,6 +396,22 @@ describe RedStorm::SimpleBolt do
           logger2.should_receive(:info).with("test2")
           bolt2 = Bolt2.new
           bolt2.prepare(nil, nil, nil)
+        end
+
+        it "should conform to SLF4J Named Hierarchy when loading loggers" do
+          logger = mock(Java::OrgSlf4j::Logger)
+          Java::OrgSlf4j::LoggerFactory.should_receive("get_logger").with("Named.Hierarchy.Bolt").and_return(logger)
+          module Named
+            module Hierarchy
+              class Bolt < RedStorm::SimpleBolt
+                on_init {log.info("test1")}
+              end
+            end
+          end
+
+          logger.should_receive(:info).with("test1")
+          bolt = Named::Hierarchy::Bolt.new
+          bolt.prepare(nil, nil, nil)
         end
       end
     end

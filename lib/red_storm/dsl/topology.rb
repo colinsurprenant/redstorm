@@ -1,6 +1,7 @@
 require 'java'
 require 'red_storm/configuration'
 require 'red_storm/configurator'
+require 'red_storm/loggable'
 
 java_import 'backtype.storm.topology.TopologyBuilder'
 java_import 'backtype.storm.generated.SubmitOptions'
@@ -11,8 +12,8 @@ module RedStorm
     class TopologyDefinitionError < StandardError; end
 
     class Topology
+      include Loggable
       attr_reader :cluster # LocalCluster reference usable in on_submit block, for example
-
       DEFAULT_SPOUT_PARALLELISM = 1
       DEFAULT_BOLT_PARALLELISM = 1
 
@@ -99,10 +100,6 @@ module RedStorm
             Object.module_eval(@clazz.java_proxy).new(@clazz.base_class_path, @clazz.name, @output_fields)
           end
         end
-      end
-
-      def self.log
-        @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
       end
 
       # def self.spout(spout_class, contructor_args = [], options = {}, &spout_block)

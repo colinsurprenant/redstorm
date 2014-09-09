@@ -216,11 +216,13 @@ Locally installing the Storm distribution is **not required**. Note that RedStor
 
   you can also use an alternate path and use the `--config <other/path/to/config.yaml>`
 
-2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies
+2. generate `target/cluster-topology.jar`. This jar file will include your sources directory plus the required dependencies.
 
   ``` sh
   $ redstorm jar <sources_directory1> <sources_directory2> ...
   ```
+
+  Note that "sources directory" means the directory that contains _your_ topology code, not the redstorm sources. For example, if you're building a topolgy from one of the examples included with this gem, the correct command would be `redstorm jar examples`.
 
 3. submit the cluster topology jar file to the cluster
 

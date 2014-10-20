@@ -29,6 +29,8 @@ class TupleImpl
     fieldIndex(field.to_s)
   end
 
+  # Because of https://jira.codehaus.org/browse/JRUBY-6643
+  java_signature 'boolean isContains(Object)'
   def contains?(field)
     contains(field.to_s)
   end

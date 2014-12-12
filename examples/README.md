@@ -66,10 +66,12 @@ First, you will need add some additional dependencies to the ``ivy/topology_depe
 <dependencies>
 	.
 	.
-	<dependency org="org.scala-lang" name="scala-library" rev="2.9.2" conf="default" transitive="false"/>
-	<dependency org="org.apache.kafka" name="kafka_2.9.2" rev="0.8.1.1" conf="default" transitive="false" />
-	<dependency org="net.wurstmeister.storm" name="storm-kafka-0.8-plus" rev="0.4.0" conf="default" transitive="false" />
-	<dependency org="com.yammer.metrics" name="metrics-core" rev="2.2.0"/>
+	<dependency org="org.scala-lang" name="scala-library" rev="2.10.1" conf="default" transitive="false" />
+  <dependency org="org.apache.kafka" name="kafka_2.10" rev="0.8.1.1" conf="default" transitive="false" />
+  <dependency org="org.apache.storm" name="storm-kafka" rev="0.9.3" conf="default" transitive="true" />
+  <dependency org="com.yammer.metrics" name="metrics-core" rev="2.2.0"/>
+  <dependency org="com.google.guava" name="guava" rev="16.0.1"/>
+  <exclude org="org.slf4j" module="slf4j-log4j12" />
 	.
 	.
 </dependency>

@@ -603,6 +603,74 @@ describe RedStorm::SimpleBolt do
         bolt.prepare(nil, nil, collector)
         bolt.execute("output")
       end
+
+      it "should emit tuple on a stream" do
+        class Bolt1 < RedStorm::SimpleBolt
+          on_receive :stream => :custom_stream do |tuple|
+            tuple
+          end
+        end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method, :stream => :custom_stream
+          def my_method(tuple); tuple; end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          on_receive :stream => :custom_stream
+          def on_receive(tuple); tuple; end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit_tuple_stream).with(:custom_stream, "values").exactly(3).times
+
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+
+        bolt = Bolt3.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+      end
+
+      it "should emit anchored tuple on a stream" do
+        class Bolt1 < RedStorm::SimpleBolt
+          on_receive :anchor => true, :stream => :custom_stream do |tuple|
+            "output"
+          end
+        end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method, :anchor => true, :stream => :custom_stream
+          def my_method(tuple)
+            "output"
+          end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          on_receive :anchor => true, :stream => :custom_stream
+          def on_receive(tuple)
+            "output"
+          end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit_anchor_tuple_stream).with(:custom_stream, "tuple", "values").exactly(3).times
+
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+
+        bolt = Bolt3.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+      end
     end
 
     describe "prepare" do

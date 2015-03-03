@@ -58,12 +58,24 @@ module RedStorm
         self.class.log
       end
 
+      def stream
+        self.class.stream
+      end
+
       def unanchored_emit(*values)
         @collector.emit_tuple(Values.new(*values))
       end
 
+      def unanchored_stream_emit(stream, *values)
+        @collector.emit_tuple_stream(stream, Values.new(*values))
+      end
+
       def anchored_emit(tuple, *values)
         @collector.emit_anchor_tuple(tuple, Values.new(*values))
+      end
+
+      def anchored_stream_emit(stream, tuple, *values)
+        @collector.emit_anchor_tuple_stream(stream, tuple, Values.new(*values))
       end
 
       def ack(tuple)
@@ -80,7 +92,21 @@ module RedStorm
         output = on_receive(tuple)
         if output && self.class.emit?
           values_list = !output.is_a?(Array) ? [[output]] : !output.first.is_a?(Array) ? [output] : output
-          values_list.each{|values| self.class.anchor? ? anchored_emit(tuple, *values) : unanchored_emit(*values)}
+          values_list.each do |values|
+            if self.class.anchor?
+              if self.class.stream?
+                anchored_stream_emit(self.stream, tuple, *values)
+              else
+                anchored_emit(tuple, *values)
+              end
+            else
+              if self.class.stream?
+                unanchored_stream_emit(self.stream, *values)
+              else
+                unanchored_emit(*values)
+              end
+            end
+          end
           @collector.ack(tuple) if self.class.ack?
         end
       end
@@ -135,6 +161,14 @@ module RedStorm
 
       def self.anchor?
         !!self.receive_options[:anchor]
+      end
+
+      def self.stream?
+        self.receive_options[:stream] && !self.receive_options[:stream].empty?
+      end
+
+      def self.stream
+        self.receive_options[:stream]
       end
 
       # below non-dry see Spout class

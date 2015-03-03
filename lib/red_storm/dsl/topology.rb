@@ -60,29 +60,33 @@ module RedStorm
           @sources = []
         end
 
-        def source(source_id, grouping)
-          @sources << [source_id.is_a?(Class) ? Topology.underscore(source_id) : source_id.to_s, grouping.is_a?(Hash) ? grouping : {grouping => nil}]
+        def source(source_id, grouping, stream = 'default')
+          @sources << [
+            source_id.is_a?(Class) ? Topology.underscore(source_id) : source_id.to_s,
+            grouping.is_a?(Hash) ? grouping : {grouping => nil},
+            stream.to_s
+          ]
         end
 
         def define_grouping(declarer)
-          @sources.each do |source_id, grouping|
+          @sources.each do |source_id, grouping, stream|
             grouper, params = grouping.first
               # declarer.fieldsGrouping(source_id, Fields.new())
             case grouper
             when :fields
-              declarer.fieldsGrouping(source_id, Fields.new(*([params].flatten.map(&:to_s))))
+              declarer.fieldsGrouping(source_id, stream, Fields.new(*([params].flatten.map(&:to_s))))
             when :global
-              declarer.globalGrouping(source_id)
+              declarer.globalGrouping(source_id, stream)
             when :shuffle
-              declarer.shuffleGrouping(source_id)
+              declarer.shuffleGrouping(source_id, stream)
             when :local_or_shuffle
-              declarer.localOrShuffleGrouping(source_id)
+              declarer.localOrShuffleGrouping(source_id, stream)
             when :none
-              declarer.noneGrouping(source_id)
+              declarer.noneGrouping(source_id, stream)
             when :all
-              declarer.allGrouping(source_id)
+              declarer.allGrouping(source_id, stream)
             when :direct
-              declarer.directGrouping(source_id)
+              declarer.directGrouping(source_id, stream)
             else
               raise("unknown grouper=#{grouper.inspect}")
             end

@@ -26,7 +26,9 @@ module RedStorm
         @fields ||= []
         fields.each do |field|
           if field.kind_of? Hash
-            @fields << Hash[ field.map { |k, v| [k.to_s, v.to_s] } ]
+            @fields << Hash[
+              field.map { |k, v| [k.to_s, v.kind_of?(Array) ? v.map(&:to_s) : v.to_s] }
+            ]
           else
             @fields << field.to_s
           end
@@ -142,7 +144,7 @@ module RedStorm
           end
         end
 
-        declarer.declare(Fields.new(default_fields.flatten))
+        declarer.declare(Fields.new(default_fields.flatten)) unless default_fields.empty?
       end
 
       def get_component_configuration

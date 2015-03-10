@@ -23,7 +23,14 @@ module RedStorm
       end
 
       def self.output_fields(*fields)
-        @fields = fields.map(&:to_s)
+        @fields ||= []
+        fields.each do |field|
+          if field.kind_of? Hash
+            @fields << Hash[ field.map { |k, v| [k.to_s, v.to_s] } ]
+          else
+            @fields << field.to_s
+          end
+        end
       end
 
       def self.configure(&configure_block)
@@ -124,7 +131,18 @@ module RedStorm
       end
 
       def declare_output_fields(declarer)
-        declarer.declare(Fields.new(self.class.fields))
+        default_fields = []
+        self.class.fields.each do |field|
+          if field.kind_of? Hash
+            field.each do |stream, fields|
+              declarer.declareStream(stream, Fields.new(fields))
+            end
+          else
+            default_fields << field
+          end
+        end
+
+        declarer.declare(Fields.new(default_fields.flatten))
       end
 
       def get_component_configuration

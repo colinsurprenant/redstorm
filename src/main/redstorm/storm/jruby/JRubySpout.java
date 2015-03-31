@@ -6,6 +6,7 @@ import backtype.storm.topology.IRichSpout;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Fields;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.jruby.Ruby;
@@ -27,7 +28,7 @@ import org.jruby.exceptions.RaiseException;
  */
 public class JRubySpout implements IRichSpout {
   private final String _realSpoutClassName;
-  private final String[] _fields;
+  private final Map<String, String[]> _fields;
   private final String _bootstrap;
 
   // transient to avoid serialization
@@ -41,7 +42,7 @@ public class JRubySpout implements IRichSpout {
    * @param realSpoutClassName the fully qualified JRuby spout implementation class name
    * @param fields the output fields names
    */
-  public JRubySpout(String baseClassPath, String realSpoutClassName, String[] fields) {
+  public JRubySpout(String baseClassPath, String realSpoutClassName, Map<String, String[]> fields) {
     _realSpoutClassName = realSpoutClassName;
     _fields = fields;
     _bootstrap = "require '" + baseClassPath + "'";
@@ -93,8 +94,13 @@ public class JRubySpout implements IRichSpout {
     // declareOutputFields is executed in the topology creation time, before serialisation.
     // just create tmp spout instance to call declareOutputFields.
 
-    if (_fields.length > 0) {
-      declarer.declare(new Fields(_fields));
+    if (_fields.size() > 0) {
+      Iterator iterator = _fields.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Map.Entry<String, String[]> field = (Map.Entry<String, String[]>)iterator.next();
+        declarer.declareStream(field.getKey(), new Fields(field.getValue()));
+        iterator.remove();
+      }
     } else {
       IRubyObject ruby_spout = initialize_ruby_spout();
       IRubyObject ruby_declarer = JavaUtil.convertJavaToRuby(__ruby__, declarer);

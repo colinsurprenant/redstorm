@@ -1,6 +1,7 @@
 require 'java'
 require 'red_storm/configurator'
 require 'red_storm/environment'
+require 'red_storm/dsl/output_fields'
 require 'pathname'
 
 module RedStorm
@@ -10,6 +11,8 @@ module RedStorm
 
     class Spout
       attr_reader :config, :context, :collector
+
+      include OutputFields
 
       def self.java_proxy; "Java::RedstormStormJruby::JRubySpout"; end
 
@@ -21,10 +24,6 @@ module RedStorm
 
       def self.log
         @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
-      end
-
-      def self.output_fields(*fields)
-        @fields = fields.map(&:to_s)
       end
 
       def self.on_send(*args, &on_send_block)
@@ -126,10 +125,6 @@ module RedStorm
         on_deactivate
       end
 
-      def declare_output_fields(declarer)
-        declarer.declare(Fields.new(self.class.fields))
-      end
-
       def ack(msg_id)
         on_ack(msg_id)
       end
@@ -153,10 +148,6 @@ module RedStorm
       def on_deactivate; end
       def on_ack(msg_id); end
       def on_fail(msg_id); end
-
-      def self.fields
-        @fields ||= []
-      end
 
       def self.configure_block
         @configure_block ||= lambda {}

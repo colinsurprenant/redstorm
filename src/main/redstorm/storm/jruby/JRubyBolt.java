@@ -6,9 +6,11 @@ import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.OutputFieldsDeclarer;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Fields;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.jruby.Ruby;
+import org.jruby.RubyHash;
 import org.jruby.RubyObject;
 import org.jruby.runtime.Helpers;
 import org.jruby.runtime.builtin.IRubyObject;
@@ -27,7 +29,7 @@ import org.jruby.exceptions.RaiseException;
  */
 public class JRubyBolt implements IRichBolt {
   private final String _realBoltClassName;
-  private final String[] _fields;
+  private final Map<String, String[]> _fields;
   private final String _bootstrap;
 
   // transient to avoid serialization
@@ -41,7 +43,7 @@ public class JRubyBolt implements IRichBolt {
    * @param realBoltClassName the fully qualified JRuby bolt implementation class name
    * @param fields the output fields names
    */
-  public JRubyBolt(String baseClassPath, String realBoltClassName, String[] fields) {
+  public JRubyBolt(String baseClassPath, String realBoltClassName, Map<String, String[]> fields) {
     _realBoltClassName = realBoltClassName;
     _fields = fields;
     _bootstrap = "require '" + baseClassPath + "'";
@@ -72,8 +74,13 @@ public class JRubyBolt implements IRichBolt {
     // declareOutputFields is executed in the topology creation time, before serialisation.
     // just create tmp bolt instance to call declareOutputFields.
 
-    if (_fields.length > 0) {
-      declarer.declare(new Fields(_fields));
+    if (_fields.size() > 0) {
+      Iterator iterator = _fields.entrySet().iterator();
+      while (iterator.hasNext()) {
+        Map.Entry<String, String[]> field = (Map.Entry<String, String[]>)iterator.next();
+        declarer.declareStream(field.getKey(), new Fields(field.getValue()));
+        iterator.remove();
+      }
     } else {
       IRubyObject ruby_bolt = initialize_ruby_bolt();
       IRubyObject ruby_declarer = JavaUtil.convertJavaToRuby(__ruby__, declarer);

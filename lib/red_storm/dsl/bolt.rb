@@ -1,6 +1,7 @@
 require 'java'
 require 'red_storm/configurator'
 require 'red_storm/environment'
+require 'red_storm/dsl/output_fields'
 require 'pathname'
 
 java_import 'backtype.storm.tuple.Fields'
@@ -14,25 +15,14 @@ module RedStorm
     class Bolt
       attr_reader :collector, :context, :config
 
+      include OutputFields
+
       def self.java_proxy; "Java::RedstormStormJruby::JRubyBolt"; end
 
       # DSL class methods
 
       def self.log
         @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
-      end
-
-      def self.output_fields(*fields)
-        @fields ||= []
-        fields.each do |field|
-          if field.kind_of? Hash
-            @fields << Hash[
-              field.map { |k, v| [k.to_s, v.kind_of?(Array) ? v.map(&:to_s) : v.to_s] }
-            ]
-          else
-            @fields << field.to_s
-          end
-        end
       end
 
       def self.configure(&configure_block)
@@ -65,10 +55,6 @@ module RedStorm
 
       def log
         self.class.log
-      end
-
-      def stream
-        self.class.stream
       end
 
       def unanchored_emit(*values)
@@ -132,21 +118,6 @@ module RedStorm
         on_close
       end
 
-      def declare_output_fields(declarer)
-        default_fields = []
-        self.class.fields.each do |field|
-          if field.kind_of? Hash
-            field.each do |stream, fields|
-              declarer.declareStream(stream, Fields.new(fields))
-            end
-          else
-            default_fields << field
-          end
-        end
-
-        declarer.declare(Fields.new(default_fields.flatten)) unless default_fields.empty?
-      end
-
       def get_component_configuration
         configurator = Configurator.new
         configurator.instance_exec(&self.class.configure_block)
@@ -158,10 +129,6 @@ module RedStorm
       # default noop optional dsl callbacks
       def on_init; end
       def on_close; end
-
-      def self.fields
-        @fields ||= []
-      end
 
       def self.configure_block
         @configure_block ||= lambda {}
@@ -181,14 +148,6 @@ module RedStorm
 
       def self.anchor?
         !!self.receive_options[:anchor]
-      end
-
-      def self.stream?
-        self.receive_options[:stream] && !self.receive_options[:stream].empty?
-      end
-
-      def self.stream
-        self.receive_options[:stream]
       end
 
       # below non-dry see Spout class

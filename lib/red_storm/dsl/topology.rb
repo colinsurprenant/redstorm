@@ -26,15 +26,36 @@ module RedStorm
           @constructor_args = constructor_args
           @id = id.to_s
           @parallelism = parallelism
-          @output_fields = []
+          @output_fields = Hash.new([])
         end
 
         def output_fields(*args)
-          args.empty? ? @output_fields : @output_fields = args.map(&:to_s)
+          args.each do |field|
+            if field.kind_of? Hash
+              field.each { |k, v| merge_fields(k.to_s, v) }
+            else
+              merge_fields('default', field)
+            end
+          end
+          @output_fields
         end
 
         def is_java?
           @clazz.name.split('::').first.downcase == 'java'
+        end
+
+        private
+
+        def java_safe_fields
+          java_hash = java.util.HashMap.new()
+          @output_fields.each do |k, v|
+            java_hash.put(k, v.to_java('java.lang.String'))
+          end
+          java_hash
+        end
+
+        def merge_fields(stream, fields)
+          @output_fields[stream] |= fields.kind_of?(Array) ? fields.map(&:to_s) : [fields.to_s]
         end
       end
 
@@ -47,7 +68,7 @@ module RedStorm
           elsif is_java?
             @clazz.new(*constructor_args)
           else
-            Object.module_eval(@clazz.java_proxy).new(@clazz.base_class_path, @clazz.name, @output_fields)
+            Object.module_eval(@clazz.java_proxy).new(@clazz.base_class_path, @clazz.name, java_safe_fields)
           end
         end
       end
@@ -100,7 +121,7 @@ module RedStorm
           elsif is_java?
             @clazz.new(*constructor_args)
           else
-            Object.module_eval(@clazz.java_proxy).new(@clazz.base_class_path, @clazz.name, @output_fields)
+            Object.module_eval(@clazz.java_proxy).new(@clazz.base_class_path, @clazz.name, java_safe_fields)
           end
         end
       end

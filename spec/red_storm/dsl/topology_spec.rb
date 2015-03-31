@@ -1,6 +1,8 @@
 require 'spec_helper'
 require 'red_storm/dsl/topology'
 
+require 'pry'
+
 describe RedStorm::SimpleTopology do
 
     # mock Storm imported classes
@@ -112,8 +114,11 @@ describe RedStorm::SimpleTopology do
             output_fields :f3
           end
         end
-        Topology1.spouts.first.output_fields.should == ["f1", "f2"]
-        Topology1.spouts.last.output_fields.should == [ "f3"]
+        # Pry.config.input = STDIN
+        # Pry.config.output = STDOUT
+        # binding.pry
+        Topology1.spouts.first.output_fields.should == { "default" => ["f1", "f2"] }
+        Topology1.spouts.last.output_fields.should == { "default" => ["f3"] }
       end
 
     end
@@ -195,8 +200,8 @@ describe RedStorm::SimpleTopology do
             output_fields :f3
           end
         end
-        Topology1.bolts.first.output_fields.should == ["f1", "f2"]
-        Topology1.bolts.last.output_fields.should == [ "f3"]
+        Topology1.bolts.first.output_fields.should == { "default" => ["f1", "f2"] }
+        Topology1.bolts.last.output_fields.should == { "default" => ["f3"] }
       end
 
     end
@@ -307,8 +312,8 @@ describe RedStorm::SimpleTopology do
 
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       RedStorm::Configurator.should_receive(:new).and_return(configurator)
-      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1", []).and_return(jruby_spout1)
-      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass2", []).and_return(jruby_spout2)
+      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1", {}).and_return(jruby_spout1)
+      RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass2", {}).and_return(jruby_spout2)
 
       builder.should_receive("setSpout").with('spout_class1', jruby_spout1, 1).and_return(declarer)
       builder.should_receive("setSpout").with('spout_class2', jruby_spout2, 1).and_return(declarer)
@@ -345,8 +350,8 @@ describe RedStorm::SimpleTopology do
 
       RedStorm::TopologyBuilder.should_receive(:new).and_return(builder)
       RedStorm::Configurator.should_receive(:new).and_return(configurator)
-      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1", []).and_return(jruby_bolt1)
-      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass2", []).and_return(jruby_bolt2)
+      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1", {}).and_return(jruby_bolt1)
+      RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass2", {}).and_return(jruby_bolt2)
 
       builder.should_receive("setBolt").with("id1", jruby_bolt1, 2).and_return(declarer)
       builder.should_receive("setBolt").with("id2", jruby_bolt2, 3).and_return(declarer)
@@ -377,8 +382,8 @@ describe RedStorm::SimpleTopology do
         backtype_config = mock(Backtype::Config)
         Backtype::Config.should_receive(:new).any_number_of_times.and_return(backtype_config)
         backtype_config.should_receive(:put)
-        RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1", []).and_return(jruby_bolt)
-        RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1", []).and_return(jruby_spout)
+        RedStorm::JRubyBolt.should_receive(:new).with("base_path", "BoltClass1", {}).and_return(jruby_bolt)
+        RedStorm::JRubySpout.should_receive(:new).with("base_path", "SpoutClass1", {}).and_return(jruby_spout)
         builder.should_receive("setBolt").with('bolt_class1', jruby_bolt, 1).and_return(@declarer)
         builder.should_receive("setSpout").with('1', jruby_spout, 1).and_return(@declarer)
         @declarer.should_receive("addConfigurations").twice

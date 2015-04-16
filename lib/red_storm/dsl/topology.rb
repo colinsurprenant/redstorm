@@ -4,6 +4,7 @@ require 'red_storm/configurator'
 
 java_import 'backtype.storm.topology.TopologyBuilder'
 java_import 'backtype.storm.generated.SubmitOptions'
+java_import 'backtype.storm.utils.Utils'
 
 module RedStorm
   module DSL
@@ -26,17 +27,19 @@ module RedStorm
           @constructor_args = constructor_args
           @id = id.to_s
           @parallelism = parallelism
-          @output_fields = Hash.new([])
+          @output_fields = @clazz.fields.clone
         end
 
-        def output_fields(*args)
-          args.each do |field|
-            if field.kind_of? Hash
-              field.each { |k, v| merge_fields(k.to_s, v) }
+        def output_fields(*fields)
+          fields.each do |field|
+            case field
+            when Hash
+              field.each { |k, v| @output_fields[k.to_s] = v.kind_of?(Array) ? v.map(&:to_s) : [v.to_s] }
             else
-              merge_fields('default', field)
+              @output_fields[Utils::DEFAULT_STREAM_ID] |= field.kind_of?(Array) ? field.map(&:to_s) : [field.to_s]
             end
           end
+
           @output_fields
         end
 
@@ -49,13 +52,9 @@ module RedStorm
         def java_safe_fields
           java_hash = java.util.HashMap.new()
           @output_fields.each do |k, v|
-            java_hash.put(k, v.to_java('java.lang.String'))
+            java_hash.put(k, v.to_java('java.lang.String')) unless v.empty?
           end
           java_hash
-        end
-
-        def merge_fields(stream, fields)
-          @output_fields[stream] |= fields.kind_of?(Array) ? fields.map(&:to_s) : [fields.to_s]
         end
       end
 
@@ -81,7 +80,7 @@ module RedStorm
           @sources = []
         end
 
-        def source(source_id, grouping, stream = 'default')
+        def source(source_id, grouping, stream = Utils::DEFAULT_STREAM_ID)
           @sources << [
             source_id.is_a?(Class) ? Topology.underscore(source_id) : source_id.to_s,
             grouping.is_a?(Hash) ? grouping : {grouping => nil},

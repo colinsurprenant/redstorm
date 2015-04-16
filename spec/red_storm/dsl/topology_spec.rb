@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'red_storm/dsl/topology'
-
-require 'pry'
+require 'red_storm/dsl/spout'
+require 'red_storm/dsl/bolt'
 
 describe RedStorm::SimpleTopology do
 
@@ -23,10 +23,10 @@ describe RedStorm::SimpleTopology do
     Object.send(:remove_const, "SpoutClass2") if Object.const_defined?("SpoutClass2")
     Object.send(:remove_const, "BoltClass1") if Object.const_defined?("BoltClass1")
     Object.send(:remove_const, "BoltClass2") if Object.const_defined?("BoltClass2")
-    class SpoutClass1; end
-    class SpoutClass2; end
-    class BoltClass1; end
-    class BoltClass2; end
+    class SpoutClass1 < RedStorm::DSL::Spout; end
+    class SpoutClass2 < RedStorm::DSL::Spout; end
+    class BoltClass1 < RedStorm::DSL::Bolt; end
+    class BoltClass2 < RedStorm::DSL::Bolt; end
     SpoutClass1.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
     SpoutClass2.should_receive(:base_class_path).at_least(0).times.and_return("base_path")
     SpoutClass1.should_receive(:java_proxy).at_least(0).times.and_return("RedStorm::JRubySpout")
@@ -114,9 +114,6 @@ describe RedStorm::SimpleTopology do
             output_fields :f3
           end
         end
-        # Pry.config.input = STDIN
-        # Pry.config.output = STDOUT
-        # binding.pry
         Topology1.spouts.first.output_fields.should == { "default" => ["f1", "f2"] }
         Topology1.spouts.last.output_fields.should == { "default" => ["f3"] }
       end

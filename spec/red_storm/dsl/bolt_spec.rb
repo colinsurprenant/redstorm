@@ -45,42 +45,42 @@ describe RedStorm::SimpleBolt do
           output_fields :f1
         end
         bolt = Bolt1.new
-        Bolt1.send(:fields).should == ["f1"]
+        Bolt1.send(:fields).should == {"default" => ["f1"]}
       end
 
       it "should parse multiple arguments" do
         class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, :f2
         end
-        Bolt1.send(:fields).should == ["f1", "f2"]
+        Bolt1.send(:fields).should == {"default" => ["f1", "f2"]}
       end
 
       it "should parse string and symbol arguments" do
         class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, "f2"
         end
-        Bolt1.send(:fields).should == ["f1", "f2"]
+        Bolt1.send(:fields).should == {"default" => ["f1", "f2"]}
       end
 
       it "should parse single hash argument" do
         class Bolt1 < RedStorm::SimpleBolt
           output_fields :stream => :f1
         end
-        Bolt1.send(:fields).should == [{"stream" => "f1"}]
+        Bolt1.send(:fields).should == {"stream" => ["f1"]}
       end
 
       it "should parse hash of string and symbols" do
         class Bolt1 < RedStorm::SimpleBolt
           output_fields "stream" => [:f1, :f2]
         end
-        Bolt1.send(:fields).should == [{"stream" => ["f1", "f2"]}]
+        Bolt1.send(:fields).should == {"stream" => ["f1", "f2"]}
       end
 
       it "should parse string and hash arguments" do
         class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, :stream => :f2
         end
-        Bolt1.send(:fields).should == ["f1", {"stream" => "f2"}]
+        Bolt1.send(:fields).should == {"default" => ["f1"], "stream" => ["f2"]}
       end
 
       it "should not share state over mutiple classes" do
@@ -90,9 +90,9 @@ describe RedStorm::SimpleBolt do
         class Bolt2 < RedStorm::SimpleBolt
           output_fields :f2
         end
-        RedStorm::SimpleBolt.send(:fields).should == []
-        Bolt1.send(:fields).should == ["f1"]
-        Bolt2.send(:fields).should == ["f2"]
+        RedStorm::SimpleBolt.send(:fields).should == {}
+        Bolt1.send(:fields).should == {"default" => ["f1"]}
+        Bolt2.send(:fields).should == {"default" => ["f2"]}
       end
     end
 
@@ -804,7 +804,7 @@ describe RedStorm::SimpleBolt do
         bolt = Bolt1.new
         class RedStorm::Fields; end
         declarer = mock("Declarer")
-        declarer.should_receive(:declare).with("fields")
+        declarer.should_receive(:declareStream).with("default", "fields")
         RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("fields")
         bolt.declare_output_fields(declarer)
       end
@@ -829,7 +829,7 @@ describe RedStorm::SimpleBolt do
         class RedStorm::Fields; end
         declarer = mock("Declarer")
         declarer.should_receive(:declareStream).with("stream", "stream_fields")
-        declarer.should_receive(:declare).with("default_fields")
+        declarer.should_receive(:declareStream).with("default", "default_fields")
         RedStorm::Fields.should_receive(:new).with(["f3", "f4"]).and_return("stream_fields")
         RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("default_fields")
         bolt.declare_output_fields(declarer)

@@ -27,18 +27,22 @@ module RedStorm
           @constructor_args = constructor_args
           @id = id.to_s
           @parallelism = parallelism
-          @output_fields = @clazz.fields.clone
+          @output_fields = Hash.new([])
+
+          initialize_output_fields
         end
 
         def output_fields(*fields)
+          default_fields = []
           fields.each do |field|
             case field
             when Hash
               field.each { |k, v| @output_fields[k.to_s] = v.kind_of?(Array) ? v.map(&:to_s) : [v.to_s] }
             else
-              @output_fields[Utils::DEFAULT_STREAM_ID] |= field.kind_of?(Array) ? field.map(&:to_s) : [field.to_s]
+              default_fields |= field.kind_of?(Array) ? field.map(&:to_s) : [field.to_s]
             end
           end
+          @output_fields[Utils::DEFAULT_STREAM_ID] = default_fields unless default_fields.empty?
 
           @output_fields
         end
@@ -48,6 +52,12 @@ module RedStorm
         end
 
         private
+
+        def initialize_output_fields
+          if @clazz.ancestors.include?(RedStorm::DSL::OutputFields)
+            @output_fields = @clazz.fields.clone
+          end
+        end
 
         def java_safe_fields
           java_hash = java.util.HashMap.new()

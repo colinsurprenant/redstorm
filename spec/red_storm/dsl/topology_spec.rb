@@ -118,6 +118,28 @@ describe RedStorm::SimpleTopology do
         Topology1.spouts.last.output_fields.should == { "default" => ["f3"] }
       end
 
+      it "should default output_fields to the class defined fields" do
+        class SpoutClass1
+          output_fields :f1, :f2
+        end
+        class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1
+        end
+        Topology1.spouts.first.output_fields.should == { "default" => ["f1", "f2"] }
+      end
+
+      it "should override class defined fields with topology output fields" do
+        class SpoutClass1
+          output_fields :f1, :f2
+        end
+        class Topology1 < RedStorm::SimpleTopology
+          spout SpoutClass1 do
+            output_fields :f3, :f4
+          end
+        end
+        Topology1.spouts.first.output_fields.should == { "default" => ["f3", "f4"] }
+      end
+
     end
 
     describe "bolt statement" do
@@ -199,6 +221,29 @@ describe RedStorm::SimpleTopology do
         end
         Topology1.bolts.first.output_fields.should == { "default" => ["f1", "f2"] }
         Topology1.bolts.last.output_fields.should == { "default" => ["f3"] }
+      end
+
+      it "should default output_fields to the class defined fields" do
+        class BoltClass1
+          output_fields :f1, :f2
+        end
+        class Topology1 < RedStorm::SimpleTopology
+          bolt BoltClass1 do
+          end
+        end
+        Topology1.bolts.first.output_fields.should == { "default" => ["f1", "f2"] }
+      end
+
+      it "should override class defined fields with topology output fields" do
+        class BoltClass1
+          output_fields :f1, :f2
+        end
+        class Topology1 < RedStorm::SimpleTopology
+          bolt BoltClass1 do
+            output_fields :f3, :f4
+          end
+        end
+        Topology1.bolts.first.output_fields.should == { "default" => ["f3", "f4"] }
       end
 
     end

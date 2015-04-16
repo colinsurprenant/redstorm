@@ -7,6 +7,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    coderay (1.1.0)
     colorize (0.5.8)
     coveralls (0.6.7)
       colorize
@@ -15,8 +16,15 @@ GEM
       simplecov (>= 0.7)
       thor
     diff-lcs (1.2.4)
+    ffi (1.9.8-java)
+    method_source (0.8.2)
     mime-types (1.23)
     multi_json (1.7.7)
+    pry (0.10.1-java)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
+      spoon (~> 0.0)
     rake (10.0.4)
     redis (3.0.4)
     rest-client (1.6.7)
@@ -33,6 +41,9 @@ GEM
       multi_json (~> 1.0)
       simplecov-html (~> 0.7.1)
     simplecov-html (0.7.1)
+    slop (3.6.0)
+    spoon (0.0.4)
+      ffi
     thor (0.18.1)
 
 PLATFORMS
@@ -40,6 +51,7 @@ PLATFORMS
 
 DEPENDENCIES
   coveralls
+  pry
   redis
   redstorm!
   rspec (~> 2.13)

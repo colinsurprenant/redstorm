@@ -65,21 +65,21 @@ describe RedStorm::SimpleSpout do
         class Spout1 < RedStorm::SimpleSpout
           output_fields :f1
         end
-        Spout1.send(:fields).should == ["f1"]
+        Spout1.send(:fields).should == {"default" => ["f1"]}
       end
 
       it "should parse multiple arguments" do
         class Spout1 < RedStorm::SimpleSpout
           output_fields :f1, :f2
         end
-        Spout1.send(:fields).should == ["f1", "f2"]
+        Spout1.send(:fields).should == {"default" => ["f1", "f2"]}
       end
 
       it "should parse string and symbol arguments" do
         class Spout1 < RedStorm::SimpleSpout
           output_fields :f1, "f2"
         end
-        Spout1.send(:fields).should == ["f1", "f2"]
+        Spout1.send(:fields).should == {"default" => ["f1", "f2"]}
       end
 
       it "should not share state over mutiple classes" do
@@ -89,9 +89,9 @@ describe RedStorm::SimpleSpout do
         class Spout2 < RedStorm::SimpleSpout
           output_fields :f2
         end
-        RedStorm::SimpleSpout.send(:fields).should == []
-        Spout1.send(:fields).should == ["f1"]
-        Spout2.send(:fields).should == ["f2"]
+        RedStorm::SimpleSpout.send(:fields).should == {}
+        Spout1.send(:fields).should == {"default" => ["f1"]}
+        Spout2.send(:fields).should == {"default" => ["f2"]}
       end
     end
 
@@ -787,7 +787,7 @@ describe RedStorm::SimpleSpout do
         spout = Spout1.new
         class RedStorm::Fields; end
         declarer = mock("Declarer")
-        declarer.should_receive(:declare).with("fields")
+        declarer.should_receive(:declareStream).with("default", "fields")
         RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("fields")
         spout.declare_output_fields(declarer)
       end

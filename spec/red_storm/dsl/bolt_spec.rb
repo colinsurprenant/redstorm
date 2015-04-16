@@ -45,21 +45,42 @@ describe RedStorm::SimpleBolt do
           output_fields :f1
         end
         bolt = Bolt1.new
-        Bolt1.send(:fields).should == ["f1"]
+        Bolt1.send(:fields).should == {"default" => ["f1"]}
       end
 
       it "should parse multiple arguments" do
         class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, :f2
         end
-        Bolt1.send(:fields).should == ["f1", "f2"]
+        Bolt1.send(:fields).should == {"default" => ["f1", "f2"]}
       end
 
       it "should parse string and symbol arguments" do
         class Bolt1 < RedStorm::SimpleBolt
           output_fields :f1, "f2"
         end
-        Bolt1.send(:fields).should == ["f1", "f2"]
+        Bolt1.send(:fields).should == {"default" => ["f1", "f2"]}
+      end
+
+      it "should parse single hash argument" do
+        class Bolt1 < RedStorm::SimpleBolt
+          output_fields :stream => :f1
+        end
+        Bolt1.send(:fields).should == {"stream" => ["f1"]}
+      end
+
+      it "should parse hash of string and symbols" do
+        class Bolt1 < RedStorm::SimpleBolt
+          output_fields "stream" => [:f1, :f2]
+        end
+        Bolt1.send(:fields).should == {"stream" => ["f1", "f2"]}
+      end
+
+      it "should parse string and hash arguments" do
+        class Bolt1 < RedStorm::SimpleBolt
+          output_fields :f1, :stream => :f2
+        end
+        Bolt1.send(:fields).should == {"default" => ["f1"], "stream" => ["f2"]}
       end
 
       it "should not share state over mutiple classes" do
@@ -69,9 +90,9 @@ describe RedStorm::SimpleBolt do
         class Bolt2 < RedStorm::SimpleBolt
           output_fields :f2
         end
-        RedStorm::SimpleBolt.send(:fields).should == []
-        Bolt1.send(:fields).should == ["f1"]
-        Bolt2.send(:fields).should == ["f2"]
+        RedStorm::SimpleBolt.send(:fields).should == {}
+        Bolt1.send(:fields).should == {"default" => ["f1"]}
+        Bolt2.send(:fields).should == {"default" => ["f2"]}
       end
     end
 
@@ -115,6 +136,7 @@ describe RedStorm::SimpleBolt do
           Bolt1.send(:emit?).should be_true
           Bolt1.send(:ack?).should be_false
           Bolt1.send(:anchor?).should be_false
+          Bolt1.send(:stream?).should be_false
         end
 
         it "should parse :emit option" do
@@ -147,16 +169,27 @@ describe RedStorm::SimpleBolt do
           Bolt1.send(:anchor?).should be_true
         end
 
-        it "should parse multiple option" do
+        it "should parse :stream option" do
           class Bolt1 < RedStorm::SimpleBolt
-            on_receive :emit => false, :ack =>true, :anchor => true do
+            on_receive :stream => "test" do
             end
           end
 
-          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:stream => "test")
+          Bolt1.send(:stream?).should be_true
+        end
+
+        it "should parse multiple option" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive :emit => false, :ack =>true, :anchor => true, :stream => "test" do
+            end
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true, :stream => "test")
           Bolt1.send(:emit?).should be_false
           Bolt1.send(:ack?).should be_true
           Bolt1.send(:anchor?).should be_true
+          Bolt1.send(:stream?).should be_true
         end
       end
 
@@ -166,13 +199,13 @@ describe RedStorm::SimpleBolt do
           class Bolt1 < RedStorm::SimpleBolt
             def test_method; end
             on_receive :test_method
-
           end
 
           Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS
           Bolt1.send(:emit?).should be_true
           Bolt1.send(:ack?).should be_false
           Bolt1.send(:anchor?).should be_false
+          Bolt1.send(:stream?).should be_false
         end
 
         it "should parse :emit option" do
@@ -186,8 +219,7 @@ describe RedStorm::SimpleBolt do
 
         it "should parse :ack option" do
           class Bolt1 < RedStorm::SimpleBolt
-            on_receive :ack => true do
-            end
+            on_receive :test_method, :ack => true
           end
 
           Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:ack => true)
@@ -196,24 +228,32 @@ describe RedStorm::SimpleBolt do
 
         it "should parse :anchor option" do
           class Bolt1 < RedStorm::SimpleBolt
-            on_receive :anchor => true do
-            end
+            on_receive :test_method, :anchor => true
           end
 
           Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:anchor => true)
           Bolt1.send(:anchor?).should be_true
         end
 
-        it "should parse multiple option" do
+        it "should parse :stream option" do
           class Bolt1 < RedStorm::SimpleBolt
-            on_receive :emit => false, :ack =>true, :anchor => true do
-            end
+            on_receive :test_method, :stream => "test"
           end
 
-          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:stream => "test")
+          Bolt1.send(:stream?).should be_true
+        end
+
+        it "should parse multiple option" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive :test_method, :emit => false, :ack =>true, :anchor => true, :stream => "test"
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true, :stream => "test")
           Bolt1.send(:emit?).should be_false
           Bolt1.send(:ack?).should be_true
           Bolt1.send(:anchor?).should be_true
+          Bolt1.send(:stream?).should be_true
         end
       end
 
@@ -227,6 +267,7 @@ describe RedStorm::SimpleBolt do
           Bolt1.send(:emit?).should be_true
           Bolt1.send(:ack?).should be_false
           Bolt1.send(:anchor?).should be_false
+          Bolt1.send(:stream?).should be_false
         end
 
         it "should parse :emit option" do
@@ -256,15 +297,25 @@ describe RedStorm::SimpleBolt do
           Bolt1.send(:anchor?).should be_true
         end
 
-        it "should parse multiple option" do
+        it "should parse :stream option" do
           class Bolt1 < RedStorm::SimpleBolt
-            on_receive :emit => false, :ack =>true, :anchor => true
+            on_receive :stream => "test"
           end
 
-          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true)
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:stream => "test")
+          Bolt1.send(:stream?).should be_true
+        end
+
+        it "should parse multiple option" do
+          class Bolt1 < RedStorm::SimpleBolt
+            on_receive :emit => false, :ack =>true, :anchor => true, :stream => "test"
+          end
+
+          Bolt1.receive_options.should == DEFAULT_RECEIVE_OPTIONS.merge(:emit =>false, :ack => true, :anchor => true, :stream => "test")
           Bolt1.send(:emit?).should be_false
           Bolt1.send(:ack?).should be_true
           Bolt1.send(:anchor?).should be_true
+          Bolt1.send(:stream?).should be_true
         end
       end
     end
@@ -603,6 +654,74 @@ describe RedStorm::SimpleBolt do
         bolt.prepare(nil, nil, collector)
         bolt.execute("output")
       end
+
+      it "should emit tuple on a stream" do
+        class Bolt1 < RedStorm::SimpleBolt
+          on_receive :stream => :custom_stream do |tuple|
+            tuple
+          end
+        end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method, :stream => :custom_stream
+          def my_method(tuple); tuple; end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          on_receive :stream => :custom_stream
+          def on_receive(tuple); tuple; end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit_tuple_stream).with(:custom_stream, "values").exactly(3).times
+
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+
+        bolt = Bolt3.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("output")
+      end
+
+      it "should emit anchored tuple on a stream" do
+        class Bolt1 < RedStorm::SimpleBolt
+          on_receive :anchor => true, :stream => :custom_stream do |tuple|
+            "output"
+          end
+        end
+        class Bolt2 < RedStorm::SimpleBolt
+          on_receive :my_method, :anchor => true, :stream => :custom_stream
+          def my_method(tuple)
+            "output"
+          end
+        end
+        class Bolt3 < RedStorm::SimpleBolt
+          on_receive :anchor => true, :stream => :custom_stream
+          def on_receive(tuple)
+            "output"
+          end
+        end
+
+        collector = mock("Collector")
+        RedStorm::Values.should_receive(:new).with("output").exactly(3).times.and_return("values")
+        collector.should_receive(:emit_anchor_tuple_stream).with(:custom_stream, "tuple", "values").exactly(3).times
+
+        bolt = Bolt1.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+
+        bolt = Bolt2.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+
+        bolt = Bolt3.new
+        bolt.prepare(nil, nil, collector)
+        bolt.execute("tuple")
+      end
     end
 
     describe "prepare" do
@@ -685,8 +804,34 @@ describe RedStorm::SimpleBolt do
         bolt = Bolt1.new
         class RedStorm::Fields; end
         declarer = mock("Declarer")
-        declarer.should_receive(:declare).with("fields")
+        declarer.should_receive(:declareStream).with("default", "fields")
         RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("fields")
+        bolt.declare_output_fields(declarer)
+      end
+
+      it "should declare stream with fields" do
+        class Bolt1 < RedStorm::SimpleBolt
+          output_fields :stream => [:f1, :f2]
+        end
+        bolt = Bolt1.new
+        class RedStorm::Fields; end
+        declarer = mock("Declarer")
+        declarer.should_receive(:declareStream).with("stream", "fields")
+        RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("fields")
+        bolt.declare_output_fields(declarer)
+      end
+
+      it "should declare default stream fields and custom stream fields" do
+        class Bolt1 < RedStorm::SimpleBolt
+          output_fields :f1, :f2, :stream => [:f3, :f4]
+        end
+        bolt = Bolt1.new
+        class RedStorm::Fields; end
+        declarer = mock("Declarer")
+        declarer.should_receive(:declareStream).with("stream", "stream_fields")
+        declarer.should_receive(:declareStream).with("default", "default_fields")
+        RedStorm::Fields.should_receive(:new).with(["f3", "f4"]).and_return("stream_fields")
+        RedStorm::Fields.should_receive(:new).with(["f1", "f2"]).and_return("default_fields")
         bolt.declare_output_fields(declarer)
       end
     end

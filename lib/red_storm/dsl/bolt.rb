@@ -1,6 +1,7 @@
 require 'java'
 require 'red_storm/configurator'
 require 'red_storm/environment'
+require 'red_storm/dsl/output_fields'
 require 'pathname'
 
 java_import 'backtype.storm.tuple.Fields'
@@ -14,16 +15,14 @@ module RedStorm
     class Bolt
       attr_reader :collector, :context, :config
 
+      include OutputFields
+
       def self.java_proxy; "Java::RedstormStormJruby::JRubyBolt"; end
 
       # DSL class methods
 
       def self.log
         @log ||= Java::OrgApacheLog4j::Logger.getLogger(self.name)
-      end
-
-      def self.output_fields(*fields)
-        @fields = fields.map(&:to_s)
       end
 
       def self.configure(&configure_block)
@@ -62,8 +61,16 @@ module RedStorm
         @collector.emit_tuple(Values.new(*values))
       end
 
+      def unanchored_stream_emit(stream, *values)
+        @collector.emit_tuple_stream(stream, Values.new(*values))
+      end
+
       def anchored_emit(tuple, *values)
         @collector.emit_anchor_tuple(tuple, Values.new(*values))
+      end
+
+      def anchored_stream_emit(stream, tuple, *values)
+        @collector.emit_anchor_tuple_stream(stream, tuple, Values.new(*values))
       end
 
       def ack(tuple)
@@ -80,7 +87,21 @@ module RedStorm
         output = on_receive(tuple)
         if output && self.class.emit?
           values_list = !output.is_a?(Array) ? [[output]] : !output.first.is_a?(Array) ? [output] : output
-          values_list.each{|values| self.class.anchor? ? anchored_emit(tuple, *values) : unanchored_emit(*values)}
+          values_list.each do |values|
+            if self.class.anchor?
+              if self.class.stream?
+                anchored_stream_emit(self.stream, tuple, *values)
+              else
+                anchored_emit(tuple, *values)
+              end
+            else
+              if self.class.stream?
+                unanchored_stream_emit(self.stream, *values)
+              else
+                unanchored_emit(*values)
+              end
+            end
+          end
           @collector.ack(tuple) if self.class.ack?
         end
       end
@@ -97,10 +118,6 @@ module RedStorm
         on_close
       end
 
-      def declare_output_fields(declarer)
-        declarer.declare(Fields.new(self.class.fields))
-      end
-
       def get_component_configuration
         configurator = Configurator.new
         configurator.instance_exec(&self.class.configure_block)
@@ -112,10 +129,6 @@ module RedStorm
       # default noop optional dsl callbacks
       def on_init; end
       def on_close; end
-
-      def self.fields
-        @fields ||= []
-      end
 
       def self.configure_block
         @configure_block ||= lambda {}

@@ -17,7 +17,7 @@ GEM
     diff-lcs (1.2.4)
     mime-types (1.23)
     multi_json (1.7.7)
-    rake (10.0.4)
+    rake (13.0.1)
     redis (3.0.4)
     rest-client (1.6.7)
       mime-types (>= 1.16)
@@ -37,6 +37,7 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   coveralls
